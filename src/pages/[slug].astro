@@ -1,0 +1,74 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { siteText } from "../config/site";
+import { subjects } from "../data/generated/subjects";
+import { defaultLocale, getLocaleFromUrl, ui } from "../i18n/ui";
+
+export async function getStaticPaths() {
+  const subjectEntries = await getCollection("subjects", ({ data }) => !data.draft);
+  return subjectEntries
+    .map((entry) => {
+      const subject = subjects.find((item) => item.slug === entry.slug);
+      if (!subject) {
+        return null;
+      }
+
+      return {
+        params: { slug: entry.slug },
+        props: { subject, entry }
+      };
+    })
+    .filter(Boolean);
+}
+
+const locale = Astro.url ? getLocaleFromUrl(Astro.url) : defaultLocale;
+const t = ui[locale];
+const copy = siteText[locale];
+const baseUrl = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+const { subject, entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<BaseLayout title={`${subject.title} | ${copy.brand}`} description={subject.summary ?? copy.metaDescription}>
+  <section class="hero">
+    <div class="hero-kicker">
+      <p class="eyebrow">{t.subjects}</p>
+      <span class="hero-tag">{subject.notes.length} {t.notes.toLowerCase()}</span>
+    </div>
+    <div class="hero-copy-block">
+      <h1>{subject.title}</h1>
+    </div>
+    <div class="prose subject-prose">
+      <Content />
+    </div>
+  </section>
+
+  <section class="section-block">
+    <div class="section-heading">
+      <h2>{t.notes}</h2>
+      <span class="meta-pill">{subject.notes.length}</span>
+    </div>
+
+    {
+      subject.notes.length === 0 ? (
+        <div class="empty-state">
+          <p>{t.empty}</p>
+        </div>
+      ) : (
+        <div class="subject-grid">
+          {subject.notes.map((note) => (
+            <article class="subject-card">
+              <h3>{note.title}</h3>
+              <p>{note.summary}</p>
+              <div class="subject-card-footer">
+                <span>{note.updatedAt ?? note.sourcePath}</span>
+                <a href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`}>Открыть</a>
+              </div>
+            </article>
+          ))}
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>

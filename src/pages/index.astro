@@ -1,0 +1,52 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { siteText } from "../config/site";
+import { subjects } from "../data/generated/subjects";
+import { defaultLocale, getLocaleFromUrl, ui } from "../i18n/ui";
+
+const locale = Astro.url ? getLocaleFromUrl(Astro.url) : defaultLocale;
+const t = ui[locale];
+const copy = siteText[locale];
+const baseUrl = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+---
+
+<BaseLayout title={copy.brand} description={copy.metaDescription}>
+  <section class="hero">
+    <div class="hero-kicker">
+      <p class="eyebrow">{copy.heroEyebrow}</p>
+      <span class="hero-tag">{copy.heroTag}</span>
+    </div>
+    <div class="hero-copy-block">
+      <h1>{copy.heroTitle}</h1>
+      <p class="hero-copy">{copy.heroBody}</p>
+    </div>
+  </section>
+
+  <section id="subjects" class="section-block">
+    <div class="section-heading">
+      <h2>{t.subjects}</h2>
+      <span class="meta-pill">{subjects.length}</span>
+    </div>
+
+    {
+      subjects.length === 0 ? (
+        <div class="empty-state">
+          <p>{t.empty}</p>
+        </div>
+      ) : (
+        <div class="subject-grid">
+          {subjects.map((subject) => (
+            <article class="subject-card">
+              <h3>{subject.title}</h3>
+              <p>{subject.description || subject.summary}</p>
+              <div class="subject-card-footer">
+                <span>{subject.notes.length} {t.notes.toLowerCase()}</span>
+                <a href={`${baseUrl}${subject.slug}/?lang=${locale}`}>Открыть</a>
+              </div>
+            </article>
+          ))}
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>

@@ -1,0 +1,57 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { siteText } from "../../config/site";
+import { defaultLocale, getLocaleFromUrl } from "../../i18n/ui";
+
+export async function getStaticPaths() {
+  const notes = await getCollection("notes", ({ data }) => !data.draft);
+  return notes.map((note) => ({
+    params: {
+      subject: note.data.subjectSlug,
+      slug: note.slug
+    },
+    props: { note }
+  }));
+}
+
+const locale = Astro.url ? getLocaleFromUrl(Astro.url) : defaultLocale;
+const copy = siteText[locale];
+const { note } = Astro.props;
+const { Content, headings } = await render(note);
+const baseUrl = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+---
+
+<BaseLayout title={`${note.data.title} | ${copy.brand}`} description={note.data.title}>
+  <article class="note-shell">
+    <header class="note-header note-header-compact">
+      <div class="hero-kicker">
+        <p class="eyebrow">{note.data.subject}</p>
+        <span class="hero-tag">{note.data.date ? note.data.date.toISOString().slice(0, 10) : note.data.sourcePath}</span>
+      </div>
+      <div class="hero-copy-block">
+        <h1 class="note-title">{note.data.title}</h1>
+      </div>
+    </header>
+
+    <div class="note-layout">
+      {headings.length > 0 ? (
+        <aside class="toc-card">
+          <p class="prefs-label">Contents</p>
+          <nav class="toc-nav">
+            {headings.map((heading) => (
+              <a href={`#${heading.slug}`}>{heading.text}</a>
+            ))}
+          </nav>
+        </aside>
+      ) : null}
+
+      <div class="note-card prose">
+        <p class="note-backline">
+          <a href={`${baseUrl}${note.data.subjectSlug}/?lang=${locale}`}>{note.data.subject}</a>
+        </p>
+        <Content />
+      </div>
+    </div>
+  </article>
+</BaseLayout>

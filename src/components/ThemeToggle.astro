@@ -1,0 +1,115 @@
+---
+import type { Locale } from "../i18n/ui";
+import { ui } from "../i18n/ui";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = ui[locale];
+---
+
+<details class="prefs-popover">
+  <summary class="prefs-trigger">{t.menu}</summary>
+  <div class="prefs-panel">
+    <section class="prefs-group" aria-label={t.language}>
+      <p class="prefs-label">{t.language}</p>
+      <div class="prefs-options">
+        <button type="button" class="prefs-chip" data-lang-value="ru" aria-pressed={locale === "ru"}>
+          RU
+        </button>
+        <button type="button" class="prefs-chip" data-lang-value="en" aria-pressed={locale === "en"}>
+          EN
+        </button>
+      </div>
+    </section>
+
+    <section class="prefs-group" aria-label={t.theme}>
+      <p class="prefs-label">{t.theme}</p>
+      <div class="prefs-options">
+        <button type="button" class="prefs-chip" data-theme-value="light">{t.light}</button>
+        <button type="button" class="prefs-chip" data-theme-value="dark">{t.dark}</button>
+        <button type="button" class="prefs-chip" data-theme-value="system">{t.system}</button>
+      </div>
+    </section>
+
+    <section class="prefs-group" aria-label={t.accent}>
+      <p class="prefs-label">{t.accent}</p>
+      <div class="prefs-swatches">
+        <button type="button" class="swatch" data-accent-value="white" aria-label={t.accentWhite}></button>
+        <button type="button" class="swatch" data-accent-value="violet" aria-label={t.accentViolet}></button>
+        <button type="button" class="swatch" data-accent-value="teal" aria-label={t.accentTeal}></button>
+        <button type="button" class="swatch" data-accent-value="blue" aria-label={t.accentBlue}></button>
+        <button type="button" class="swatch" data-accent-value="olive" aria-label={t.accentOlive}></button>
+        <button type="button" class="swatch" data-accent-value="rose" aria-label={t.accentRose}></button>
+      </div>
+    </section>
+  </div>
+</details>
+
+<script is:inline>
+  const themeStorageKey = "notegen-theme";
+  const accentStorageKey = "notegen-accent";
+  const root = document.documentElement;
+  const themeChips = document.querySelectorAll("[data-theme-value]");
+  const accentChips = document.querySelectorAll("[data-accent-value]");
+  const langChips = document.querySelectorAll("[data-lang-value]");
+  const applyTheme = (value) => {
+    const resolved = value === "system"
+      ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+      : value;
+    root.dataset.theme = resolved;
+    themeChips.forEach((chip) => {
+      chip.setAttribute("aria-pressed", String(chip.dataset.themeValue === value));
+    });
+  };
+  const applyAccent = (value) => {
+    root.dataset.accent = value;
+    accentChips.forEach((chip) => {
+      chip.setAttribute("aria-pressed", String(chip.dataset.accentValue === value));
+    });
+  };
+  const currentUrl = new URL(window.location.href);
+  const currentLang = currentUrl.searchParams.get("lang") === "en" ? "en" : "ru";
+  langChips.forEach((chip) => {
+    chip.setAttribute("aria-pressed", String(chip.dataset.langValue === currentLang));
+  });
+
+  const savedTheme = localStorage.getItem(themeStorageKey) ?? "system";
+  const savedAccent = localStorage.getItem(accentStorageKey) ?? "white";
+  applyTheme(savedTheme);
+  applyAccent(savedAccent);
+
+  themeChips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const value = chip.dataset.themeValue ?? "system";
+      localStorage.setItem(themeStorageKey, value);
+      applyTheme(value);
+      chip.closest("details")?.removeAttribute("open");
+    });
+  });
+  accentChips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const value = chip.dataset.accentValue ?? "white";
+      localStorage.setItem(accentStorageKey, value);
+      applyAccent(value);
+      chip.closest("details")?.removeAttribute("open");
+    });
+  });
+  langChips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const value = chip.dataset.langValue ?? "ru";
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.set("lang", value);
+      window.location.href = nextUrl.toString();
+    });
+  });
+
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    const value = localStorage.getItem(themeStorageKey) ?? "system";
+    if (value === "system") {
+      applyTheme("system");
+    }
+  });
+</script>
