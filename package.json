@@ -9,7 +9,7 @@
     "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
     "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
     "check": "ASTRO_TELEMETRY_DISABLED=1 astro check",
-    "sync:vault": "node --env-file=.env ./scripts/sync-vault.mjs"
+    "sync:vault": "node ./scripts/sync-vault.mjs"
   },
   "dependencies": {
     "astro": "^5.0.0",
