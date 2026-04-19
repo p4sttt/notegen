@@ -7,7 +7,15 @@ export default defineConfig({
   base: "/notegen",
   output: "static",
   markdown: {
+    syntaxHighlight: "shiki",
     remarkPlugins: [remarkMath],
-    rehypePlugins: [rehypeKatex]
+    rehypePlugins: [rehypeKatex],
+    shikiConfig: {
+      themes: {
+        light: "github-light",
+        dark: "github-dark"
+      },
+      defaultColor: false
+    }
   }
 });

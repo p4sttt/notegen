@@ -19,6 +19,10 @@ type UIStrings = {
   accentOlive: string;
   accentRose: string;
   menu: string;
+  open: string;
+  contents: string;
+  notesCount: string;
+  sourceData: string;
   empty: string;
   intro: string;
 };
@@ -41,6 +45,10 @@ export const ui: Record<Locale, UIStrings> = {
     accentOlive: "Оливковый",
     accentRose: "Розовый",
     menu: "Параметры",
+    open: "Открыть",
+    contents: "Содержание",
+    notesCount: "конспекты",
+    sourceData: "Источник данных",
     empty: "Контент пока не импортирован.",
     intro: "Статический сайт конспектов, собранный из Obsidian vault."
   },
@@ -61,6 +69,10 @@ export const ui: Record<Locale, UIStrings> = {
     accentOlive: "Olive",
     accentRose: "Rose",
     menu: "Controls",
+    open: "Open",
+    contents: "Contents",
+    notesCount: "notes",
+    sourceData: "Source",
     empty: "Content has not been imported yet.",
     intro: "A static notes site generated from an Obsidian vault."
   }

@@ -51,6 +51,7 @@ const t = ui[locale];
 <script is:inline>
   const themeStorageKey = "notegen-theme";
   const accentStorageKey = "notegen-accent";
+  const languageStorageKey = "notegen-language";
   const root = document.documentElement;
   const themeChips = document.querySelectorAll("[data-theme-value]");
   const accentChips = document.querySelectorAll("[data-accent-value]");
@@ -100,6 +101,7 @@ const t = ui[locale];
   langChips.forEach((chip) => {
     chip.addEventListener("click", () => {
       const value = chip.dataset.langValue ?? "ru";
+      localStorage.setItem(languageStorageKey, value);
       const nextUrl = new URL(window.location.href);
       nextUrl.searchParams.set("lang", value);
       window.location.href = nextUrl.toString();

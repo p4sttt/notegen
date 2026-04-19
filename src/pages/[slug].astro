@@ -33,8 +33,10 @@ const { Content } = await render(entry);
 <BaseLayout title={`${subject.title} | ${copy.brand}`} description={subject.summary ?? copy.metaDescription}>
   <section class="hero">
     <div class="hero-kicker">
-      <p class="eyebrow">{t.subjects}</p>
-      <span class="hero-tag">{subject.notes.length} {t.notes.toLowerCase()}</span>
+      <p class="eyebrow" data-i18n="subjects">{t.subjects}</p>
+      <span class="hero-tag">
+        {subject.notes.length} <span data-i18n="notesCount">{t.notesCount}</span>
+      </span>
     </div>
     <div class="hero-copy-block">
       <h1>{subject.title}</h1>
@@ -46,7 +48,7 @@ const { Content } = await render(entry);
 
   <section class="section-block">
     <div class="section-heading">
-      <h2>{t.notes}</h2>
+      <h2 data-i18n="notes">{t.notes}</h2>
       <span class="meta-pill">{subject.notes.length}</span>
     </div>
 
@@ -63,7 +65,7 @@ const { Content } = await render(entry);
               <p>{note.summary}</p>
               <div class="subject-card-footer">
                 <span>{note.updatedAt ?? note.sourcePath}</span>
-                <a href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`}>Открыть</a>
+                <a href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`} data-lang-link data-i18n="open">{t.open}</a>
               </div>
             </article>
           ))}

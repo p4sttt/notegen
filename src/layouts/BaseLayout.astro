@@ -13,10 +13,12 @@ const { title, description = "Static notes site" } = Astro.props;
 const locale = Astro.url ? getLocaleFromUrl(Astro.url) : defaultLocale;
 const copy = siteText[locale];
 const baseUrl = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+const uiMessages = JSON.stringify(ui);
+const siteMessages = JSON.stringify(siteText);
 ---
 
 <!doctype html>
-<html lang={locale} data-theme="light" data-accent="white">
+<html lang={locale} data-theme="light" data-accent="white" data-default-locale={defaultLocale}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -33,9 +35,9 @@ const baseUrl = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_UR
   <body>
     <div class="page-shell">
       <header class="site-header">
-        <a href={`${baseUrl}?lang=${locale}`} class="brand">{copy.brand}</a>
+        <a href={`${baseUrl}?lang=${locale}`} class="brand" data-lang-link>{copy.brand}</a>
         <nav class="top-nav">
-          <a href={`${baseUrl}?lang=${locale}#subjects`}>{ui[locale].subjects}</a>
+          <a href={`${baseUrl}?lang=${locale}#subjects`} data-lang-link data-i18n="subjects">{ui[locale].subjects}</a>
         </nav>
         <ThemeToggle locale={locale} />
       </header>
@@ -43,5 +45,40 @@ const baseUrl = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_UR
         <slot />
       </main>
     </div>
+    <script is:inline define:vars={{ uiMessages, siteMessages, defaultLocale }}>
+      const uiDict = uiMessages;
+      const siteDict = siteMessages;
+      const languageStorageKey = "notegen-language";
+      const currentUrl = new URL(window.location.href);
+      const queryLocale = currentUrl.searchParams.get("lang");
+      const savedLocale = localStorage.getItem(languageStorageKey);
+      const locale = queryLocale === "en" || queryLocale === "ru"
+        ? queryLocale
+        : (savedLocale === "en" || savedLocale === "ru" ? savedLocale : defaultLocale);
+
+      if (currentUrl.searchParams.get("lang") !== locale) {
+        currentUrl.searchParams.set("lang", locale);
+        history.replaceState(null, "", currentUrl.toString());
+      }
+
+      document.documentElement.lang = locale;
+      localStorage.setItem(languageStorageKey, locale);
+
+      document.querySelectorAll("[data-i18n]").forEach((element) => {
+        const key = element.getAttribute("data-i18n");
+        const value = uiDict[locale]?.[key] ?? siteDict[locale]?.[key];
+        if (value) {
+          element.textContent = value;
+        }
+      });
+
+      document.querySelectorAll("[data-lang-link]").forEach((element) => {
+        const href = element.getAttribute("href");
+        if (!href) return;
+        const url = new URL(href, window.location.origin);
+        url.searchParams.set("lang", locale);
+        element.setAttribute("href", `${url.pathname}${url.search}${url.hash}`);
+      });
+    </script>
   </body>
 </html>

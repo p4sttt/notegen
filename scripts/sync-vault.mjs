@@ -272,10 +272,12 @@ for (const directoryName of subjectDirectories) {
       const noteSlug = slugify(parsed.data.slug || entry.name.replace(/\.md$/i, ""));
       const collectionSlug = `${subjectSlug}/${noteSlug}`;
       const noteTitle = parsed.data.title || entry.name.replace(/\.md$/i, "");
+      const noteDescription = parsed.data.description || excerpt(parsed.body);
       const rewrittenBody = rewriteAssetLinks(normalizeBlockquoteMath(parsed.body), subjectSlug);
       const outputFrontmatter = toFrontmatter({
         title: noteTitle,
         slug: noteSlug,
+        description: noteDescription,
         date: parsed.data.date,
         draft: parsed.data.draft ?? false,
         subject: subjectTitle,
@@ -295,7 +297,8 @@ for (const directoryName of subjectDirectories) {
         slug: noteSlug,
         collectionSlug,
         title: noteTitle,
-        summary: excerpt(parsed.body),
+        summary: noteDescription,
+        description: noteDescription,
         sourcePath: path.relative(resolvedVaultPath, sourcePath),
         updatedAt: parsed.data.date || undefined
       };
@@ -317,6 +320,7 @@ const dataFile = `${[
   "  collectionSlug: string;",
   "  title: string;",
   "  summary?: string;",
+  "  description?: string;",
   "  sourcePath?: string;",
   "  updatedAt?: string;",
   "};",
@@ -337,7 +341,7 @@ ${subjects
     const noteLines = subject.notes
       .map(
         (note) =>
-          `    { slug: '${escapeSingleQuotes(note.slug)}', collectionSlug: '${escapeSingleQuotes(note.collectionSlug)}', title: '${escapeSingleQuotes(note.title)}', summary: '${escapeSingleQuotes(note.summary ?? "")}', sourcePath: '${escapeSingleQuotes(note.sourcePath ?? "")}', updatedAt: '${escapeSingleQuotes(note.updatedAt ?? "")}' }`
+          `    { slug: '${escapeSingleQuotes(note.slug)}', collectionSlug: '${escapeSingleQuotes(note.collectionSlug)}', title: '${escapeSingleQuotes(note.title)}', summary: '${escapeSingleQuotes(note.summary ?? "")}', description: '${escapeSingleQuotes(note.description ?? "")}', sourcePath: '${escapeSingleQuotes(note.sourcePath ?? "")}', updatedAt: '${escapeSingleQuotes(note.updatedAt ?? "")}' }`
       )
       .join(",\n");
 

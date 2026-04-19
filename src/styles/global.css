@@ -21,9 +21,9 @@
   --text-muted: #66615c;
   --text-soft: #8d867f;
   --line: rgba(17, 17, 17, 0.09);
-  --accent: #ffffff;
-  --accent-rgb: 255, 255, 255;
-  --accent-soft: rgba(255, 255, 255, 0.08);
+  --accent: #1a1a1a;
+  --accent-rgb: 26, 26, 26;
+  --accent-soft: rgba(26, 26, 26, 0.06);
   --grid-line: rgba(17, 17, 17, 0.018);
   --grid-dot: rgba(17, 17, 17, 0.028);
 }
@@ -43,9 +43,15 @@
 }
 
 :root[data-accent="white"] {
-  --accent: #ffffff;
-  --accent-rgb: 255, 255, 255;
-  --accent-soft: rgba(255, 255, 255, 0.08);
+  --accent: #1a1a1a;
+  --accent-rgb: 26, 26, 26;
+  --accent-soft: rgba(26, 26, 26, 0.06);
+}
+
+:root[data-theme="dark"][data-accent="white"] {
+  --accent: #f4f0e8;
+  --accent-rgb: 244, 240, 232;
+  --accent-soft: rgba(244, 240, 232, 0.08);
 }
 
 :root[data-accent="violet"] {
@@ -347,7 +353,7 @@ img {
 
 .eyebrow {
   margin: 0 0 var(--space-2);
-  color: var(--accent);
+  color: color-mix(in srgb, var(--accent) 72%, var(--text-soft));
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -436,7 +442,7 @@ h3 {
   border: 1px solid rgba(var(--accent-rgb), 0.22);
   border-radius: 999px;
   background: rgba(var(--accent-rgb), 0.06);
-  color: var(--accent);
+  color: color-mix(in srgb, var(--accent) 86%, var(--text));
   font-weight: 700;
 }
 
@@ -697,6 +703,26 @@ h3 {
   padding: 0;
   border: 0;
   background: transparent;
+}
+
+.astro-code {
+  overflow-x: auto;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+:root[data-theme="light"] .astro-code,
+:root:not([data-theme]) .astro-code {
+  background: #f8f6f1 !important;
+  color: #1f2328 !important;
+}
+
+:root[data-theme="dark"] .astro-code {
+  background: #16181d !important;
+  color: #e6edf3 !important;
 }
 
 .prose blockquote {
