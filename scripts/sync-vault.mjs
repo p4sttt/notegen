@@ -48,6 +48,7 @@ const subjectsContentRoot = path.resolve("src/content/subjects");
 const contentRoot = path.resolve("src/content/notes");
 const assetsRoot = path.resolve("public/generated/notes");
 const subjectsDataPath = path.resolve("src/data/generated/subjects.ts");
+const subjectsDataDir = path.dirname(subjectsDataPath);
 
 if (!vaultPath) {
   console.error("VAULT_PATH is not set.");
@@ -214,6 +215,7 @@ rmSync(assetsRoot, { recursive: true, force: true });
 mkdirSync(subjectsContentRoot, { recursive: true });
 mkdirSync(contentRoot, { recursive: true });
 mkdirSync(assetsRoot, { recursive: true });
+mkdirSync(subjectsDataDir, { recursive: true });
 
 const subjectDirectories = readdirSync(resolvedVaultPath, { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
