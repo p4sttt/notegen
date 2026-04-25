@@ -1,0 +1,178 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { siteText } from "../config/site";
+import { subjects, topLevelNotes } from "../data/generated/subjects";
+import { defaultLocale, getLocaleFromUrl, ui } from "../i18n/ui";
+
+export async function getStaticPaths() {
+  const includeDrafts = import.meta.env.DEV;
+  const subjectEntries = await getCollection("subjects", ({ data }) => includeDrafts || !data.draft);
+  const notes = await getCollection("notes", ({ data }) => includeDrafts || !data.draft);
+
+  const subjectPaths = subjectEntries
+    .map((entry) => {
+      const subjectSlug = entry.data.slug ?? entry.slug;
+      const subject = subjects.find((item) => item.slug === subjectSlug);
+      if (!subject) {
+        return null;
+      }
+
+      return {
+        params: { slug: subjectSlug },
+        props: { kind: "subject", subject, entry }
+      };
+    })
+    .filter(Boolean);
+
+  const generatedNotes = [...subjects.flatMap((subject) => subject.notes), ...topLevelNotes];
+  const notePaths = notes.map((note) => {
+    const generatedNote = generatedNotes.find((item) => item.sourcePath === note.data.sourcePath);
+    return {
+      params: { slug: generatedNote?.collectionSlug ?? note.slug },
+      props: { kind: "note", note }
+    };
+  });
+
+  return [...subjectPaths, ...notePaths];
+}
+
+const locale = Astro.url ? getLocaleFromUrl(Astro.url) : defaultLocale;
+const copy = siteText[locale];
+const t = ui[locale];
+const baseUrl = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+const props = Astro.props as any;
+const visibleSubjects = import.meta.env.DEV ? subjects : subjects.filter((subject) => !subject.draft);
+const subjectRender = props.kind === "subject" ? await render(props.entry) : null;
+const noteRender = props.kind === "note" ? await render(props.note) : null;
+const SubjectContent = subjectRender?.Content;
+const NoteContent = noteRender?.Content;
+const headings = noteRender?.headings ?? [];
+---
+
+{
+  props.kind === "subject" ? (
+    (() => {
+      const { subject } = props;
+      const childSubjects = visibleSubjects.filter((item) => item.parentSlug === subject.slug);
+      const visibleNotes = import.meta.env.DEV ? subject.notes : subject.notes.filter((note: any) => !note.draft);
+      return (
+        <BaseLayout title={`${subject.title} | ${copy.brand}`} description={subject.summary ?? copy.metaDescription}>
+          <div class="home-panel">
+            <section class="hero home-panel-section">
+              <div class="hero-kicker">
+                <p class="eyebrow" data-i18n="subjects">{t.subjects}</p>
+                <span class="hero-tag">
+                  {visibleNotes.length} <span data-i18n="notesCount">{t.notesCount}</span>
+                </span>
+              </div>
+              <div class="hero-copy-block">
+                <h1>{subject.title}</h1>
+              </div>
+              <div class="prose subject-prose">
+                {SubjectContent ? <SubjectContent /> : null}
+              </div>
+            </section>
+
+            <hr class="section-divider" />
+
+            {childSubjects.length > 0 ? (
+              <>
+                <section class="section-block home-panel-section">
+                  <div class="section-heading">
+                    <h2 data-i18n="subjects">{t.subjects}</h2>
+                    <span class="meta-pill">{childSubjects.length}</span>
+                  </div>
+                  <div class="subject-grid">
+                    {childSubjects.map((child) => (
+                      <article class="subject-card">
+                        <h3>{child.title}</h3>
+                        <p>{child.description || child.summary}</p>
+                        <div class="subject-card-footer">
+                          <span>
+                            {child.notes.length} <span data-i18n="notesCount">{t.notesCount}</span>
+                          </span>
+                          <a href={`${baseUrl}${child.slug}/?lang=${locale}`} data-lang-link data-i18n="open">{t.open}</a>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+                <hr class="section-divider" />
+              </>
+            ) : null}
+
+            <section class="section-block home-panel-section">
+              <div class="section-heading">
+                <h2 data-i18n="notes">{t.notes}</h2>
+                <span class="meta-pill">{visibleNotes.length}</span>
+              </div>
+
+              {visibleNotes.length === 0 ? (
+                <div class="empty-state">
+                  <p>{t.empty}</p>
+                </div>
+              ) : (
+                <div class="subject-grid">
+                  {visibleNotes.map((note: any) => (
+                    <article class="subject-card">
+                      <h3>{note.title}</h3>
+                      <p>{note.summary}</p>
+                      <div class="subject-card-footer">
+                        <span>{note.updatedAt ?? note.sourcePath}</span>
+                        <a href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`} data-lang-link data-i18n="open">{t.open}</a>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        </BaseLayout>
+      );
+    })()
+  ) : (
+    (() => {
+      const { note } = props;
+      return (
+        <BaseLayout title={`${note.data.title} | ${copy.brand}`} description={note.data.title}>
+          <article class="note-shell home-panel">
+            <header class="note-header note-header-compact home-panel-section">
+              <div class="hero-kicker">
+                <p class="eyebrow">{note.data.subject ?? copy.brand}</p>
+                <span class="hero-tag">{note.data.date ? note.data.date.toISOString().slice(0, 10) : t.sourceData}</span>
+              </div>
+              <div class="hero-copy-block">
+                <h1 class="note-title">{note.data.title}</h1>
+              </div>
+            </header>
+
+            <hr class="section-divider" />
+
+            <div class="note-layout note-panel-body">
+              {headings.length > 0 ? (
+                <aside class="toc-card">
+                  <p class="prefs-label" data-i18n="contents">{t.contents}</p>
+                  <nav class="toc-nav">
+                    {headings.map((heading) => (
+                      <a href={`#${heading.slug}`}>{heading.text}</a>
+                    ))}
+                  </nav>
+                </aside>
+              ) : null}
+
+              <div class="note-card prose">
+                {note.data.subjectSlug ? (
+                  <p class="note-backline">
+                    <a href={`${baseUrl}${note.data.subjectSlug}/?lang=${locale}`} data-lang-link>{note.data.subject}</a>
+                  </p>
+                ) : null}
+                {NoteContent ? <NoteContent /> : null}
+              </div>
+            </div>
+          </article>
+        </BaseLayout>
+      );
+    })()
+  )
+}

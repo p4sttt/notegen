@@ -336,6 +336,21 @@ img {
   z-index: 1;
 }
 
+.home-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  backdrop-filter: blur(18px);
+  overflow: hidden;
+}
+
+.section-divider {
+  height: 1px;
+  margin: 0;
+  border: 0;
+  background: var(--line);
+}
+
 .hero,
 .section-block,
 .empty-state,
@@ -349,6 +364,51 @@ img {
 .section-block {
   padding: clamp(1.5rem, 3.4vw, 2.75rem);
   backdrop-filter: blur(18px);
+}
+
+.home-panel .hero,
+.home-panel .section-block {
+  padding: clamp(1.25rem, 2.7vw, 2.25rem);
+}
+
+.home-panel .home-panel-section {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.note-shell.home-panel {
+  gap: 0;
+}
+
+.home-panel .note-header,
+.home-panel .note-card,
+.home-panel .toc-card,
+.home-panel .empty-state {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.home-panel .note-card,
+.home-panel .toc-card,
+.home-panel .empty-state {
+  padding: 0;
+}
+
+.note-panel-body {
+  padding: clamp(1.25rem, 2.7vw, 2.25rem);
+}
+
+.home-panel .hero-kicker,
+.home-panel .section-heading {
+  margin-bottom: var(--space-5);
+}
+
+.home-panel .subject-card {
+  padding: 1.35rem 1.45rem;
 }
 
 .eyebrow {

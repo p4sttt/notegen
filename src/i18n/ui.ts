@@ -30,8 +30,8 @@ type UIStrings = {
 export const ui: Record<Locale, UIStrings> = {
   ru: {
     home: "Главная",
-    subjects: "Предметы",
-    notes: "Конспекты",
+    subjects: "Разделы",
+    notes: "Заметки",
     theme: "Тема",
     light: "Светлая",
     dark: "Тёмная",
@@ -47,14 +47,14 @@ export const ui: Record<Locale, UIStrings> = {
     menu: "Параметры",
     open: "Открыть",
     contents: "Содержание",
-    notesCount: "конспекты",
+    notesCount: "заметки",
     sourceData: "Источник данных",
     empty: "Контент пока не импортирован.",
     intro: "Статический сайт конспектов, собранный из Obsidian vault."
   },
   en: {
     home: "Home",
-    subjects: "Subjects",
+    subjects: "Sections",
     notes: "Notes",
     theme: "Theme",
     light: "Light",

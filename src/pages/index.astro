@@ -1,54 +1,91 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { siteText } from "../config/site";
-import { subjects } from "../data/generated/subjects";
+import { subjects, topLevelNotes } from "../data/generated/subjects";
 import { defaultLocale, getLocaleFromUrl, ui } from "../i18n/ui";
 
 const locale = Astro.url ? getLocaleFromUrl(Astro.url) : defaultLocale;
 const t = ui[locale];
 const copy = siteText[locale];
 const baseUrl = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+const visibleSubjects = import.meta.env.DEV ? subjects : subjects.filter((subject) => !subject.draft);
+const rootSubjects = visibleSubjects.filter((subject) => !subject.parentSlug);
+const visibleTopLevelNotes = import.meta.env.DEV ? topLevelNotes : topLevelNotes.filter((note) => !note.draft);
 ---
 
 <BaseLayout title={copy.brand} description={copy.metaDescription}>
-  <section class="hero">
-    <div class="hero-kicker">
-      <p class="eyebrow" data-i18n="heroEyebrow">{copy.heroEyebrow}</p>
-      <span class="hero-tag" data-i18n="heroTag">{copy.heroTag}</span>
-    </div>
-    <div class="hero-copy-block">
-      <h1 data-i18n="heroTitle">{copy.heroTitle}</h1>
-      <p class="hero-copy" data-i18n="heroBody">{copy.heroBody}</p>
-    </div>
-  </section>
+  <div class="home-panel">
+    <section class="hero home-panel-section">
+      <div class="hero-kicker">
+        <p class="eyebrow" data-i18n="heroEyebrow">{copy.heroEyebrow}</p>
+        <span class="hero-tag" data-i18n="heroTag">{copy.heroTag}</span>
+      </div>
+      <div class="hero-copy-block">
+        <h1 data-i18n="heroTitle">{copy.heroTitle}</h1>
+        <p class="hero-copy" data-i18n="heroBody">{copy.heroBody}</p>
+      </div>
+    </section>
 
-  <section id="subjects" class="section-block">
-    <div class="section-heading">
-      <h2 data-i18n="subjects">{t.subjects}</h2>
-      <span class="meta-pill">{subjects.length}</span>
-    </div>
+    <hr class="section-divider" />
 
-    {
-      subjects.length === 0 ? (
-        <div class="empty-state">
-          <p>{t.empty}</p>
-        </div>
-      ) : (
-        <div class="subject-grid">
-          {subjects.map((subject) => (
-            <article class="subject-card">
-              <h3>{subject.title}</h3>
-              <p>{subject.description || subject.summary}</p>
-              <div class="subject-card-footer">
-                <span>
-                  {subject.notes.length} <span data-i18n="notesCount">{t.notesCount}</span>
-                </span>
-                <a href={`${baseUrl}${subject.slug}/?lang=${locale}`} data-lang-link data-i18n="open">{t.open}</a>
-              </div>
-            </article>
-          ))}
-        </div>
-      )
-    }
-  </section>
+    <section id="subjects" class="section-block home-panel-section">
+      <div class="section-heading">
+        <h2 data-i18n="subjects">{t.subjects}</h2>
+        <span class="meta-pill">{rootSubjects.length}</span>
+      </div>
+
+      {
+        rootSubjects.length === 0 ? (
+          <div class="empty-state">
+            <p>{t.empty}</p>
+          </div>
+        ) : (
+          <div class="subject-grid">
+            {rootSubjects.map((subject) => (
+              <article class="subject-card">
+                <h3>{subject.title}</h3>
+                <p>{subject.description || subject.summary}</p>
+                <div class="subject-card-footer">
+                  <span>
+                    {subject.notes.length} <span data-i18n="notesCount">{t.notesCount}</span>
+                  </span>
+                  <a href={`${baseUrl}${subject.slug}/?lang=${locale}`} data-lang-link data-i18n="open">{t.open}</a>
+                </div>
+              </article>
+            ))}
+          </div>
+        )
+      }
+    </section>
+
+    <hr class="section-divider" />
+
+    <section id="notes" class="section-block home-panel-section">
+      <div class="section-heading">
+        <h2 data-i18n="notes">{t.notes}</h2>
+        <span class="meta-pill">{visibleTopLevelNotes.length}</span>
+      </div>
+
+      {
+        visibleTopLevelNotes.length === 0 ? (
+          <div class="empty-state">
+            <p>{t.empty}</p>
+          </div>
+        ) : (
+          <div class="subject-grid">
+            {visibleTopLevelNotes.map((note) => (
+              <article class="subject-card">
+                <h3>{note.title}</h3>
+                <p>{note.summary}</p>
+                <div class="subject-card-footer">
+                  <span>{note.updatedAt ?? note.sourcePath}</span>
+                  <a href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`} data-lang-link data-i18n="open">{t.open}</a>
+                </div>
+              </article>
+            ))}
+          </div>
+        )
+      }
+    </section>
+  </div>
 </BaseLayout>

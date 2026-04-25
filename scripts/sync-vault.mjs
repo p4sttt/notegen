@@ -193,6 +193,85 @@ function rewriteAssetLinks(markdown, subjectSlug) {
   });
 }
 
+function relativePathSegments(relativePath) {
+  return relativePath.split(path.sep).filter(Boolean);
+}
+
+function slugifyPath(relativePath) {
+  return relativePathSegments(relativePath).map(slugify).join("/");
+}
+
+function ensureParentDir(filePath) {
+  mkdirSync(path.dirname(filePath), { recursive: true });
+}
+
+function contentFileName(slugPath) {
+  return `${slugPath.split("/").map(slugify).join("--")}.md`;
+}
+
+function listDirectories(rootPath) {
+  const directories = [];
+
+  function visit(directoryPath) {
+    const entries = readdirSync(directoryPath, { withFileTypes: true }).sort((left, right) =>
+      left.name.localeCompare(right.name)
+    );
+
+    for (const entry of entries) {
+      if (!entry.isDirectory() || entry.name === "assets") {
+        continue;
+      }
+
+      const childPath = path.join(directoryPath, entry.name);
+      directories.push(childPath);
+      visit(childPath);
+    }
+  }
+
+  visit(rootPath);
+  return directories;
+}
+
+function listMarkdownFiles(rootPath) {
+  const files = [];
+
+  function visit(directoryPath) {
+    const entries = readdirSync(directoryPath, { withFileTypes: true }).sort((left, right) =>
+      left.name.localeCompare(right.name)
+    );
+
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        if (entry.name !== "assets") {
+          visit(path.join(directoryPath, entry.name));
+        }
+        continue;
+      }
+
+      if (entry.isFile() && entry.name.endsWith(".md") && entry.name !== "_index.md") {
+        files.push(path.join(directoryPath, entry.name));
+      }
+    }
+  }
+
+  visit(rootPath);
+  return files;
+}
+
+function findNearestSubject(relativeDirectory, subjectBySourcePath) {
+  let current = relativeDirectory;
+
+  while (current && current !== ".") {
+    const subject = subjectBySourcePath.get(current);
+    if (subject) {
+      return subject;
+    }
+    current = path.dirname(current);
+  }
+
+  return undefined;
+}
+
 function toFrontmatter(data) {
   const lines = ["---"];
   for (const [key, value] of Object.entries(data)) {
@@ -217,31 +296,31 @@ mkdirSync(contentRoot, { recursive: true });
 mkdirSync(assetsRoot, { recursive: true });
 mkdirSync(subjectsDataDir, { recursive: true });
 
-const subjectDirectories = readdirSync(resolvedVaultPath, { withFileTypes: true })
-  .filter((entry) => entry.isDirectory())
-  .map((entry) => entry.name)
-  .sort();
-
 const subjects = [];
+const topLevelNotes = [];
 let generatedNotesCount = 0;
+const subjectDirectories = listDirectories(resolvedVaultPath)
+  .filter((directoryPath) => existsSync(path.join(directoryPath, "_index.md")))
+  .sort((left, right) => path.relative(resolvedVaultPath, left).localeCompare(path.relative(resolvedVaultPath, right)));
+const subjectBySourcePath = new Map();
 
-for (const directoryName of subjectDirectories) {
-  const subjectPath = path.join(resolvedVaultPath, directoryName);
+for (const subjectPath of subjectDirectories) {
   const indexPath = path.join(subjectPath, "_index.md");
-  if (!existsSync(indexPath)) {
-    continue;
-  }
+  const sourceRelativePath = path.relative(resolvedVaultPath, subjectPath);
+  const subjectSlug = slugifyPath(sourceRelativePath);
+  const parentSubject = findNearestSubject(path.dirname(sourceRelativePath), subjectBySourcePath);
 
-  const subjectSlug = slugify(directoryName);
   const rawIndex = readFileSync(indexPath, "utf8");
   const parsedIndex = parseFrontmatter(rawIndex);
-  const subjectTitle = parsedIndex.data.title || directoryName;
+  const subjectTitle = parsedIndex.data.title || path.basename(subjectPath);
   const subjectDescription = parsedIndex.data.description || firstParagraph(parsedIndex.body);
   const subjectSummary = subjectDescription || excerpt(parsedIndex.body, 160);
   const rewrittenSubjectBody = rewriteAssetLinks(normalizeBlockquoteMath(parsedIndex.body), subjectSlug);
 
+  const subjectOutputPath = path.join(subjectsContentRoot, contentFileName(subjectSlug));
+  ensureParentDir(subjectOutputPath);
   writeFileSync(
-    path.join(subjectsContentRoot, `${subjectSlug}.md`),
+    subjectOutputPath,
     `${toFrontmatter({
       title: subjectTitle,
       slug: subjectSlug,
@@ -252,9 +331,7 @@ for (const directoryName of subjectDirectories) {
     "utf8"
   );
 
-  const subjectContentDir = path.join(contentRoot, subjectSlug);
   const subjectAssetsDir = path.join(assetsRoot, subjectSlug);
-  mkdirSync(subjectContentDir, { recursive: true });
   mkdirSync(subjectAssetsDir, { recursive: true });
 
   const sourceAssetsDir = path.join(subjectPath, "assets");
@@ -262,56 +339,79 @@ for (const directoryName of subjectDirectories) {
     cpSync(sourceAssetsDir, path.join(subjectAssetsDir, "assets"), { recursive: true });
   }
 
-  const notes = readdirSync(subjectPath, { withFileTypes: true })
-    .filter((entry) => entry.isFile() && entry.name.endsWith(".md") && entry.name !== "_index.md")
-    .sort((left, right) => left.name.localeCompare(right.name))
-    .map((entry) => {
-      const sourcePath = path.join(subjectPath, entry.name);
-      const raw = readFileSync(sourcePath, "utf8");
-      const parsed = parseFrontmatter(raw);
-      const noteSlug = slugify(parsed.data.slug || entry.name.replace(/\.md$/i, ""));
-      const collectionSlug = `${subjectSlug}/${noteSlug}`;
-      const noteTitle = parsed.data.title || entry.name.replace(/\.md$/i, "");
-      const noteDescription = parsed.data.description || excerpt(parsed.body);
-      const rewrittenBody = rewriteAssetLinks(normalizeBlockquoteMath(parsed.body), subjectSlug);
-      const outputFrontmatter = toFrontmatter({
-        title: noteTitle,
-        slug: noteSlug,
-        description: noteDescription,
-        date: parsed.data.date,
-        draft: parsed.data.draft ?? false,
-        subject: subjectTitle,
-        subjectSlug,
-        sourcePath: path.relative(resolvedVaultPath, sourcePath)
-      });
-
-      writeFileSync(
-        path.join(subjectContentDir, `${noteSlug}.md`),
-        `${outputFrontmatter}${rewrittenBody.trim()}\n`,
-        "utf8"
-      );
-
-      generatedNotesCount += 1;
-
-      return {
-        slug: noteSlug,
-        collectionSlug,
-        title: noteTitle,
-        summary: noteDescription,
-        description: noteDescription,
-        sourcePath: path.relative(resolvedVaultPath, sourcePath),
-        updatedAt: parsed.data.date || undefined
-      };
-    });
-
-  subjects.push({
+  const subject = {
     slug: subjectSlug,
     title: subjectTitle,
     summary: subjectSummary,
     description: subjectDescription,
-    sourcePath: path.relative(resolvedVaultPath, subjectPath),
-    notes
+    draft: parsedIndex.data.draft ?? false,
+    parentSlug: parentSubject?.slug,
+    sourcePath: sourceRelativePath,
+    notes: []
+  };
+
+  subjects.push(subject);
+  subjectBySourcePath.set(sourceRelativePath, subject);
+}
+
+for (const sourcePath of listMarkdownFiles(resolvedVaultPath)) {
+  const sourceRelativePath = path.relative(resolvedVaultPath, sourcePath);
+  const sourceRelativeDir = path.dirname(sourceRelativePath);
+  const subject = findNearestSubject(sourceRelativeDir, subjectBySourcePath);
+  const isTopLevelNote = sourceRelativeDir === ".";
+
+  if (!subject && !isTopLevelNote) {
+    continue;
+  }
+
+  const raw = readFileSync(sourcePath, "utf8");
+  const parsed = parseFrontmatter(raw);
+  const noteRelativePath = subject
+    ? path.relative(path.join(resolvedVaultPath, subject.sourcePath), sourcePath)
+    : sourceRelativePath;
+  const noteRelativeSegments = relativePathSegments(noteRelativePath.replace(/\.md$/i, ""));
+  const originalName = noteRelativeSegments.at(-1) || path.basename(sourcePath, ".md");
+  noteRelativeSegments[noteRelativeSegments.length - 1] = parsed.data.slug || originalName;
+  const noteSlug = noteRelativeSegments.map(slugify).join("/");
+  const collectionSlug = subject ? `${subject.slug}/${noteSlug}` : noteSlug;
+  const noteTitle = parsed.data.title || originalName;
+  const noteDescription = parsed.data.description || excerpt(parsed.body);
+  const rewrittenBody = subject
+    ? rewriteAssetLinks(normalizeBlockquoteMath(parsed.body), subject.slug)
+    : normalizeBlockquoteMath(parsed.body);
+  const outputFrontmatter = toFrontmatter({
+    title: noteTitle,
+    slug: collectionSlug,
+    description: noteDescription,
+    date: parsed.data.date,
+    draft: parsed.data.draft ?? false,
+    subject: subject?.title,
+    subjectSlug: subject?.slug,
+    parentSlug: subject?.parentSlug,
+    sourcePath: sourceRelativePath
   });
+  const noteOutputPath = path.join(contentRoot, contentFileName(collectionSlug));
+
+  ensureParentDir(noteOutputPath);
+  writeFileSync(noteOutputPath, `${outputFrontmatter}${rewrittenBody.trim()}\n`, "utf8");
+
+  generatedNotesCount += 1;
+  const note = {
+    slug: noteSlug,
+    collectionSlug,
+    title: noteTitle,
+    summary: noteDescription,
+    description: noteDescription,
+    draft: parsed.data.draft ?? false,
+    sourcePath: sourceRelativePath,
+    updatedAt: parsed.data.date || undefined
+  };
+
+  if (subject) {
+    subject.notes.push(note);
+  } else {
+    topLevelNotes.push(note);
+  }
 }
 
 const dataFile = `${[
@@ -321,6 +421,7 @@ const dataFile = `${[
   "  title: string;",
   "  summary?: string;",
   "  description?: string;",
+  "  draft?: boolean;",
   "  sourcePath?: string;",
   "  updatedAt?: string;",
   "};",
@@ -330,6 +431,8 @@ const dataFile = `${[
   "  title: string;",
   "  summary?: string;",
   "  description?: string;",
+  "  draft?: boolean;",
+  "  parentSlug?: string;",
   "  sourcePath?: string;",
   "  notes: Note[];",
   "};",
@@ -341,12 +444,21 @@ ${subjects
     const noteLines = subject.notes
       .map(
         (note) =>
-          `    { slug: '${escapeSingleQuotes(note.slug)}', collectionSlug: '${escapeSingleQuotes(note.collectionSlug)}', title: '${escapeSingleQuotes(note.title)}', summary: '${escapeSingleQuotes(note.summary ?? "")}', description: '${escapeSingleQuotes(note.description ?? "")}', sourcePath: '${escapeSingleQuotes(note.sourcePath ?? "")}', updatedAt: '${escapeSingleQuotes(note.updatedAt ?? "")}' }`
+          `    { slug: '${escapeSingleQuotes(note.slug)}', collectionSlug: '${escapeSingleQuotes(note.collectionSlug)}', title: '${escapeSingleQuotes(note.title)}', summary: '${escapeSingleQuotes(note.summary ?? "")}', description: '${escapeSingleQuotes(note.description ?? "")}', draft: ${note.draft ? "true" : "false"}, sourcePath: '${escapeSingleQuotes(note.sourcePath ?? "")}', updatedAt: '${escapeSingleQuotes(note.updatedAt ?? "")}' }`
       )
       .join(",\n");
 
-    return `  {\n    slug: '${escapeSingleQuotes(subject.slug)}',\n    title: '${escapeSingleQuotes(subject.title)}',\n    summary: '${escapeSingleQuotes(subject.summary ?? "")}',\n    description: '${escapeSingleQuotes(subject.description ?? "")}',\n    sourcePath: '${escapeSingleQuotes(subject.sourcePath ?? "")}',\n    notes: [\n${noteLines}\n    ]\n  }`;
+    return `  {\n    slug: '${escapeSingleQuotes(subject.slug)}',\n    title: '${escapeSingleQuotes(subject.title)}',\n    summary: '${escapeSingleQuotes(subject.summary ?? "")}',\n    description: '${escapeSingleQuotes(subject.description ?? "")}',\n    draft: ${subject.draft ? "true" : "false"},\n    parentSlug: '${escapeSingleQuotes(subject.parentSlug ?? "")}',\n    sourcePath: '${escapeSingleQuotes(subject.sourcePath ?? "")}',\n    notes: [\n${noteLines}\n    ]\n  }`;
   })
+  .join(",\n")}
+];
+
+export const topLevelNotes: Note[] = [
+${topLevelNotes
+  .map(
+    (note) =>
+      `  { slug: '${escapeSingleQuotes(note.slug)}', collectionSlug: '${escapeSingleQuotes(note.collectionSlug)}', title: '${escapeSingleQuotes(note.title)}', summary: '${escapeSingleQuotes(note.summary ?? "")}', description: '${escapeSingleQuotes(note.description ?? "")}', draft: ${note.draft ? "true" : "false"}, sourcePath: '${escapeSingleQuotes(note.sourcePath ?? "")}', updatedAt: '${escapeSingleQuotes(note.updatedAt ?? "")}' }`
+  )
   .join(",\n")}
 ];
 `;
