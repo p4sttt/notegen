@@ -13,6 +13,12 @@
   --space-5: 1.75rem;
   --space-6: 2.5rem;
   --space-7: 3.5rem;
+  --article-font-size: 0.98rem;
+  --article-line-height: 1.72;
+  --article-title-size: clamp(1.35rem, 2.4vw, 1.9rem);
+  --article-h1-size: clamp(1.55rem, 3vw, 2.2rem);
+  --article-h2-size: clamp(1.3rem, 2.2vw, 1.65rem);
+  --article-h3-size: clamp(1.12rem, 1.7vw, 1.32rem);
   --bg: #efede7;
   --bg-elevated: rgba(255, 255, 255, 0.76);
   --surface: rgba(255, 255, 255, 0.72);
@@ -626,8 +632,8 @@ h3 {
 }
 
 .prose {
-  font-size: 1.05rem;
-  line-height: 1.78;
+  font-size: var(--article-font-size);
+  line-height: var(--article-line-height);
   color: color-mix(in srgb, var(--text) 88%, var(--text-muted));
 }
 
@@ -647,27 +653,27 @@ h3 {
 .prose h1 {
   margin-top: 0.25rem;
   margin-bottom: 1.25rem;
-  font-size: clamp(2.1rem, 4.8vw, 3.2rem);
-  line-height: 0.98;
-  letter-spacing: -0.04em;
+  font-size: var(--article-h1-size);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
   color: var(--text);
 }
 
 .prose h2 {
-  margin-top: 2.75rem;
+  margin-top: 2.35rem;
   margin-bottom: 0.9rem;
-  font-size: clamp(1.55rem, 3vw, 2rem);
-  line-height: 1.06;
-  letter-spacing: -0.035em;
+  font-size: var(--article-h2-size);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
   color: color-mix(in srgb, var(--text) 94%, var(--text-muted));
 }
 
 .prose h3 {
-  margin-top: 2.2rem;
+  margin-top: 1.95rem;
   margin-bottom: 0.75rem;
-  font-size: clamp(1.25rem, 2.25vw, 1.55rem);
-  line-height: 1.14;
-  letter-spacing: -0.025em;
+  font-size: var(--article-h3-size);
+  line-height: 1.18;
+  letter-spacing: -0.015em;
   color: color-mix(in srgb, var(--text) 86%, var(--text-muted));
 }
 
@@ -820,9 +826,221 @@ h3 {
 
 .note-title {
   margin-bottom: 0;
-  font-size: clamp(1.5rem, 3.2vw, 2.35rem);
-  line-height: 1.02;
-  letter-spacing: -0.04em;
+  font-size: var(--article-title-size);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --space-4: 0.85rem;
+    --space-5: 1.15rem;
+    --space-6: 1.6rem;
+    --space-7: 2rem;
+    --article-font-size: 0.92rem;
+    --article-line-height: 1.64;
+    --article-title-size: 1.32rem;
+    --article-h1-size: 1.4rem;
+    --article-h2-size: 1.18rem;
+    --article-h3-size: 1.05rem;
+  }
+
+  html {
+    background-size: 22px 22px, 22px 22px, 22px 22px;
+  }
+
+  body {
+    letter-spacing: 0;
+  }
+
+  .page-shell {
+    width: min(100% - 0.9rem, var(--page-max));
+    padding: 0.55rem 0 2.25rem;
+  }
+
+  .site-header {
+    top: 0.45rem;
+    gap: 0.65rem;
+    margin-bottom: 1.4rem;
+    padding: 0.75rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .brand {
+    font-size: 0.84rem;
+    letter-spacing: 0.08em;
+  }
+
+  .top-nav {
+    gap: 0.4rem;
+    font-size: 0.82rem;
+  }
+
+  .top-nav a,
+  .prefs-trigger,
+  .prefs-chip {
+    min-height: 2rem;
+    padding: 0.35rem 0.65rem;
+  }
+
+  .prefs-panel {
+    left: 0;
+    right: auto;
+    min-width: min(18rem, calc(100vw - 1.6rem));
+    padding: 1rem;
+  }
+
+  .home-panel,
+  .hero,
+  .section-block,
+  .empty-state,
+  .subject-card,
+  .note-header,
+  .note-card,
+  .toc-card {
+    border-radius: var(--radius-lg);
+  }
+
+  .hero,
+  .section-block,
+  .note-header,
+  .note-card,
+  .toc-card {
+    padding: 1rem;
+  }
+
+  .home-panel .hero,
+  .home-panel .section-block,
+  .note-panel-body {
+    padding: 1rem;
+  }
+
+  .home-panel .hero-kicker,
+  .home-panel .section-heading,
+  .hero-kicker {
+    margin-bottom: 1rem;
+  }
+
+  .hero-kicker,
+  .section-heading {
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .eyebrow,
+  .prefs-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+  }
+
+  .hero-tag,
+  .meta-pill {
+    min-height: 1.75rem;
+    padding: 0.25rem 0.55rem;
+    font-size: 0.72rem;
+  }
+
+  h1,
+  .hero-copy-block h1 {
+    margin-bottom: 0.75rem;
+    font-size: 2rem;
+    line-height: 1;
+    letter-spacing: 0;
+  }
+
+  h2 {
+    font-size: 1.35rem;
+    letter-spacing: 0;
+  }
+
+  h3 {
+    font-size: 1.05rem;
+    letter-spacing: 0;
+  }
+
+  .hero-copy,
+  .empty-state p,
+  .subject-card p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    letter-spacing: 0;
+  }
+
+  .subject-grid {
+    gap: 0.75rem;
+  }
+
+  .home-panel .subject-card,
+  .subject-card {
+    padding: 1rem;
+  }
+
+  .subject-card-footer {
+    font-size: 0.82rem;
+  }
+
+  .subject-card-footer a {
+    padding: 0.55rem 0.75rem;
+  }
+
+  .note-shell,
+  .note-layout,
+  .content-frame {
+    gap: 1rem;
+  }
+
+  .note-header-compact {
+    padding-top: 0.9rem;
+    padding-bottom: 1rem;
+  }
+
+  .note-backline {
+    margin-bottom: 1.1rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+  }
+
+  .prose p,
+  .prose ul,
+  .prose ol,
+  .prose blockquote {
+    margin-bottom: 0.9rem;
+  }
+
+  .prose h1 {
+    margin-bottom: 0.85rem;
+  }
+
+  .prose h2 {
+    margin-top: 1.65rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .prose h3 {
+    margin-top: 1.35rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .prose ul,
+  .prose ol {
+    padding-left: 1rem;
+  }
+
+  .prose pre,
+  .astro-code {
+    padding: 0.8rem;
+    font-size: 0.82rem;
+    line-height: 1.55;
+  }
+
+  .toc-card {
+    padding: 0.9rem 1rem;
+  }
+
+  .toc-nav {
+    gap: 0.45rem;
+    font-size: 0.86rem;
+  }
 }
 
 @media (min-width: 760px) {
