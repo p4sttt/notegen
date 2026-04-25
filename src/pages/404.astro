@@ -1,8 +1,13 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { siteText } from "../config/site";
+import { defaultLocale, getLocaleFromUrl } from "../i18n/ui";
+
+const locale = Astro.url ? getLocaleFromUrl(Astro.url) : defaultLocale;
+const copy = siteText[locale];
 ---
 
-<BaseLayout title="404 | notegen" description="Page not found">
+<BaseLayout title={`404 | ${copy.brand}`} description="Page not found">
   <section class="section-block home-panel home-panel-section">
     <div class="empty-state">
       <p>Страница не найдена.</p>

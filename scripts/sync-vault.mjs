@@ -1,5 +1,5 @@
 import {
-  cpSync,
+  copyFileSync,
   existsSync,
   mkdirSync,
   readdirSync,
@@ -60,6 +60,82 @@ const resolvedVaultPath = path.resolve(vaultPath);
 if (!existsSync(resolvedVaultPath)) {
   console.error(`Vault path does not exist: ${resolvedVaultPath}`);
   process.exit(1);
+}
+
+function toVaultRelativePath(filePath) {
+  return path.relative(resolvedVaultPath, filePath).split(path.sep).join("/");
+}
+
+function escapeRegExp(input) {
+  return input.replace(/[|\\{}()[\]^$+?.]/g, "\\$&");
+}
+
+function globToRegExp(input) {
+  const source = input
+    .split("*")
+    .map(escapeRegExp)
+    .join("[^/]*");
+  return new RegExp(`^${source}$`);
+}
+
+function readIgnoreRules(rootPath) {
+  const ignorePath = path.join(rootPath, ".notegenignore");
+  const defaultRules = [".git/", "node_modules/"];
+  const userRules = existsSync(ignorePath) ? readFileSync(ignorePath, "utf8").split("\n") : [];
+
+  return [...defaultRules, ...userRules]
+    .map((rawLine) => rawLine.trim())
+    .filter((line) => line && !line.startsWith("#"))
+    .map((line) => {
+      const normalized = line
+        .replace(/\\/g, "/")
+        .replace(/^\/+/, "")
+        .replace(/\/+$/, line.endsWith("/") ? "/" : "");
+      const dirOnly = normalized.endsWith("/");
+      const pattern = dirOnly ? normalized.slice(0, -1) : normalized;
+
+      return {
+        pattern,
+        dirOnly,
+        hasSlash: pattern.includes("/"),
+        regex: pattern.includes("*") ? globToRegExp(pattern) : undefined
+      };
+    })
+    .filter((rule) => rule.pattern && rule.pattern !== ".");
+}
+
+const ignoreRules = readIgnoreRules(resolvedVaultPath);
+
+function matchesPattern(rule, value) {
+  return rule.regex ? rule.regex.test(value) : value === rule.pattern;
+}
+
+function isIgnoredRelative(relativePath, isDirectory = false) {
+  const normalized = relativePath.split(path.sep).join("/").replace(/^\.\/?/, "");
+  if (!normalized) {
+    return false;
+  }
+
+  return ignoreRules.some((rule) => {
+    if (rule.hasSlash) {
+      if (rule.dirOnly) {
+        return matchesPattern(rule, normalized) || normalized.startsWith(`${rule.pattern}/`);
+      }
+      return matchesPattern(rule, normalized);
+    }
+
+    const segments = normalized.split("/");
+    if (rule.dirOnly) {
+      const candidates = isDirectory ? segments : segments.slice(0, -1);
+      return candidates.some((segment) => matchesPattern(rule, segment));
+    }
+
+    return matchesPattern(rule, segments.at(-1) ?? "");
+  });
+}
+
+function isIgnoredPath(filePath, isDirectory = false) {
+  return isIgnoredRelative(toVaultRelativePath(filePath), isDirectory);
 }
 
 function slugify(input) {
@@ -223,6 +299,10 @@ function listDirectories(rootPath) {
       }
 
       const childPath = path.join(directoryPath, entry.name);
+      if (isIgnoredPath(childPath, true)) {
+        continue;
+      }
+
       directories.push(childPath);
       visit(childPath);
     }
@@ -242,20 +322,52 @@ function listMarkdownFiles(rootPath) {
 
     for (const entry of entries) {
       if (entry.isDirectory()) {
-        if (entry.name !== "assets") {
-          visit(path.join(directoryPath, entry.name));
+        const childPath = path.join(directoryPath, entry.name);
+        if (entry.name !== "assets" && !isIgnoredPath(childPath, true)) {
+          visit(childPath);
         }
         continue;
       }
 
-      if (entry.isFile() && entry.name.endsWith(".md") && entry.name !== "_index.md") {
-        files.push(path.join(directoryPath, entry.name));
+      const childPath = path.join(directoryPath, entry.name);
+      if (
+        entry.isFile() &&
+        entry.name.endsWith(".md") &&
+        entry.name !== "_index.md" &&
+        !isIgnoredPath(childPath, false)
+      ) {
+        files.push(childPath);
       }
     }
   }
 
   visit(rootPath);
   return files;
+}
+
+function copyDirectoryFiltered(sourceDir, targetDir) {
+  const entries = readdirSync(sourceDir, { withFileTypes: true }).sort((left, right) =>
+    left.name.localeCompare(right.name)
+  );
+
+  for (const entry of entries) {
+    const sourcePath = path.join(sourceDir, entry.name);
+    if (isIgnoredPath(sourcePath, entry.isDirectory())) {
+      continue;
+    }
+
+    const targetPath = path.join(targetDir, entry.name);
+    if (entry.isDirectory()) {
+      mkdirSync(targetPath, { recursive: true });
+      copyDirectoryFiltered(sourcePath, targetPath);
+      continue;
+    }
+
+    if (entry.isFile()) {
+      ensureParentDir(targetPath);
+      copyFileSync(sourcePath, targetPath);
+    }
+  }
 }
 
 function findNearestSubject(relativeDirectory, subjectBySourcePath) {
@@ -300,7 +412,10 @@ const subjects = [];
 const topLevelNotes = [];
 let generatedNotesCount = 0;
 const subjectDirectories = listDirectories(resolvedVaultPath)
-  .filter((directoryPath) => existsSync(path.join(directoryPath, "_index.md")))
+  .filter((directoryPath) => {
+    const indexPath = path.join(directoryPath, "_index.md");
+    return existsSync(indexPath) && !isIgnoredPath(indexPath, false);
+  })
   .sort((left, right) => path.relative(resolvedVaultPath, left).localeCompare(path.relative(resolvedVaultPath, right)));
 const subjectBySourcePath = new Map();
 
@@ -335,8 +450,8 @@ for (const subjectPath of subjectDirectories) {
   mkdirSync(subjectAssetsDir, { recursive: true });
 
   const sourceAssetsDir = path.join(subjectPath, "assets");
-  if (existsSync(sourceAssetsDir) && statSync(sourceAssetsDir).isDirectory()) {
-    cpSync(sourceAssetsDir, path.join(subjectAssetsDir, "assets"), { recursive: true });
+  if (existsSync(sourceAssetsDir) && statSync(sourceAssetsDir).isDirectory() && !isIgnoredPath(sourceAssetsDir, true)) {
+    copyDirectoryFiltered(sourceAssetsDir, path.join(subjectAssetsDir, "assets"));
   }
 
   const subject = {

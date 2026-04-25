@@ -75,6 +75,61 @@ Expected conventions:
 - note files may contain frontmatter such as `title`, `slug`, `date`, `draft`
 - relative assets should be referenced like `![desc](./assets/file.png)`
 
+## Site Configuration
+
+Each notes repository can override frontend text by adding `notegen.config.json` to the vault root:
+
+```json
+{
+  "siteText": {
+    "brand": "pig-ai articles",
+    "heroTitle": "pig-ai articles",
+    "ru": {
+      "metaDescription": "Статьи и заметки pig-ai.",
+      "heroBody": "Материалы, заметки и длинные тексты."
+    },
+    "en": {
+      "metaDescription": "pig-ai articles and notes.",
+      "heroBody": "Articles, notes, and long-form writing."
+    }
+  }
+}
+```
+
+Top-level `siteText` fields apply to every locale. Locale-specific `ru` and `en` fields override those values.
+
+Supported text fields:
+
+- `metaDescription`
+- `brand`
+- `heroEyebrow`
+- `heroTitle`
+- `heroBody`
+- `heroTag`
+
+By default the build reads `$VAULT_PATH/notegen.config.json`. Use `SITE_CONFIG_PATH` to point to another config file.
+
+## Ignoring Vault Files
+
+Add `.notegenignore` to the vault root to skip files and directories during import:
+
+```gitignore
+# Do not import repository docs as notes
+README.md
+
+# Ignore any directory with this name
+drafts/
+
+# Ignore a path from the vault root
+private/meeting-notes.md
+
+# Ignore copied note assets
+raw/
+*.tmp
+```
+
+Rules are matched relative to the vault root. Directory rules ending with `/` skip the directory and everything inside it. `*` matches inside one path segment. Negated rules with `!` are not supported.
+
 ## CI/CD
 
 `notegen` uses GitHub Actions for build and deploy:
@@ -143,6 +198,7 @@ Container contract:
 - `VAULT_PATH` defaults to `/vault`
 - `OUT_DIR` defaults to `/out`
 - `ASTRO_SITE` and `ASTRO_BASE` override Astro `site` and `base`
+- `SITE_CONFIG_PATH` can point to a custom site config JSON file
 
 ### Example GitHub Actions usage from a notes repository
 
