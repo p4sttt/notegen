@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.astro/
+.git/
+.github/
+.codex/
+
+vault/
+.env
+.env.*
+
+public/generated/
+src/content/notes/
+src/content/subjects/
+src/data/generated/subjects.ts
+
+npm-debug.log*

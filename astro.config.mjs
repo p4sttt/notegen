@@ -3,8 +3,8 @@ import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 
 export default defineConfig({
-  site: "https://example.github.io",
-  base: "/notegen",
+  site: process.env.ASTRO_SITE || "https://example.github.io",
+  base: process.env.ASTRO_BASE || "/notegen",
   output: "static",
   markdown: {
     syntaxHighlight: "shiki",

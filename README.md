@@ -101,6 +101,92 @@ Pages setting in `notegen`:
 
 - `Settings -> Pages -> Source -> GitHub Actions`
 
+## Docker
+
+The Docker image builds the static site from a mounted vault repository.
+
+### Published image
+
+Pushes to `main` and version tags publish the frontend image to GitHub Container Registry:
+
+```text
+ghcr.io/<github-owner>/notegen:latest
+ghcr.io/<github-owner>/notegen:v0.1.0
+ghcr.io/<github-owner>/notegen:sha-<commit>
+```
+
+To use this image from GitLab or another external CI, make the GHCR package public in GitHub:
+
+`GitHub -> Packages -> notegen -> Package settings -> Change visibility -> Public`
+
+### Build the image
+
+```bash
+docker build -t notegen .
+```
+
+### Build a site locally
+
+```bash
+docker run --rm \
+  -v "$PWD/vault:/vault:ro" \
+  -v "$PWD/dist:/out" \
+  -e ASTRO_SITE="https://example.github.io" \
+  -e ASTRO_BASE="/notegen" \
+  notegen
+```
+
+Container contract:
+
+- `/vault` is the mounted notes repository
+- `/out` receives the generated static site
+- `VAULT_PATH` defaults to `/vault`
+- `OUT_DIR` defaults to `/out`
+- `ASTRO_SITE` and `ASTRO_BASE` override Astro `site` and `base`
+
+### Example GitHub Actions usage from a notes repository
+
+```yaml
+name: Build notes site
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout notes
+        uses: actions/checkout@v4
+        with:
+          path: vault
+
+      - name: Checkout notegen
+        uses: actions/checkout@v4
+        with:
+          repository: owner/notegen
+          path: notegen
+
+      - name: Build notegen image
+        run: docker build -t notegen ./notegen
+
+      - name: Build static site
+        run: |
+          mkdir -p site
+          docker run --rm \
+            -v "$PWD/vault:/vault:ro" \
+            -v "$PWD/site:/out" \
+            -e ASTRO_SITE="https://${{ github.repository_owner }}.github.io" \
+            -e ASTRO_BASE="/${{ github.event.repository.name }}" \
+            ghcr.io/owner/notegen:latest
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+```
+
 ## Notes
 
 - generated vault content is ignored by git
