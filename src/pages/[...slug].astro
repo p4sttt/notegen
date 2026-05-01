@@ -153,7 +153,9 @@ const headings = noteRender?.headings ?? [];
                   <p class="prefs-label" data-i18n="contents">{t.contents}</p>
                   <nav class="toc-nav">
                     {headings.map((heading) => (
-                      <a href={`#${heading.slug}`}>{heading.text}</a>
+                      <a class={`toc-link toc-link-depth-${heading.depth}`} href={`#${heading.slug}`}>
+                        {heading.text}
+                      </a>
                     ))}
                   </nav>
                 </aside>

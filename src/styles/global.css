@@ -622,14 +622,44 @@ h3 {
   gap: 0.75rem;
 }
 
-.toc-nav a {
+.toc-link {
+  --toc-indent: 0rem;
+  display: block;
+  padding-left: var(--toc-indent);
   color: var(--text-muted);
+  font-size: 0.92rem;
   line-height: 1.45;
   transition: color 180ms ease, transform 180ms ease;
 }
 
-.toc-nav a:hover,
-.toc-nav a:focus-visible {
+.toc-link-depth-1 {
+  --toc-indent: 0rem;
+  color: color-mix(in srgb, var(--text) 84%, var(--text-muted));
+  font-weight: 700;
+}
+
+.toc-link-depth-2 {
+  --toc-indent: 0.75rem;
+}
+
+.toc-link-depth-3 {
+  --toc-indent: 1.5rem;
+  font-size: 0.88rem;
+}
+
+.toc-link-depth-4 {
+  --toc-indent: 2.25rem;
+  font-size: 0.84rem;
+}
+
+.toc-link-depth-5,
+.toc-link-depth-6 {
+  --toc-indent: 3rem;
+  font-size: 0.8rem;
+}
+
+.toc-link:hover,
+.toc-link:focus-visible {
   color: var(--text);
   transform: translateX(2px);
   outline: none;
