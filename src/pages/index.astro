@@ -2,7 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { siteText } from "../config/site";
 import { subjects, topLevelNotes } from "../data/generated/subjects";
-import { defaultLocale, getLocaleFromUrl, ui } from "../i18n/ui";
+import { defaultLocale, formatNotesCount, getLocaleFromUrl, ui } from "../i18n/ui";
 import EntityCard from "../shared/ui/EntityCard.astro";
 import Hero from "../widgets/hero/Hero.astro";
 import SectionBlock from "../widgets/section-block/SectionBlock.astro";
@@ -41,9 +41,7 @@ const visibleTopLevelNotes = import.meta.env.DEV ? topLevelNotes : topLevelNotes
           <div class="entity-grid">
             {rootSubjects.map((subject) => (
               <EntityCard title={subject.title} summary={subject.description || subject.summary} href={`${baseUrl}${subject.slug}/?lang=${locale}`}>
-                <Fragment slot="meta">
-                  {subject.notes.length} <span data-i18n="notesCount">{t.notesCount}</span>
-                </Fragment>
+                <Fragment slot="meta">{formatNotesCount(locale, subject.notes.length)}</Fragment>
               </EntityCard>
             ))}
           </div>

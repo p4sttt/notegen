@@ -3,7 +3,7 @@ import { getCollection, render } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { siteText } from "../config/site";
 import { subjects, topLevelNotes } from "../data/generated/subjects";
-import { defaultLocale, getLocaleFromUrl, ui } from "../i18n/ui";
+import { defaultLocale, formatNotesCount, getLocaleFromUrl, ui } from "../i18n/ui";
 import EntityCard from "../shared/ui/EntityCard.astro";
 import ContentNavigation from "../widgets/content-navigation/ContentNavigation.astro";
 import SectionBlock from "../widgets/section-block/SectionBlock.astro";
@@ -66,7 +66,7 @@ const headings = noteRender?.headings ?? [];
               <div class="hero-kicker">
                 <p class="eyebrow" data-i18n="subjects">{t.subjects}</p>
                 <span class="hero-tag">
-                  {visibleNotes.length} <span data-i18n="notesCount">{t.notesCount}</span>
+                  {formatNotesCount(locale, visibleNotes.length)}
                 </span>
               </div>
               <div class="hero-copy-block">
@@ -85,9 +85,7 @@ const headings = noteRender?.headings ?? [];
                   <div class="entity-grid">
                     {childSubjects.map((child) => (
                       <EntityCard title={child.title} summary={child.description || child.summary} href={`${baseUrl}${child.slug}/?lang=${locale}`}>
-                        <Fragment slot="meta">
-                          {child.notes.length} <span data-i18n="notesCount">{t.notesCount}</span>
-                        </Fragment>
+                        <Fragment slot="meta">{formatNotesCount(locale, child.notes.length)}</Fragment>
                       </EntityCard>
                     ))}
                   </div>
