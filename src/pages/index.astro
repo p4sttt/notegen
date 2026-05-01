@@ -42,16 +42,15 @@ const visibleTopLevelNotes = import.meta.env.DEV ? topLevelNotes : topLevelNotes
         ) : (
           <div class="subject-grid">
             {rootSubjects.map((subject) => (
-              <article class="subject-card">
+              <a class="subject-card" href={`${baseUrl}${subject.slug}/?lang=${locale}`} data-lang-link>
                 <h3>{subject.title}</h3>
                 <p>{subject.description || subject.summary}</p>
                 <div class="subject-card-footer">
                   <span>
                     {subject.notes.length} <span data-i18n="notesCount">{t.notesCount}</span>
                   </span>
-                  <a href={`${baseUrl}${subject.slug}/?lang=${locale}`} data-lang-link data-i18n="open">{t.open}</a>
                 </div>
-              </article>
+              </a>
             ))}
           </div>
         )
@@ -74,14 +73,13 @@ const visibleTopLevelNotes = import.meta.env.DEV ? topLevelNotes : topLevelNotes
         ) : (
           <div class="subject-grid">
             {visibleTopLevelNotes.map((note) => (
-              <article class="subject-card">
+              <a class="subject-card" href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`} data-lang-link>
                 <h3>{note.title}</h3>
                 <p>{note.summary}</p>
                 <div class="subject-card-footer">
                   <span>{note.updatedAt ?? note.sourcePath}</span>
-                  <a href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`} data-lang-link data-i18n="open">{t.open}</a>
                 </div>
-              </article>
+              </a>
             ))}
           </div>
         )
