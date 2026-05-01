@@ -3,7 +3,10 @@ import { getCollection, render } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { siteText } from "../config/site";
 import { subjects, topLevelNotes } from "../data/generated/subjects";
-import { defaultLocale, getLocaleFromUrl, ui } from "../i18n/ui";
+import { defaultLocale, formatNotesCount, getLocaleFromUrl, ui } from "../i18n/ui";
+import EntityCard from "../shared/ui/EntityCard.astro";
+import ContentNavigation from "../widgets/content-navigation/ContentNavigation.astro";
+import SectionBlock from "../widgets/section-block/SectionBlock.astro";
 
 export async function getStaticPaths() {
   const includeDrafts = import.meta.env.DEV;
@@ -63,7 +66,7 @@ const headings = noteRender?.headings ?? [];
               <div class="hero-kicker">
                 <p class="eyebrow" data-i18n="subjects">{t.subjects}</p>
                 <span class="hero-tag">
-                  {visibleNotes.length} <span data-i18n="notesCount">{t.notesCount}</span>
+                  {formatNotesCount(locale, visibleNotes.length)}
                 </span>
               </div>
               <div class="hero-copy-block">
@@ -78,55 +81,34 @@ const headings = noteRender?.headings ?? [];
 
             {childSubjects.length > 0 ? (
               <>
-                <section class="section-block home-panel-section">
-                  <div class="section-heading">
-                    <h2 data-i18n="subjects">{t.subjects}</h2>
-                    <span class="meta-pill">{childSubjects.length}</span>
-                  </div>
-                  <div class="subject-grid">
+                <SectionBlock title={t.subjects} count={childSubjects.length} i18nKey="subjects">
+                  <div class="entity-grid">
                     {childSubjects.map((child) => (
-                      <article class="subject-card">
-                        <h3>{child.title}</h3>
-                        <p>{child.description || child.summary}</p>
-                        <div class="subject-card-footer">
-                          <span>
-                            {child.notes.length} <span data-i18n="notesCount">{t.notesCount}</span>
-                          </span>
-                          <a href={`${baseUrl}${child.slug}/?lang=${locale}`} data-lang-link data-i18n="open">{t.open}</a>
-                        </div>
-                      </article>
+                      <EntityCard title={child.title} summary={child.description || child.summary} href={`${baseUrl}${child.slug}/?lang=${locale}`}>
+                        <Fragment slot="meta">{formatNotesCount(locale, child.notes.length)}</Fragment>
+                      </EntityCard>
                     ))}
                   </div>
-                </section>
+                </SectionBlock>
                 <hr class="section-divider" />
               </>
             ) : null}
 
-            <section class="section-block home-panel-section">
-              <div class="section-heading">
-                <h2 data-i18n="notes">{t.notes}</h2>
-                <span class="meta-pill">{visibleNotes.length}</span>
-              </div>
-
+            <SectionBlock title={t.notes} count={visibleNotes.length} i18nKey="notes">
               {visibleNotes.length === 0 ? (
                 <div class="empty-state">
                   <p>{t.empty}</p>
                 </div>
               ) : (
-                <div class="subject-grid">
+                <div class="entity-grid">
                   {visibleNotes.map((note: any) => (
-                    <article class="subject-card">
-                      <h3>{note.title}</h3>
-                      <p>{note.summary}</p>
-                      <div class="subject-card-footer">
-                        <span>{note.updatedAt ?? note.sourcePath}</span>
-                        <a href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`} data-lang-link data-i18n="open">{t.open}</a>
-                      </div>
-                    </article>
+                    <EntityCard title={note.title} summary={note.summary} href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`}>
+                      <Fragment slot="meta">{note.updatedAt ?? note.sourcePath}</Fragment>
+                    </EntityCard>
                   ))}
                 </div>
               )}
-            </section>
+            </SectionBlock>
           </div>
         </BaseLayout>
       );
@@ -150,16 +132,7 @@ const headings = noteRender?.headings ?? [];
             <hr class="section-divider" />
 
             <div class="note-layout note-panel-body">
-              {headings.length > 0 ? (
-                <aside class="toc-card">
-                  <p class="prefs-label" data-i18n="contents">{t.contents}</p>
-                  <nav class="toc-nav">
-                    {headings.map((heading) => (
-                      <a href={`#${heading.slug}`}>{heading.text}</a>
-                    ))}
-                  </nav>
-                </aside>
-              ) : null}
+              <ContentNavigation headings={headings} title={t.contents} />
 
               <div class="note-card prose">
                 {note.data.subjectSlug ? (

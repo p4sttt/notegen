@@ -1,0 +1,91 @@
+:root {
+  color-scheme: light;
+  --font-sans: "Inter", sans-serif;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 18px;
+  --page-max: 1200px;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.75rem;
+  --space-6: 2.5rem;
+  --space-7: 3.5rem;
+  --article-font-size: 0.98rem;
+  --article-line-height: 1.72;
+  --article-title-size: clamp(1.35rem, 2.4vw, 1.9rem);
+  --article-h1-size: clamp(1.55rem, 3vw, 2.2rem);
+  --article-h2-size: clamp(1.3rem, 2.2vw, 1.65rem);
+  --article-h3-size: clamp(1.12rem, 1.7vw, 1.32rem);
+  --bg: #efede7;
+  --bg-elevated: rgba(255, 255, 255, 0.76);
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-strong: rgba(255, 255, 255, 0.92);
+  --text: #111111;
+  --text-muted: #66615c;
+  --text-soft: #8d867f;
+  --line: rgba(17, 17, 17, 0.09);
+  --accent: #1a1a1a;
+  --accent-rgb: 26, 26, 26;
+  --accent-soft: rgba(26, 26, 26, 0.06);
+  --grid-line: rgba(17, 17, 17, 0.018);
+  --grid-dot: rgba(17, 17, 17, 0.028);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #141414;
+  --bg-elevated: rgba(22, 22, 22, 0.86);
+  --surface: rgba(26, 26, 26, 0.74);
+  --surface-strong: rgba(31, 31, 31, 0.92);
+  --text: #f4f0e8;
+  --text-muted: #bbb2a7;
+  --text-soft: #8d867b;
+  --line: rgba(244, 240, 232, 0.11);
+  --grid-line: rgba(244, 240, 232, 0.018);
+  --grid-dot: rgba(244, 240, 232, 0.034);
+}
+
+:root[data-accent="white"] {
+  --accent: #1a1a1a;
+  --accent-rgb: 26, 26, 26;
+  --accent-soft: rgba(26, 26, 26, 0.06);
+}
+
+:root[data-theme="dark"][data-accent="white"] {
+  --accent: #f4f0e8;
+  --accent-rgb: 244, 240, 232;
+  --accent-soft: rgba(244, 240, 232, 0.08);
+}
+
+:root[data-accent="violet"] {
+  --accent: #7058f6;
+  --accent-rgb: 112, 88, 246;
+  --accent-soft: rgba(112, 88, 246, 0.1);
+}
+
+:root[data-accent="teal"] {
+  --accent: #135f57;
+  --accent-rgb: 19, 95, 87;
+  --accent-soft: rgba(19, 95, 87, 0.1);
+}
+
+:root[data-accent="blue"] {
+  --accent: #275fc7;
+  --accent-rgb: 39, 95, 199;
+  --accent-soft: rgba(39, 95, 199, 0.11);
+}
+
+:root[data-accent="olive"] {
+  --accent: #66703a;
+  --accent-rgb: 102, 112, 58;
+  --accent-soft: rgba(102, 112, 58, 0.12);
+}
+
+:root[data-accent="rose"] {
+  --accent: #a14f79;
+  --accent-rgb: 161, 79, 121;
+  --accent-soft: rgba(161, 79, 121, 0.12);
+}

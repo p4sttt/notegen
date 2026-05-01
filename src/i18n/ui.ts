@@ -21,7 +21,12 @@ type UIStrings = {
   menu: string;
   open: string;
   contents: string;
-  notesCount: string;
+  notesCount: {
+    one: string;
+    few?: string;
+    many?: string;
+    other: string;
+  };
   sourceData: string;
   empty: string;
   intro: string;
@@ -47,7 +52,12 @@ export const ui: Record<Locale, UIStrings> = {
     menu: "Параметры",
     open: "Открыть",
     contents: "Содержание",
-    notesCount: "заметки",
+    notesCount: {
+      one: "заметка",
+      few: "заметки",
+      many: "заметок",
+      other: "заметки"
+    },
     sourceData: "Источник данных",
     empty: "Контент пока не импортирован.",
     intro: "Статический сайт конспектов, собранный из Obsidian vault."
@@ -71,7 +81,10 @@ export const ui: Record<Locale, UIStrings> = {
     menu: "Controls",
     open: "Open",
     contents: "Contents",
-    notesCount: "notes",
+    notesCount: {
+      one: "note",
+      other: "notes"
+    },
     sourceData: "Source",
     empty: "Content has not been imported yet.",
     intro: "A static notes site generated from an Obsidian vault."
@@ -81,4 +94,11 @@ export const ui: Record<Locale, UIStrings> = {
 export function getLocaleFromUrl(url: URL): Locale {
   const locale = url.searchParams.get("lang");
   return locale === "en" ? "en" : defaultLocale;
+}
+
+export function formatNotesCount(locale: Locale, count: number): string {
+  const category = new Intl.PluralRules(locale).select(count);
+  const forms = ui[locale].notesCount;
+  const label = forms[category as keyof typeof forms] ?? forms.other;
+  return `${count} ${label}`;
 }

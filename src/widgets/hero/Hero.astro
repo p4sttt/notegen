@@ -1,0 +1,23 @@
+---
+interface Props {
+  title: string;
+  eyebrow: string;
+  tag?: string;
+  titleI18nKey?: string;
+  eyebrowI18nKey?: string;
+  tagI18nKey?: string;
+}
+
+const { title, eyebrow, tag, titleI18nKey, eyebrowI18nKey, tagI18nKey } = Astro.props;
+---
+
+<section class="hero home-panel-section">
+  <div class="hero-kicker">
+    <p class="eyebrow" data-i18n={eyebrowI18nKey}>{eyebrow}</p>
+    {tag ? <span class="hero-tag" data-i18n={tagI18nKey}>{tag}</span> : null}
+  </div>
+  <div class="hero-copy-block">
+    <h1 data-i18n={titleI18nKey}>{title}</h1>
+    <slot />
+  </div>
+</section>
