@@ -44,6 +44,7 @@ function readEnvValue(name) {
 }
 
 const vaultPath = process.env.VAULT_PATH || readEnvValue("VAULT_PATH");
+const siteBase = process.env.ASTRO_BASE || readEnvValue("ASTRO_BASE") || "/notegen";
 const subjectsContentRoot = path.resolve("src/content/subjects");
 const contentRoot = path.resolve("src/content/notes");
 const assetsRoot = path.resolve("public/generated/notes");
@@ -65,6 +66,16 @@ if (!existsSync(resolvedVaultPath)) {
 function toVaultRelativePath(filePath) {
   return path.relative(resolvedVaultPath, filePath).split(path.sep).join("/");
 }
+
+function normalizeSiteBase(input) {
+  if (!input || input === "/") {
+    return "";
+  }
+
+  return `/${input.replace(/^\/+|\/+$/g, "")}`;
+}
+
+const publicBasePath = normalizeSiteBase(siteBase);
 
 function escapeRegExp(input) {
   return input.replace(/[|\\{}()[\]^$+?.]/g, "\\$&");
@@ -262,11 +273,88 @@ function firstParagraph(markdown) {
   return paragraph ? stripMarkdown(paragraph) : "";
 }
 
-function rewriteAssetLinks(markdown, subjectSlug) {
-  return markdown.replace(/\]\((\.\/assets\/[^)]+)\)/g, (_match, assetPath) => {
-    const normalized = assetPath.replace(/^\.\//, "");
-    return `](/generated/notes/${subjectSlug}/${normalized})`;
-  });
+function isLocalAssetTarget(target) {
+  return (
+    target &&
+    !target.startsWith("/") &&
+    !target.startsWith("#") &&
+    !/^[a-z][a-z0-9+.-]*:/i.test(target)
+  );
+}
+
+function splitAssetTarget(target) {
+  const markerIndex = target.search(/[?#]/);
+  if (markerIndex === -1) {
+    return { assetPath: target, suffix: "" };
+  }
+
+  return {
+    assetPath: target.slice(0, markerIndex),
+    suffix: target.slice(markerIndex)
+  };
+}
+
+function normalizeAssetPath(assetPath) {
+  return assetPath
+    .replace(/^<|>$/g, "")
+    .replace(/\\/g, "/")
+    .replace(/^\.\//, "")
+    .split("/")
+    .filter((segment) => segment && segment !== ".")
+    .join("/");
+}
+
+function copyReferencedAsset(sourceDirectory, publicScope, rawTarget) {
+  const { assetPath, suffix } = splitAssetTarget(rawTarget.trim());
+  const normalized = normalizeAssetPath(assetPath);
+
+  if (!normalized || normalized.startsWith("../")) {
+    return rawTarget;
+  }
+
+  const sourceAssetPath = path.resolve(sourceDirectory, normalized);
+  const sourceRoot = path.resolve(sourceDirectory);
+  if (!sourceAssetPath.startsWith(`${sourceRoot}${path.sep}`) || !existsSync(sourceAssetPath)) {
+    return rawTarget;
+  }
+
+  const stat = statSync(sourceAssetPath);
+  if (!stat.isFile()) {
+    return rawTarget;
+  }
+
+  const targetAssetPath = path.join(assetsRoot, publicScope, normalized);
+  ensureParentDir(targetAssetPath);
+  copyFileSync(sourceAssetPath, targetAssetPath);
+
+  return `${publicBasePath}/generated/notes/${publicScope}/${normalized}${suffix}`;
+}
+
+function rewriteAssetLinks(markdown, sourceDirectory, publicScope) {
+  return markdown
+    .replace(/!\[([^\]]*)]\(([^)]+)\)/g, (match, alt, rawTarget) => {
+      const trimmedTarget = rawTarget.trim();
+      if (!isLocalAssetTarget(trimmedTarget)) {
+        return match;
+      }
+
+      const rewrittenTarget = copyReferencedAsset(sourceDirectory, publicScope, trimmedTarget);
+      return `![${alt}](${rewrittenTarget})`;
+    })
+    .replace(/(<img\b[^>]*?\bsrc\s*=\s*)(["'])([^"']+)(\2)/gi, (match, prefix, quote, rawTarget, closingQuote) => {
+      if (!isLocalAssetTarget(rawTarget)) {
+        return match;
+      }
+
+      return `${prefix}${quote}${copyReferencedAsset(sourceDirectory, publicScope, rawTarget)}${closingQuote}`;
+    })
+    .replace(/(<img\b[^>]*?\bsrc\s*=\s*)([^\s>"']+)/gi, (match, prefix, rawTarget) => {
+      if (!isLocalAssetTarget(rawTarget)) {
+        return match;
+      }
+
+      return `${prefix}${copyReferencedAsset(sourceDirectory, publicScope, rawTarget)}`;
+    });
 }
 
 function relativePathSegments(relativePath) {
@@ -430,7 +518,7 @@ for (const subjectPath of subjectDirectories) {
   const subjectTitle = parsedIndex.data.title || path.basename(subjectPath);
   const subjectDescription = parsedIndex.data.description || firstParagraph(parsedIndex.body);
   const subjectSummary = subjectDescription || excerpt(parsedIndex.body, 160);
-  const rewrittenSubjectBody = rewriteAssetLinks(normalizeBlockquoteMath(parsedIndex.body), subjectSlug);
+  const rewrittenSubjectBody = rewriteAssetLinks(normalizeBlockquoteMath(parsedIndex.body), subjectPath, subjectSlug);
 
   const subjectOutputPath = path.join(subjectsContentRoot, contentFileName(subjectSlug));
   ensureParentDir(subjectOutputPath);
@@ -491,9 +579,7 @@ for (const sourcePath of listMarkdownFiles(resolvedVaultPath)) {
   const collectionSlug = subject ? `${subject.slug}/${noteSlug}` : noteSlug;
   const noteTitle = parsed.data.title || originalName;
   const noteDescription = parsed.data.description || excerpt(parsed.body);
-  const rewrittenBody = subject
-    ? rewriteAssetLinks(normalizeBlockquoteMath(parsed.body), subject.slug)
-    : normalizeBlockquoteMath(parsed.body);
+  const rewrittenBody = rewriteAssetLinks(normalizeBlockquoteMath(parsed.body), path.dirname(sourcePath), collectionSlug);
   const outputFrontmatter = toFrontmatter({
     title: noteTitle,
     slug: collectionSlug,
