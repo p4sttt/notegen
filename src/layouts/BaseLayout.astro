@@ -1,8 +1,8 @@
 ---
 import "../styles/global.css";
-import ThemeToggle from "../components/ThemeToggle.astro";
 import { siteText } from "../config/site";
 import { defaultLocale, getLocaleFromUrl, ui } from "../i18n/ui";
+import PreferencesControl from "../widgets/preferences/PreferencesControl.astro";
 
 interface Props {
   title: string;
@@ -41,7 +41,7 @@ const siteMessages = JSON.stringify(siteText);
         <nav class="top-nav">
           <a href={`${baseUrl}?lang=${locale}#subjects`} data-lang-link data-i18n="subjects">{ui[locale].subjects}</a>
         </nav>
-        <ThemeToggle locale={locale} />
+        <PreferencesControl locale={locale} />
       </header>
       <main class="content-frame">
         <slot />

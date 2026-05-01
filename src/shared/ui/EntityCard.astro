@@ -1,0 +1,17 @@
+---
+interface Props {
+  title: string;
+  summary?: string;
+  href: string;
+}
+
+const { title, summary, href } = Astro.props;
+---
+
+<a class="entity-card" href={href} data-lang-link>
+  <h3>{title}</h3>
+  {summary ? <p>{summary}</p> : null}
+  <div class="entity-card-footer">
+    <span><slot name="meta" /></span>
+  </div>
+</a>

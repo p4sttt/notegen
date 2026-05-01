@@ -1,0 +1,23 @@
+.section-block {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  padding: clamp(1.5rem, 3.4vw, 2.75rem);
+  backdrop-filter: blur(18px);
+}
+
+.home-panel .section-block {
+  padding: clamp(1.25rem, 2.7vw, 2.25rem);
+}
+
+.home-panel .section-heading {
+  margin-bottom: var(--space-5);
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}

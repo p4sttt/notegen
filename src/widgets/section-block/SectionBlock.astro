@@ -1,0 +1,20 @@
+---
+import MetaPill from "../../shared/ui/MetaPill.astro";
+
+interface Props {
+  title: string;
+  count?: string | number;
+  id?: string;
+  i18nKey?: string;
+}
+
+const { title, count, id, i18nKey } = Astro.props;
+---
+
+<section id={id} class="section-block home-panel-section">
+  <div class="section-heading">
+    <h2 data-i18n={i18nKey}>{title}</h2>
+    {count !== undefined ? <MetaPill value={count} /> : null}
+  </div>
+  <slot />
+</section>

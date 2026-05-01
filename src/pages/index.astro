@@ -3,6 +3,9 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { siteText } from "../config/site";
 import { subjects, topLevelNotes } from "../data/generated/subjects";
 import { defaultLocale, getLocaleFromUrl, ui } from "../i18n/ui";
+import EntityCard from "../shared/ui/EntityCard.astro";
+import Hero from "../widgets/hero/Hero.astro";
+import SectionBlock from "../widgets/section-block/SectionBlock.astro";
 
 const locale = Astro.url ? getLocaleFromUrl(Astro.url) : defaultLocale;
 const t = ui[locale];
@@ -15,75 +18,57 @@ const visibleTopLevelNotes = import.meta.env.DEV ? topLevelNotes : topLevelNotes
 
 <BaseLayout title={copy.brand} description={copy.metaDescription}>
   <div class="home-panel">
-    <section class="hero home-panel-section">
-      <div class="hero-kicker">
-        <p class="eyebrow" data-i18n="heroEyebrow">{copy.heroEyebrow}</p>
-        <span class="hero-tag" data-i18n="heroTag">{copy.heroTag}</span>
-      </div>
-      <div class="hero-copy-block">
-        <h1 data-i18n="heroTitle">{copy.heroTitle}</h1>
-        <p class="hero-copy" data-i18n="heroBody">{copy.heroBody}</p>
-      </div>
-    </section>
+    <Hero
+      title={copy.heroTitle}
+      eyebrow={copy.heroEyebrow}
+      tag={copy.heroTag}
+      titleI18nKey="heroTitle"
+      eyebrowI18nKey="heroEyebrow"
+      tagI18nKey="heroTag"
+    >
+      <p class="hero-copy" data-i18n="heroBody">{copy.heroBody}</p>
+    </Hero>
 
     <hr class="section-divider" />
 
-    <section id="subjects" class="section-block home-panel-section">
-      <div class="section-heading">
-        <h2 data-i18n="subjects">{t.subjects}</h2>
-        <span class="meta-pill">{rootSubjects.length}</span>
-      </div>
-
+    <SectionBlock id="subjects" title={t.subjects} count={rootSubjects.length} i18nKey="subjects">
       {
         rootSubjects.length === 0 ? (
           <div class="empty-state">
             <p>{t.empty}</p>
           </div>
         ) : (
-          <div class="subject-grid">
+          <div class="entity-grid">
             {rootSubjects.map((subject) => (
-              <a class="subject-card" href={`${baseUrl}${subject.slug}/?lang=${locale}`} data-lang-link>
-                <h3>{subject.title}</h3>
-                <p>{subject.description || subject.summary}</p>
-                <div class="subject-card-footer">
-                  <span>
-                    {subject.notes.length} <span data-i18n="notesCount">{t.notesCount}</span>
-                  </span>
-                </div>
-              </a>
+              <EntityCard title={subject.title} summary={subject.description || subject.summary} href={`${baseUrl}${subject.slug}/?lang=${locale}`}>
+                <Fragment slot="meta">
+                  {subject.notes.length} <span data-i18n="notesCount">{t.notesCount}</span>
+                </Fragment>
+              </EntityCard>
             ))}
           </div>
         )
       }
-    </section>
+    </SectionBlock>
 
     <hr class="section-divider" />
 
-    <section id="notes" class="section-block home-panel-section">
-      <div class="section-heading">
-        <h2 data-i18n="notes">{t.notes}</h2>
-        <span class="meta-pill">{visibleTopLevelNotes.length}</span>
-      </div>
-
+    <SectionBlock id="notes" title={t.notes} count={visibleTopLevelNotes.length} i18nKey="notes">
       {
         visibleTopLevelNotes.length === 0 ? (
           <div class="empty-state">
             <p>{t.empty}</p>
           </div>
         ) : (
-          <div class="subject-grid">
+          <div class="entity-grid">
             {visibleTopLevelNotes.map((note) => (
-              <a class="subject-card" href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`} data-lang-link>
-                <h3>{note.title}</h3>
-                <p>{note.summary}</p>
-                <div class="subject-card-footer">
-                  <span>{note.updatedAt ?? note.sourcePath}</span>
-                </div>
-              </a>
+              <EntityCard title={note.title} summary={note.summary} href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`}>
+                <Fragment slot="meta">{note.updatedAt ?? note.sourcePath}</Fragment>
+              </EntityCard>
             ))}
           </div>
         )
       }
-    </section>
+    </SectionBlock>
   </div>
 </BaseLayout>
