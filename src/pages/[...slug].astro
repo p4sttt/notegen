@@ -85,16 +85,15 @@ const headings = noteRender?.headings ?? [];
                   </div>
                   <div class="subject-grid">
                     {childSubjects.map((child) => (
-                      <article class="subject-card">
+                      <a class="subject-card" href={`${baseUrl}${child.slug}/?lang=${locale}`} data-lang-link>
                         <h3>{child.title}</h3>
                         <p>{child.description || child.summary}</p>
                         <div class="subject-card-footer">
                           <span>
                             {child.notes.length} <span data-i18n="notesCount">{t.notesCount}</span>
                           </span>
-                          <a href={`${baseUrl}${child.slug}/?lang=${locale}`} data-lang-link data-i18n="open">{t.open}</a>
                         </div>
-                      </article>
+                      </a>
                     ))}
                   </div>
                 </section>
@@ -115,14 +114,13 @@ const headings = noteRender?.headings ?? [];
               ) : (
                 <div class="subject-grid">
                   {visibleNotes.map((note: any) => (
-                    <article class="subject-card">
+                    <a class="subject-card" href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`} data-lang-link>
                       <h3>{note.title}</h3>
                       <p>{note.summary}</p>
                       <div class="subject-card-footer">
                         <span>{note.updatedAt ?? note.sourcePath}</span>
-                        <a href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`} data-lang-link data-i18n="open">{t.open}</a>
                       </div>
-                    </article>
+                    </a>
                   ))}
                 </div>
               )}

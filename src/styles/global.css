@@ -188,11 +188,11 @@ img {
 .prefs-trigger:focus-visible,
 .prefs-chip:hover,
 .prefs-chip:focus-visible,
-.subject-card-footer a:hover,
-.subject-card-footer a:focus-visible,
+.subject-card:hover,
+.subject-card:focus-visible,
 .swatch:hover,
 .swatch:focus-visible {
-  border-color: var(--line);
+  border-color: rgba(var(--accent-rgb), 0.28);
   color: var(--text);
   outline: none;
 }
@@ -414,7 +414,7 @@ img {
 }
 
 .home-panel .subject-card {
-  padding: 1.35rem 1.45rem;
+  padding: 1.4rem 1.45rem;
 }
 
 .eyebrow {
@@ -523,8 +523,27 @@ h3 {
 
 .subject-card {
   display: grid;
-  gap: var(--space-1);
+  grid-template-rows: auto 1fr auto;
+  gap: var(--space-3);
   padding: var(--space-5);
+  min-height: 100%;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.subject-card:focus-visible {
+  border-color: rgba(var(--accent-rgb), 0.42);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
+  outline: none;
+}
+
+.subject-card h3 {
+  margin-bottom: 0;
 }
 
 .subject-card > p {
@@ -538,25 +557,10 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-3);
+  margin-top: var(--space-2);
   color: var(--text-muted);
   font-size: 0.95rem;
-}
-
-.subject-card-footer a {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.7rem 0.95rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--surface-strong);
-  color: var(--text);
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    background-color 180ms ease,
-    color 180ms ease;
 }
 
 .top-nav a:hover,
@@ -565,8 +569,8 @@ h3 {
 .prefs-trigger:focus-visible,
 .prefs-chip:hover,
 .prefs-chip:focus-visible,
-.subject-card-footer a:hover,
-.subject-card-footer a:focus-visible,
+.subject-card:hover,
+.subject-card:focus-visible,
 .swatch:hover,
 .swatch:focus-visible {
   transform: translateY(-1px);
@@ -576,7 +580,7 @@ h3 {
 .top-nav a:active,
 .prefs-trigger:active,
 .prefs-chip:active,
-.subject-card-footer a:active,
+.subject-card:active,
 .swatch:active {
   transform: translateY(0);
 }
@@ -977,10 +981,6 @@ h3 {
 
   .subject-card-footer {
     font-size: 0.82rem;
-  }
-
-  .subject-card-footer a {
-    padding: 0.55rem 0.75rem;
   }
 
   .note-shell,
