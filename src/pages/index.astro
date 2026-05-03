@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { siteText } from "../config/site";
 import { subjects, topLevelNotes } from "../data/generated/subjects";
+import { getSubjectNotesCount } from "../entities/subject/model";
 import { defaultLocale, formatNotesCount, getLocaleFromUrl, ui } from "../i18n/ui";
 import EntityCard from "../shared/ui/EntityCard.astro";
 import Hero from "../widgets/hero/Hero.astro";
@@ -11,9 +12,10 @@ const locale = Astro.url ? getLocaleFromUrl(Astro.url) : defaultLocale;
 const t = ui[locale];
 const copy = siteText[locale];
 const baseUrl = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
-const visibleSubjects = import.meta.env.DEV ? subjects : subjects.filter((subject) => !subject.draft);
+const includeDrafts = import.meta.env.DEV;
+const visibleSubjects = includeDrafts ? subjects : subjects.filter((subject) => !subject.draft);
 const rootSubjects = visibleSubjects.filter((subject) => !subject.parentSlug);
-const visibleTopLevelNotes = import.meta.env.DEV ? topLevelNotes : topLevelNotes.filter((note) => !note.draft);
+const visibleTopLevelNotes = includeDrafts ? topLevelNotes : topLevelNotes.filter((note) => !note.draft);
 ---
 
 <BaseLayout title={copy.brand} description={copy.metaDescription}>
@@ -41,7 +43,7 @@ const visibleTopLevelNotes = import.meta.env.DEV ? topLevelNotes : topLevelNotes
           <div class="entity-grid">
             {rootSubjects.map((subject) => (
               <EntityCard title={subject.title} summary={subject.description || subject.summary} href={`${baseUrl}${subject.slug}/?lang=${locale}`}>
-                <Fragment slot="meta">{formatNotesCount(locale, subject.notes.length)}</Fragment>
+                <Fragment slot="meta">{formatNotesCount(locale, getSubjectNotesCount(subject, visibleSubjects, includeDrafts))}</Fragment>
               </EntityCard>
             ))}
           </div>
