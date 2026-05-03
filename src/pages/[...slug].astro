@@ -3,6 +3,7 @@ import { getCollection, render } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { siteText } from "../config/site";
 import { subjects, topLevelNotes } from "../data/generated/subjects";
+import { getSubjectNotesCount } from "../entities/subject/model";
 import { defaultLocale, formatNotesCount, getLocaleFromUrl, ui } from "../i18n/ui";
 import EntityCard from "../shared/ui/EntityCard.astro";
 import ContentNavigation from "../widgets/content-navigation/ContentNavigation.astro";
@@ -45,7 +46,8 @@ const copy = siteText[locale];
 const t = ui[locale];
 const baseUrl = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
 const props = Astro.props as any;
-const visibleSubjects = import.meta.env.DEV ? subjects : subjects.filter((subject) => !subject.draft);
+const includeDrafts = import.meta.env.DEV;
+const visibleSubjects = includeDrafts ? subjects : subjects.filter((subject) => !subject.draft);
 const subjectRender = props.kind === "subject" ? await render(props.entry) : null;
 const noteRender = props.kind === "note" ? await render(props.note) : null;
 const SubjectContent = subjectRender?.Content;
@@ -58,7 +60,8 @@ const headings = noteRender?.headings ?? [];
     (() => {
       const { subject } = props;
       const childSubjects = visibleSubjects.filter((item) => item.parentSlug === subject.slug);
-      const visibleNotes = import.meta.env.DEV ? subject.notes : subject.notes.filter((note: any) => !note.draft);
+      const visibleNotes = includeDrafts ? subject.notes : subject.notes.filter((note: any) => !note.draft);
+      const totalNotesCount = getSubjectNotesCount(subject, visibleSubjects, includeDrafts);
       return (
         <BaseLayout title={`${subject.title} | ${copy.brand}`} description={subject.summary ?? copy.metaDescription}>
           <div class="home-panel">
@@ -66,7 +69,7 @@ const headings = noteRender?.headings ?? [];
               <div class="hero-kicker">
                 <p class="eyebrow" data-i18n="subjects">{t.subjects}</p>
                 <span class="hero-tag">
-                  {formatNotesCount(locale, visibleNotes.length)}
+                  {formatNotesCount(locale, totalNotesCount)}
                 </span>
               </div>
               <div class="hero-copy-block">
@@ -85,7 +88,7 @@ const headings = noteRender?.headings ?? [];
                   <div class="entity-grid">
                     {childSubjects.map((child) => (
                       <EntityCard title={child.title} summary={child.description || child.summary} href={`${baseUrl}${child.slug}/?lang=${locale}`}>
-                        <Fragment slot="meta">{formatNotesCount(locale, child.notes.length)}</Fragment>
+                        <Fragment slot="meta">{formatNotesCount(locale, getSubjectNotesCount(child, visibleSubjects, includeDrafts))}</Fragment>
                       </EntityCard>
                     ))}
                   </div>
