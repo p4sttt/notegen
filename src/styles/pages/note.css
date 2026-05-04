@@ -5,6 +5,7 @@
 
 .note-header,
 .note-card {
+  min-width: 0;
   padding: clamp(1.5rem, 3.2vw, 2.5rem);
   border: 1px solid var(--line);
   border-radius: var(--radius-xl);
@@ -15,6 +16,7 @@
 .note-layout {
   display: grid;
   gap: var(--space-6);
+  min-width: 0;
 }
 
 .note-panel-body {
