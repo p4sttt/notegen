@@ -64,6 +64,34 @@
   cursor: pointer;
 }
 
+.prefs-trigger-icon {
+  display: none;
+  position: relative;
+  width: 1rem;
+  height: 1rem;
+  background:
+    linear-gradient(currentColor, currentColor) center / 0.72rem 2px no-repeat;
+}
+
+.prefs-trigger-icon::before,
+.prefs-trigger-icon::after {
+  content: "";
+  position: absolute;
+  left: 0.14rem;
+  width: 0.72rem;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.prefs-trigger-icon::before {
+  top: 0.24rem;
+}
+
+.prefs-trigger-icon::after {
+  bottom: 0.24rem;
+}
+
 .prefs-popover summary {
   list-style: none;
 }

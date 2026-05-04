@@ -11,7 +11,10 @@ const t = ui[locale];
 ---
 
 <details class="prefs-popover">
-  <summary class="prefs-trigger">{t.menu}</summary>
+  <summary class="prefs-trigger" aria-label={t.menu}>
+    <span class="prefs-trigger-icon" aria-hidden="true"></span>
+    <span class="prefs-trigger-label">{t.menu}</span>
+  </summary>
   <div class="prefs-panel">
     <section class="prefs-group" aria-label={t.language}>
       <p class="prefs-label">{t.language}</p>
