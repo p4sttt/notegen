@@ -251,6 +251,10 @@
     grid-template-columns: minmax(0, 1fr) 18.5rem;
   }
 
+  .note-layout-full {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .note-card {
     order: 1;
   }

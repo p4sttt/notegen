@@ -14,5 +14,6 @@ vault/
 # Generated site content from vault sync
 public/generated/
 src/content/notes/
-src/content/subjects/
-src/data/generated/subjects.ts
+src/content/topics/
+src/data/generated/changelog.ts
+src/data/generated/topics.ts

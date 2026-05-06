@@ -14,6 +14,7 @@ type SiteText = {
 type SiteTextOverrides = Partial<Record<Locale, Partial<SiteText>>> & Partial<SiteText>;
 
 type SiteConfig = {
+  changelogPath?: string;
   siteText?: SiteTextOverrides;
   text?: SiteTextOverrides;
 };
