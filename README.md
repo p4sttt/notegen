@@ -6,6 +6,7 @@ Static notes site generated from a private Obsidian vault.
 
 - imports subjects from vault directories that contain `_index.md`
 - imports note pages from markdown files inside each subject directory
+- imports Jupyter notebooks (`.ipynb`) as note pages
 - copies relative assets from `./assets/...`
 - builds a static Astro site with light/dark themes
 - renders LaTeX via KaTeX
@@ -72,7 +73,9 @@ Expected conventions:
 
 - a subject directory must contain `_index.md`
 - `_index.md` may contain frontmatter such as `title`, `slug`, `draft`, `description`
-- note files may contain frontmatter such as `title`, `slug`, `date`, `draft`
+- note files may be Markdown (`.md`) or Jupyter notebooks (`.ipynb`)
+- Markdown note files may contain frontmatter such as `title`, `slug`, `date`, `draft`
+- Jupyter notebooks are converted during `npm run sync:vault`: markdown cells become page Markdown, code cells become syntax-highlighted code blocks, and supported outputs are rendered as HTML, text blocks, or copied image assets
 - relative assets should be referenced like `![desc](./assets/file.png)`
 
 ## Site Configuration

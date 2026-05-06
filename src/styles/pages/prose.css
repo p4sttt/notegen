@@ -198,6 +198,26 @@
   background: transparent;
 }
 
+.prose .notebook-output {
+  margin: -0.65rem 0 1.2rem;
+}
+
+.prose .notebook-output pre,
+.prose pre.notebook-output {
+  border-color: color-mix(in srgb, var(--line) 82%, rgba(var(--accent-rgb), 0.18));
+}
+
+.prose .notebook-output-error {
+  border-color: color-mix(in srgb, #b42318 34%, var(--line));
+  color: color-mix(in srgb, #b42318 70%, var(--text));
+}
+
+.prose .notebook-output-image img,
+.prose .notebook-output-html img {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
 .astro-code {
   overflow-x: auto;
   padding: 1rem 1.1rem;
