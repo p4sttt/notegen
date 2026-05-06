@@ -1,8 +1,8 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { siteText } from "../config/site";
-import { subjects, topLevelNotes } from "../data/generated/subjects";
-import { getSubjectNotesCount } from "../entities/subject/model";
+import { topics, topLevelNotes } from "../data/generated/topics";
+import { getTopicNotesCount } from "../entities/topic/model";
 import { defaultLocale, formatNotesCount, getLocaleFromUrl, ui } from "../i18n/ui";
 import EntityCard from "../shared/ui/EntityCard.astro";
 import Hero from "../widgets/hero/Hero.astro";
@@ -13,8 +13,8 @@ const t = ui[locale];
 const copy = siteText[locale];
 const baseUrl = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
 const includeDrafts = import.meta.env.DEV;
-const visibleSubjects = includeDrafts ? subjects : subjects.filter((subject) => !subject.draft);
-const rootSubjects = visibleSubjects.filter((subject) => !subject.parentSlug);
+const visibleTopics = includeDrafts ? topics : topics.filter((topic) => !topic.draft);
+const rootTopics = visibleTopics.filter((topic) => !topic.parentSlug);
 const visibleTopLevelNotes = includeDrafts ? topLevelNotes : topLevelNotes.filter((note) => !note.draft);
 ---
 
@@ -33,17 +33,17 @@ const visibleTopLevelNotes = includeDrafts ? topLevelNotes : topLevelNotes.filte
 
     <hr class="section-divider" />
 
-    <SectionBlock id="subjects" title={t.subjects} count={rootSubjects.length} i18nKey="subjects">
+    <SectionBlock id="topics" title={t.topics} count={rootTopics.length} i18nKey="topics">
       {
-        rootSubjects.length === 0 ? (
+        rootTopics.length === 0 ? (
           <div class="empty-state">
             <p>{t.empty}</p>
           </div>
         ) : (
           <div class="entity-grid">
-            {rootSubjects.map((subject) => (
-              <EntityCard title={subject.title} summary={subject.description || subject.summary} href={`${baseUrl}${subject.slug}/?lang=${locale}`}>
-                <Fragment slot="meta">{formatNotesCount(locale, getSubjectNotesCount(subject, visibleSubjects, includeDrafts))}</Fragment>
+            {rootTopics.map((topic) => (
+              <EntityCard title={topic.title} summary={topic.description || topic.summary} href={`${baseUrl}${topic.slug}/?lang=${locale}`}>
+                <Fragment slot="meta">{formatNotesCount(locale, getTopicNotesCount(topic, visibleTopics, includeDrafts))}</Fragment>
               </EntityCard>
             ))}
           </div>

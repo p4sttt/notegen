@@ -6,7 +6,7 @@ function renderNote(note, indent = "  ") {
   return `${indent}{ slug: '${escapeSingleQuotes(note.slug)}', collectionSlug: '${escapeSingleQuotes(note.collectionSlug)}', title: '${escapeSingleQuotes(note.title)}', summary: '${escapeSingleQuotes(note.summary ?? "")}', description: '${escapeSingleQuotes(note.description ?? "")}', draft: ${note.draft ? "true" : "false"}, sourcePath: '${escapeSingleQuotes(note.sourcePath ?? "")}', updatedAt: '${escapeSingleQuotes(note.updatedAt ?? "")}' }`;
 }
 
-export function renderSubjectsDataFile(subjects, topLevelNotes) {
+export function renderTopicsDataFile(topics, topLevelNotes) {
   return `${[
     "export type Note = {",
     "  slug: string;",
@@ -19,7 +19,7 @@ export function renderSubjectsDataFile(subjects, topLevelNotes) {
     "  updatedAt?: string;",
     "};",
     "",
-    "export type Subject = {",
+    "export type Topic = {",
     "  slug: string;",
     "  title: string;",
     "  summary?: string;",
@@ -30,13 +30,13 @@ export function renderSubjectsDataFile(subjects, topLevelNotes) {
     "  notes: Note[];",
     "};",
     "",
-    "export const subjects: Subject[] = ["
+    "export const topics: Topic[] = ["
   ].join("\n")}
-${subjects
-  .map((subject) => {
-    const noteLines = subject.notes.map((note) => renderNote(note, "    ")).join(",\n");
+${topics
+  .map((topic) => {
+    const noteLines = topic.notes.map((note) => renderNote(note, "    ")).join(",\n");
 
-    return `  {\n    slug: '${escapeSingleQuotes(subject.slug)}',\n    title: '${escapeSingleQuotes(subject.title)}',\n    summary: '${escapeSingleQuotes(subject.summary ?? "")}',\n    description: '${escapeSingleQuotes(subject.description ?? "")}',\n    draft: ${subject.draft ? "true" : "false"},\n    parentSlug: '${escapeSingleQuotes(subject.parentSlug ?? "")}',\n    sourcePath: '${escapeSingleQuotes(subject.sourcePath ?? "")}',\n    notes: [\n${noteLines}\n    ]\n  }`;
+    return `  {\n    slug: '${escapeSingleQuotes(topic.slug)}',\n    title: '${escapeSingleQuotes(topic.title)}',\n    summary: '${escapeSingleQuotes(topic.summary ?? "")}',\n    description: '${escapeSingleQuotes(topic.description ?? "")}',\n    draft: ${topic.draft ? "true" : "false"},\n    parentSlug: '${escapeSingleQuotes(topic.parentSlug ?? "")}',\n    sourcePath: '${escapeSingleQuotes(topic.sourcePath ?? "")}',\n    notes: [\n${noteLines}\n    ]\n  }`;
   })
   .join(",\n")}
 ];

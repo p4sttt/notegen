@@ -4,8 +4,23 @@ export const defaultLocale: Locale = "ru";
 
 type UIStrings = {
   home: string;
-  subjects: string;
+  topics: string;
   notes: string;
+  changelog: string;
+  changelogEmpty: string;
+  changelogActions: {
+    created: string;
+    updated: string;
+    deleted: string;
+    renamed: string;
+    changed: string;
+  };
+  changelogKinds: {
+    note: string;
+    topic: string;
+    asset: string;
+    other: string;
+  };
   theme: string;
   light: string;
   dark: string;
@@ -35,8 +50,23 @@ type UIStrings = {
 export const ui: Record<Locale, UIStrings> = {
   ru: {
     home: "Главная",
-    subjects: "Разделы",
+    topics: "Топики",
     notes: "Заметки",
+    changelog: "Изменения",
+    changelogEmpty: "Изменения пока не добавлены.",
+    changelogActions: {
+      created: "создано",
+      updated: "изменено",
+      deleted: "удалено",
+      renamed: "переименовано",
+      changed: "обновлено"
+    },
+    changelogKinds: {
+      note: "заметка",
+      topic: "топик",
+      asset: "ассет",
+      other: "объект"
+    },
     theme: "Тема",
     light: "Светлая",
     dark: "Тёмная",
@@ -64,8 +94,23 @@ export const ui: Record<Locale, UIStrings> = {
   },
   en: {
     home: "Home",
-    subjects: "Sections",
+    topics: "Topics",
     notes: "Notes",
+    changelog: "Changelog",
+    changelogEmpty: "No changes have been added yet.",
+    changelogActions: {
+      created: "created",
+      updated: "updated",
+      deleted: "deleted",
+      renamed: "renamed",
+      changed: "changed"
+    },
+    changelogKinds: {
+      note: "note",
+      topic: "topic",
+      asset: "asset",
+      other: "item"
+    },
     theme: "Theme",
     light: "Light",
     dark: "Dark",

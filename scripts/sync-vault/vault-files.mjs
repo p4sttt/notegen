@@ -61,13 +61,13 @@ export function listNoteFiles(rootPath, isIgnoredPath) {
   return files;
 }
 
-export function findNearestSubject(relativeDirectory, subjectBySourcePath) {
+export function findNearestTopic(relativeDirectory, topicBySourcePath) {
   let current = relativeDirectory;
 
   while (current && current !== ".") {
-    const subject = subjectBySourcePath.get(current);
-    if (subject) {
-      return subject;
+    const topic = topicBySourcePath.get(current);
+    if (topic) {
+      return topic;
     }
     current = path.dirname(current);
   }
