@@ -1,0 +1,72 @@
+.changelog-shell {
+  display: grid;
+}
+
+.changelog-list {
+  display: grid;
+  gap: 0;
+}
+
+.changelog-event {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  padding: clamp(1rem, 2.4vw, 1.75rem) clamp(1.25rem, 2.7vw, 2.25rem);
+  border-bottom: 1px solid var(--line);
+}
+
+.changelog-event:last-child {
+  border-bottom: 0;
+}
+
+.changelog-event-main {
+  min-width: 0;
+}
+
+.changelog-action {
+  display: inline-flex;
+  margin-bottom: var(--space-2);
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.changelog-event h2 {
+  margin: 0;
+  font-size: clamp(1.05rem, 1.6vw, 1.28rem);
+  line-height: 1.25;
+}
+
+.changelog-event h2 a {
+  color: var(--text);
+}
+
+.changelog-event p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+  color: var(--text-soft);
+  font-size: 0.92rem;
+}
+
+.changelog-event time {
+  color: var(--text-soft);
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .changelog-event {
+    grid-template-columns: 1fr;
+  }
+
+  .changelog-event time {
+    white-space: normal;
+  }
+}

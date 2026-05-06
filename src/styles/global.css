@@ -7,5 +7,6 @@
 @import "./widgets/section-block.css";
 @import "./widgets/content-navigation.css";
 @import "./pages/note.css";
+@import "./pages/changelog.css";
 @import "./pages/prose.css";
 @import "./foundation/responsive.css";

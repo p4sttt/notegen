@@ -11,7 +11,7 @@ vault/
 
 public/generated/
 src/content/notes/
-src/content/subjects/
-src/data/generated/subjects.ts
+src/content/topics/
+src/data/generated/topics.ts
 
 npm-debug.log*
