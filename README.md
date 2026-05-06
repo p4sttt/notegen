@@ -24,9 +24,24 @@ src/
   pages/          Astro routes
 scripts/
   sync-vault.mjs  imports vault content into the site
+  sync-vault/     sync implementation modules
 .github/workflows/
   deploy.yml      build and deploy workflow
 ```
+
+### Vault Sync Modules
+
+`scripts/sync-vault.mjs` is the CLI entrypoint and orchestration layer. The implementation details live in `scripts/sync-vault/`:
+
+- `env.mjs` reads values from `.env`
+- `ignore-rules.mjs` parses `.notegenignore` and checks ignored paths
+- `markdown.mjs` parses frontmatter and prepares Markdown summaries/content
+- `notebooks.mjs` converts Jupyter notebooks into Markdown and output assets
+- `assets.mjs` copies local assets and rewrites Markdown/HTML asset links
+- `vault-files.mjs` walks the vault and resolves subject ancestry
+- `paths.mjs` normalizes site paths, slugs, and generated content filenames
+- `fs-utils.mjs` contains small filesystem helpers shared by sync modules
+- `data-file.mjs` renders `src/data/generated/subjects.ts`
 
 ## Local Development
 
