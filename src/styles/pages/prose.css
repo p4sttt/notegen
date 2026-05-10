@@ -227,19 +227,35 @@
   padding: 1rem 1.1rem;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+  background: var(--shiki-light-bg, var(--surface-strong)) !important;
+  color: var(--shiki-light, var(--text)) !important;
   font-size: 0.95rem;
   line-height: 1.65;
 }
 
+.astro-code span {
+  color: var(--shiki-light, inherit);
+  font-style: var(--shiki-light-font-style, inherit);
+  font-weight: var(--shiki-light-font-weight, inherit);
+  text-decoration: var(--shiki-light-text-decoration, inherit);
+}
+
 :root[data-theme="light"] .astro-code,
 :root:not([data-theme]) .astro-code {
-  background: #f8f6f1 !important;
-  color: #1f2328 !important;
+  background: var(--shiki-light-bg, #f8f6f1) !important;
+  color: var(--shiki-light, #1f2328) !important;
 }
 
 :root[data-theme="dark"] .astro-code {
-  background: #16181d !important;
-  color: #e6edf3 !important;
+  background: var(--shiki-dark-bg, #16181d) !important;
+  color: var(--shiki-dark, #e6edf3) !important;
+}
+
+:root[data-theme="dark"] .astro-code span {
+  color: var(--shiki-dark, inherit);
+  font-style: var(--shiki-dark-font-style, inherit);
+  font-weight: var(--shiki-dark-font-weight, inherit);
+  text-decoration: var(--shiki-dark-text-decoration, inherit);
 }
 
 .prose blockquote {
