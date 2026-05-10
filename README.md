@@ -91,7 +91,8 @@ Expected conventions:
 - a topic directory must contain `_index.md`
 - `_index.md` may contain frontmatter such as `title`, `slug`, `draft`, `description`
 - note files may be Markdown (`.md`) or Jupyter notebooks (`.ipynb`)
-- Markdown note files may contain frontmatter such as `title`, `slug`, `date`, `draft`
+- Markdown note files may contain frontmatter such as `title`, `slug`, `date`, `status`
+- note `status` values are `draft`, `in-progress`, or `done`; legacy `draft: true` maps to `status: draft`, and legacy `draft: false` maps to `status: done`
 - Jupyter notebooks are converted during `npm run sync:vault`: markdown cells become page Markdown, code cells become syntax-highlighted code blocks, and supported outputs are rendered as HTML, text blocks, or copied image assets
 - relative assets should be referenced like `![desc](./assets/file.png)`
 

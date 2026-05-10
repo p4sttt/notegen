@@ -1,0 +1,42 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { siteText } from "../config/site";
+import { topics, topLevelNotes } from "../data/generated/topics";
+import { isInProgressNote } from "../entities/topic/model";
+import { defaultLocale, getLocaleFromUrl, ui } from "../i18n/ui";
+import EntityCard from "../shared/ui/EntityCard.astro";
+import SectionBlock from "../widgets/section-block/SectionBlock.astro";
+
+const locale = Astro.url ? getLocaleFromUrl(Astro.url) : defaultLocale;
+const t = ui[locale];
+const copy = siteText[locale];
+const baseUrl = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+const inProgressNotes = [...topics.flatMap((topic) => topic.notes), ...topLevelNotes].filter(isInProgressNote);
+---
+
+<BaseLayout title={`${t.drafts} | ${copy.brand}`} description={copy.metaDescription}>
+  <div class="home-panel">
+    <SectionBlock id="drafts" title={t.drafts} count={inProgressNotes.length} i18nKey="drafts">
+      {
+        inProgressNotes.length === 0 ? (
+          <div class="empty-state">
+            <p>{t.empty}</p>
+          </div>
+        ) : (
+          <div class="entity-grid">
+            {inProgressNotes.map((note) => (
+              <EntityCard
+                title={note.title}
+                summary={note.summary}
+                href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`}
+                badgeLabel={t.inProgress}
+              >
+                <Fragment slot="meta">{note.updatedAt || note.sourcePath}</Fragment>
+              </EntityCard>
+            ))}
+          </div>
+        )
+      }
+    </SectionBlock>
+  </div>
+</BaseLayout>

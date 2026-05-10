@@ -6,6 +6,8 @@ type UIStrings = {
   home: string;
   topics: string;
   notes: string;
+  drafts: string;
+  inProgress: string;
   changelog: string;
   changelogEmpty: string;
   changelogActions: {
@@ -52,6 +54,8 @@ export const ui: Record<Locale, UIStrings> = {
     home: "Главная",
     topics: "Топики",
     notes: "Заметки",
+    drafts: "Черновики",
+    inProgress: "in-progress",
     changelog: "Изменения",
     changelogEmpty: "Изменения пока не добавлены.",
     changelogActions: {
@@ -96,6 +100,8 @@ export const ui: Record<Locale, UIStrings> = {
     home: "Home",
     topics: "Topics",
     notes: "Notes",
+    drafts: "Drafts",
+    inProgress: "in-progress",
     changelog: "Changelog",
     changelogEmpty: "No changes have been added yet.",
     changelogActions: {

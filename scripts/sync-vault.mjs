@@ -70,6 +70,14 @@ const topLevelNotes = [];
 let generatedNotesCount = 0;
 const topicBySourcePath = new Map();
 
+function normalizeNoteStatus(data) {
+  if (data.status === "draft" || data.status === "in-progress" || data.status === "done") {
+    return data.status;
+  }
+
+  return data.draft === true ? "draft" : "done";
+}
+
 const topicDirectories = listDirectories(resolvedVaultPath, isIgnoredPath)
   .filter((directoryPath) => {
     const indexPath = path.join(directoryPath, "_index.md");
@@ -154,7 +162,8 @@ for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
           title: notebookTitle(notebookConversion.notebook, originalName),
           description: notebookConversion.notebook.metadata?.description,
           date: notebookConversion.notebook.metadata?.date,
-          draft: notebookConversion.notebook.metadata?.draft
+          draft: notebookConversion.notebook.metadata?.draft,
+          status: notebookConversion.notebook.metadata?.status
         },
         body: notebookConversion.markdown
       }
@@ -165,13 +174,14 @@ for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
   const collectionSlug = topic ? `${topic.slug}/${noteSlug}` : noteSlug;
   const noteTitle = parsed.data.title || originalName;
   const noteDescription = parsed.data.description || excerpt(parsed.body);
+  const noteStatus = normalizeNoteStatus(parsed.data);
   const rewrittenBody = rewriteAssetLinks(normalizeBlockquoteMath(parsed.body), path.dirname(sourcePath), collectionSlug);
   const outputFrontmatter = toFrontmatter({
     title: noteTitle,
     slug: collectionSlug,
     description: noteDescription,
     date: parsed.data.date,
-    draft: parsed.data.draft ?? false,
+    status: noteStatus,
     topic: topic?.title,
     topicSlug: topic?.slug,
     parentSlug: topic?.parentSlug,
@@ -189,7 +199,7 @@ for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
     title: noteTitle,
     summary: noteDescription,
     description: noteDescription,
-    draft: parsed.data.draft ?? false,
+    status: noteStatus,
     sourcePath: sourceRelativePath,
     updatedAt: parsed.data.date || undefined
   };
