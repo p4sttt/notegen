@@ -3,7 +3,7 @@ import { getCollection, render } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { siteText } from "../config/site";
 import { topics, topLevelNotes } from "../data/generated/topics";
-import { getTopicNotesCount } from "../entities/topic/model";
+import { getTopicNotesCount, isInProgressNote, isPublishedNote } from "../entities/topic/model";
 import { defaultLocale, formatNotesCount, getLocaleFromUrl, ui } from "../i18n/ui";
 import EntityCard from "../shared/ui/EntityCard.astro";
 import ContentNavigation from "../widgets/content-navigation/ContentNavigation.astro";
@@ -12,7 +12,7 @@ import SectionBlock from "../widgets/section-block/SectionBlock.astro";
 export async function getStaticPaths() {
   const includeDrafts = import.meta.env.DEV;
   const topicEntries = await getCollection("topics", ({ data }) => includeDrafts || !data.draft);
-  const notes = await getCollection("notes", ({ data }) => includeDrafts || !data.draft);
+  const notes = await getCollection("notes", ({ data }) => isPublishedNote(data));
 
   const topicPaths = topicEntries
     .map((entry) => {
@@ -60,16 +60,24 @@ const headings = noteRender?.headings ?? [];
     (() => {
       const { topic } = props;
       const childTopics = visibleTopics.filter((item) => item.parentSlug === topic.slug);
-      const visibleNotes = includeDrafts ? topic.notes : topic.notes.filter((note: any) => !note.draft);
+      const visibleNotes = topic.notes.filter(isPublishedNote);
       const totalNotesCount = getTopicNotesCount(topic, visibleTopics, includeDrafts);
       return (
-        <BaseLayout title={`${topic.title} | ${copy.brand}`} description={topic.summary ?? copy.metaDescription}>
+        <BaseLayout
+          title={`${topic.title} | ${copy.brand}`}
+          description={topic.summary ?? copy.metaDescription}
+          titlePrefix={topic.title}
+          titleSuffixI18nKey="brand"
+          descriptionI18nKey={topic.summary ? undefined : "metaDescription"}
+        >
           <div class="home-panel">
             <section class="hero home-panel-section">
               <div class="hero-kicker">
                 <p class="eyebrow" data-i18n="topics">{t.topics}</p>
                 <span class="hero-tag">
-                  {formatNotesCount(locale, totalNotesCount)}
+                  <span data-i18n-plural="notesCount" data-i18n-count={totalNotesCount}>
+                    {formatNotesCount(locale, totalNotesCount)}
+                  </span>
                 </span>
               </div>
               <div class="hero-copy-block">
@@ -88,7 +96,11 @@ const headings = noteRender?.headings ?? [];
                   <div class="entity-grid">
                     {childTopics.map((child) => (
                       <EntityCard title={child.title} summary={child.description || child.summary} href={`${baseUrl}${child.slug}/?lang=${locale}`}>
-                        <Fragment slot="meta">{formatNotesCount(locale, getTopicNotesCount(child, visibleTopics, includeDrafts))}</Fragment>
+                        <Fragment slot="meta">
+                          <span data-i18n-plural="notesCount" data-i18n-count={getTopicNotesCount(child, visibleTopics, includeDrafts)}>
+                            {formatNotesCount(locale, getTopicNotesCount(child, visibleTopics, includeDrafts))}
+                          </span>
+                        </Fragment>
                       </EntityCard>
                     ))}
                   </div>
@@ -100,12 +112,18 @@ const headings = noteRender?.headings ?? [];
             <SectionBlock title={t.notes} count={visibleNotes.length} i18nKey="notes">
               {visibleNotes.length === 0 ? (
                 <div class="empty-state">
-                  <p>{t.empty}</p>
+                  <p data-i18n="empty">{t.empty}</p>
                 </div>
               ) : (
                 <div class="entity-grid">
                   {visibleNotes.map((note: any) => (
-                    <EntityCard title={note.title} summary={note.summary} href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`}>
+                    <EntityCard
+                      title={note.title}
+                      summary={note.summary}
+                      href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`}
+                      badgeLabel={isInProgressNote(note) ? t.inProgress : undefined}
+                      badgeI18nKey={isInProgressNote(note) ? "inProgress" : undefined}
+                    >
                       <Fragment slot="meta">{note.updatedAt ?? note.sourcePath}</Fragment>
                     </EntityCard>
                   ))}
@@ -120,13 +138,17 @@ const headings = noteRender?.headings ?? [];
     (() => {
       const { note } = props;
       const isNotebook = note.data.sourcePath?.endsWith(".ipynb") ?? false;
+      const isInProgress = note.data.status === "in-progress";
       return (
-        <BaseLayout title={`${note.data.title} | ${copy.brand}`} description={note.data.title}>
+        <BaseLayout title={`${note.data.title} | ${copy.brand}`} description={note.data.title} titlePrefix={note.data.title} titleSuffixI18nKey="brand">
           <article class="note-shell home-panel">
             <header class="note-header note-header-compact home-panel-section">
               <div class="hero-kicker">
                 <p class="eyebrow">{note.data.topic ?? copy.brand}</p>
-                <span class="hero-tag">{note.data.date ? note.data.date.toISOString().slice(0, 10) : t.sourceData}</span>
+                <div class="note-status-line">
+                  {isInProgress ? <span class="note-status-badge" data-i18n="inProgress">{t.inProgress}</span> : null}
+                  <span class="hero-tag" data-i18n={note.data.date ? undefined : "sourceData"}>{note.data.date ? note.data.date.toISOString().slice(0, 10) : t.sourceData}</span>
+                </div>
               </div>
               <div class="hero-copy-block">
                 <h1 class="note-title">{note.data.title}</h1>

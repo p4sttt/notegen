@@ -31,17 +31,29 @@ function getFaviconUrl(value) {
   return `https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(url.origin)}`;
 }
 
+function makeFaviconNode(url) {
+  return {
+    type: "image",
+    url: getFaviconUrl(url),
+    alt: "",
+    data: {
+      hProperties: {
+        className: ["link-chip__favicon"],
+        loading: "lazy",
+        decoding: "async",
+        referrerPolicy: "no-referrer",
+        onerror: "this.style.display='none'"
+      }
+    }
+  };
+}
+
 function decorateExternalLink(node, { raw = false } = {}) {
   if (!isExternalUrl(node.url)) {
     return;
   }
 
   node.data = node.data || {};
-  const existingStyle = node.data.hProperties?.style
-    ?.split(";")
-    .map((part) => part.trim())
-    .filter((part) => part && !part.startsWith("--link-favicon"))
-    .join("; ");
   node.data.linkChipDecorated = true;
   node.data.hProperties = {
     ...node.data.hProperties,
@@ -49,13 +61,14 @@ function decorateExternalLink(node, { raw = false } = {}) {
     target: "_blank",
     rel: "noopener noreferrer",
     title: node.url,
-    "data-domain": getDomain(node.url),
-    style: `${existingStyle ? `${existingStyle}; ` : ""}--link-favicon: url("${getFaviconUrl(node.url)}")`
+    "data-domain": getDomain(node.url)
   };
 
-  if (raw) {
-    node.children = [{ type: "text", value: getDomain(node.url) }];
-  }
+  const children = raw
+    ? [{ type: "text", value: getDomain(node.url) }]
+    : node.children.filter((child) => child.data?.hProperties?.className?.includes("link-chip__favicon") !== true);
+
+  node.children = [makeFaviconNode(node.url), ...children];
 }
 
 function linkifyTextNode(node) {

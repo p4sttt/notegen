@@ -3,13 +3,18 @@ interface Props {
   title: string;
   summary?: string;
   href: string;
+  badgeLabel?: string;
+  badgeI18nKey?: string;
 }
 
-const { title, summary, href } = Astro.props;
+const { title, summary, href, badgeLabel, badgeI18nKey } = Astro.props;
 ---
 
 <a class="entity-card" href={href} data-lang-link>
-  <h3>{title}</h3>
+  <div class="entity-card-heading">
+    <h3>{title}</h3>
+    {badgeLabel ? <span class="entity-card-badge" data-i18n={badgeI18nKey}>{badgeLabel}</span> : null}
+  </div>
   {summary ? <p>{summary}</p> : null}
   <div class="entity-card-footer">
     <span><slot name="meta" /></span>

@@ -13,15 +13,16 @@ import {
   parseFrontmatter,
   toFrontmatter
 } from "./sync-vault/markdown.mjs";
-import { createNotebookConverter, notebookTitle } from "./sync-vault/notebooks.mjs";
+import { createNotebookConverter, notebookNoteFrontmatter } from "./sync-vault/notebooks.mjs";
 import { contentFileName, normalizeSiteBase, relativePathSegments, slugify, slugifyPath } from "./sync-vault/paths.mjs";
 import { readSiteConfig, resolveVaultConfigPath } from "./sync-vault/site-config.mjs";
 import { findNearestTopic, listDirectories, listNoteFiles } from "./sync-vault/vault-files.mjs";
 
 const vaultPath = process.env.VAULT_PATH || readEnvValue("VAULT_PATH");
 const siteBase = process.env.ASTRO_BASE || readEnvValue("ASTRO_BASE") || "/notegen";
-const topicsContentRoot = path.resolve("src/content/topics");
-const contentRoot = path.resolve("src/content/notes");
+const contentCollectionsRoot = path.resolve("src/content");
+const topicsContentRoot = path.join(contentCollectionsRoot, "topics");
+const contentRoot = path.join(contentCollectionsRoot, "notes");
 const assetsRoot = path.resolve("public/generated/notes");
 const topicsDataPath = path.resolve("src/data/generated/topics.ts");
 const changelogDataPath = path.resolve("src/data/generated/changelog.ts");
@@ -57,8 +58,7 @@ const { notebookToMarkdown } = createNotebookConverter({
   publicBasePath
 });
 
-rmSync(topicsContentRoot, { recursive: true, force: true });
-rmSync(contentRoot, { recursive: true, force: true });
+rmSync(contentCollectionsRoot, { recursive: true, force: true });
 rmSync(assetsRoot, { recursive: true, force: true });
 mkdirSync(topicsContentRoot, { recursive: true });
 mkdirSync(contentRoot, { recursive: true });
@@ -69,6 +69,14 @@ const topics = [];
 const topLevelNotes = [];
 let generatedNotesCount = 0;
 const topicBySourcePath = new Map();
+
+function normalizeNoteStatus(data) {
+  if (data.status === "draft" || data.status === "in-progress" || data.status === "done") {
+    return data.status;
+  }
+
+  return data.draft === true ? "draft" : "done";
+}
 
 const topicDirectories = listDirectories(resolvedVaultPath, isIgnoredPath)
   .filter((directoryPath) => {
@@ -149,15 +157,7 @@ for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
     : noteRelativeSegments.map(slugify).join("/");
   const notebookConversion = isNotebook ? notebookToMarkdown(raw, notebookPublicScope) : null;
   const parsed = isNotebook
-    ? {
-        data: {
-          title: notebookTitle(notebookConversion.notebook, originalName),
-          description: notebookConversion.notebook.metadata?.description,
-          date: notebookConversion.notebook.metadata?.date,
-          draft: notebookConversion.notebook.metadata?.draft
-        },
-        body: notebookConversion.markdown
-      }
+    ? notebookNoteFrontmatter(notebookConversion.notebook, notebookConversion.markdown, originalName)
     : parseFrontmatter(raw);
 
   noteRelativeSegments[noteRelativeSegments.length - 1] = parsed.data.slug || originalName;
@@ -165,13 +165,14 @@ for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
   const collectionSlug = topic ? `${topic.slug}/${noteSlug}` : noteSlug;
   const noteTitle = parsed.data.title || originalName;
   const noteDescription = parsed.data.description || excerpt(parsed.body);
+  const noteStatus = normalizeNoteStatus(parsed.data);
   const rewrittenBody = rewriteAssetLinks(normalizeBlockquoteMath(parsed.body), path.dirname(sourcePath), collectionSlug);
   const outputFrontmatter = toFrontmatter({
     title: noteTitle,
     slug: collectionSlug,
     description: noteDescription,
     date: parsed.data.date,
-    draft: parsed.data.draft ?? false,
+    status: noteStatus,
     topic: topic?.title,
     topicSlug: topic?.slug,
     parentSlug: topic?.parentSlug,
@@ -189,7 +190,7 @@ for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
     title: noteTitle,
     summary: noteDescription,
     description: noteDescription,
-    draft: parsed.data.draft ?? false,
+    status: noteStatus,
     sourcePath: sourceRelativePath,
     updatedAt: parsed.data.date || undefined
   };

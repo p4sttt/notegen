@@ -91,9 +91,43 @@ Expected conventions:
 - a topic directory must contain `_index.md`
 - `_index.md` may contain frontmatter such as `title`, `slug`, `draft`, `description`
 - note files may be Markdown (`.md`) or Jupyter notebooks (`.ipynb`)
-- Markdown note files may contain frontmatter such as `title`, `slug`, `date`, `draft`
+- Markdown note files may contain frontmatter such as `title`, `slug`, `date`, `status`
+- note `status` values are `draft`, `in-progress`, or `done`; legacy `draft: true` maps to `status: draft`, and legacy `draft: false` maps to `status: done`
 - Jupyter notebooks are converted during `npm run sync:vault`: markdown cells become page Markdown, code cells become syntax-highlighted code blocks, and supported outputs are rendered as HTML, text blocks, or copied image assets
+- Jupyter notebooks may define note metadata through `notebook.metadata.notegen` or through YAML frontmatter in the first markdown cell
 - relative assets should be referenced like `![desc](./assets/file.png)`
+
+Notebook metadata example:
+
+```json
+{
+  "metadata": {
+    "notegen": {
+      "title": "Notebook Page Title",
+      "slug": "notebook-page",
+      "description": "Short page description.",
+      "date": "2026-05-14",
+      "status": "in-progress"
+    }
+  }
+}
+```
+
+Equivalent first markdown cell:
+
+```md
+---
+title: "Notebook Page Title"
+slug: "notebook-page"
+description: "Short page description."
+date: "2026-05-14"
+status: "in-progress"
+---
+
+# Notebook content starts here
+```
+
+If both are present, first-cell frontmatter overrides `notebook.metadata.notegen`. If neither defines `title`, `notegen` uses the first `# Heading` in a markdown cell, then falls back to the filename.
 
 ## Site Configuration
 
@@ -103,13 +137,15 @@ Each notes repository can override frontend text by adding `notegen.config.json`
 {
   "changelogPath": "changelog.json",
   "siteText": {
-    "brand": "pig-ai articles",
-    "heroTitle": "pig-ai articles",
     "ru": {
+      "brand": "Статьи pig-ai",
+      "heroTitle": "Статьи pig-ai",
       "metaDescription": "Статьи и заметки pig-ai.",
       "heroBody": "Материалы, заметки и длинные тексты."
     },
     "en": {
+      "brand": "pig-ai articles",
+      "heroTitle": "pig-ai articles",
       "metaDescription": "pig-ai articles and notes.",
       "heroBody": "Articles, notes, and long-form writing."
     }

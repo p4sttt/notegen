@@ -3,7 +3,7 @@ function escapeSingleQuotes(input) {
 }
 
 function renderNote(note, indent = "  ") {
-  return `${indent}{ slug: '${escapeSingleQuotes(note.slug)}', collectionSlug: '${escapeSingleQuotes(note.collectionSlug)}', title: '${escapeSingleQuotes(note.title)}', summary: '${escapeSingleQuotes(note.summary ?? "")}', description: '${escapeSingleQuotes(note.description ?? "")}', draft: ${note.draft ? "true" : "false"}, sourcePath: '${escapeSingleQuotes(note.sourcePath ?? "")}', updatedAt: '${escapeSingleQuotes(note.updatedAt ?? "")}' }`;
+  return `${indent}{ slug: '${escapeSingleQuotes(note.slug)}', collectionSlug: '${escapeSingleQuotes(note.collectionSlug)}', title: '${escapeSingleQuotes(note.title)}', summary: '${escapeSingleQuotes(note.summary ?? "")}', description: '${escapeSingleQuotes(note.description ?? "")}', status: '${escapeSingleQuotes(note.status ?? "done")}', sourcePath: '${escapeSingleQuotes(note.sourcePath ?? "")}', updatedAt: '${escapeSingleQuotes(note.updatedAt ?? "")}' }`;
 }
 
 export function renderTopicsDataFile(topics, topLevelNotes) {
@@ -14,7 +14,7 @@ export function renderTopicsDataFile(topics, topLevelNotes) {
     "  title: string;",
     "  summary?: string;",
     "  description?: string;",
-    "  draft?: boolean;",
+    "  status: 'draft' | 'in-progress' | 'done';",
     "  sourcePath?: string;",
     "  updatedAt?: string;",
     "};",

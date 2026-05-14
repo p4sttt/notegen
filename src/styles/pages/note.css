@@ -35,6 +35,28 @@
   letter-spacing: -0.025em;
 }
 
+.note-status-line {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.note-status-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0 0.68rem;
+  border: 1px solid color-mix(in srgb, #d97706 24%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, #f59e0b 7%, var(--surface-strong));
+  color: color-mix(in srgb, #b45309 46%, var(--text-muted));
+  font-size: 0.76rem;
+  font-weight: 650;
+  line-height: 1;
+}
+
 .note-backline {
   margin-bottom: 2rem;
   color: var(--text-soft);
