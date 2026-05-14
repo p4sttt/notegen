@@ -29,7 +29,13 @@ function formatTimestamp(timestamp: string) {
 }
 ---
 
-<BaseLayout title={`${t.changelog} | ${copy.brand}`} description={copy.metaDescription}>
+<BaseLayout
+  title={`${t.changelog} | ${copy.brand}`}
+  description={copy.metaDescription}
+  titleI18nKey="changelog"
+  titleSuffixI18nKey="brand"
+  descriptionI18nKey="metaDescription"
+>
   <section class="home-panel changelog-shell">
     <header class="hero home-panel-section">
       <div class="hero-kicker">
@@ -47,7 +53,7 @@ function formatTimestamp(timestamp: string) {
       {
         changelog.length === 0 ? (
           <div class="empty-state">
-            <p>{t.changelogEmpty}</p>
+            <p data-i18n="changelogEmpty">{t.changelogEmpty}</p>
           </div>
         ) : (
           changelog.map((event) => {
@@ -60,15 +66,15 @@ function formatTimestamp(timestamp: string) {
             return (
               <article class={`changelog-event changelog-event-${event.action}`}>
                 <div class="changelog-event-main">
-                  <span class="changelog-action">{t.changelogActions[event.action]}</span>
+                  <span class="changelog-action" data-i18n={`changelogActions.${event.action}`}>{t.changelogActions[event.action]}</span>
                   <h2>{title}</h2>
                   <p>
-                    <span>{t.changelogKinds[event.kind]}</span>
+                    <span data-i18n={`changelogKinds.${event.kind}`}>{t.changelogKinds[event.kind]}</span>
                     {event.topic ? <span>{event.topic}</span> : null}
                     {event.oldPath ? <span>{event.oldPath} -> {event.path}</span> : <span>{event.path}</span>}
                   </p>
                 </div>
-                <time datetime={event.timestamp}>{formatTimestamp(event.timestamp)}</time>
+                <time datetime={event.timestamp} data-i18n-datetime={event.timestamp}>{formatTimestamp(event.timestamp)}</time>
               </article>
             );
           })

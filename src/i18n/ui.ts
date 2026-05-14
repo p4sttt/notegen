@@ -52,7 +52,7 @@ type UIStrings = {
 export const ui: Record<Locale, UIStrings> = {
   ru: {
     home: "Главная",
-    topics: "Топики",
+    topics: "Разделы",
     notes: "Заметки",
     drafts: "Черновики",
     inProgress: "in-progress",
@@ -67,7 +67,7 @@ export const ui: Record<Locale, UIStrings> = {
     },
     changelogKinds: {
       note: "заметка",
-      topic: "топик",
+      topic: "раздел",
       asset: "ассет",
       other: "объект"
     },

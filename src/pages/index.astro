@@ -18,7 +18,7 @@ const rootTopics = visibleTopics.filter((topic) => !topic.parentSlug);
 const visibleTopLevelNotes = topLevelNotes.filter(isPublishedNote);
 ---
 
-<BaseLayout title={copy.brand} description={copy.metaDescription}>
+<BaseLayout title={copy.brand} description={copy.metaDescription} titleI18nKey="brand" descriptionI18nKey="metaDescription">
   <div class="home-panel">
     <Hero
       title={copy.heroTitle}
@@ -37,15 +37,22 @@ const visibleTopLevelNotes = topLevelNotes.filter(isPublishedNote);
       {
         rootTopics.length === 0 ? (
           <div class="empty-state">
-            <p>{t.empty}</p>
+            <p data-i18n="empty">{t.empty}</p>
           </div>
         ) : (
           <div class="entity-grid">
-            {rootTopics.map((topic) => (
+            {rootTopics.map((topic) => {
+              const notesCount = getTopicNotesCount(topic, visibleTopics, includeDrafts);
+              return (
               <EntityCard title={topic.title} summary={topic.description || topic.summary} href={`${baseUrl}${topic.slug}/?lang=${locale}`}>
-                <Fragment slot="meta">{formatNotesCount(locale, getTopicNotesCount(topic, visibleTopics, includeDrafts))}</Fragment>
+                <Fragment slot="meta">
+                  <span data-i18n-plural="notesCount" data-i18n-count={notesCount}>
+                    {formatNotesCount(locale, notesCount)}
+                  </span>
+                </Fragment>
               </EntityCard>
-            ))}
+              );
+            })}
           </div>
         )
       }
@@ -57,7 +64,7 @@ const visibleTopLevelNotes = topLevelNotes.filter(isPublishedNote);
       {
         visibleTopLevelNotes.length === 0 ? (
           <div class="empty-state">
-            <p>{t.empty}</p>
+            <p data-i18n="empty">{t.empty}</p>
           </div>
         ) : (
           <div class="entity-grid">
@@ -67,6 +74,7 @@ const visibleTopLevelNotes = topLevelNotes.filter(isPublishedNote);
                 summary={note.summary}
                 href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`}
                 badgeLabel={isInProgressNote(note) ? t.inProgress : undefined}
+                badgeI18nKey={isInProgressNote(note) ? "inProgress" : undefined}
               >
                 <Fragment slot="meta">{note.updatedAt ?? note.sourcePath}</Fragment>
               </EntityCard>
