@@ -7,8 +7,10 @@ type UIStrings = {
   topics: string;
   notes: string;
   drafts: string;
+  draftsEyebrow: string;
   inProgress: string;
   changelog: string;
+  changelogEyebrow: string;
   changelogEmpty: string;
   changelogActions: {
     created: string;
@@ -55,8 +57,10 @@ export const ui: Record<Locale, UIStrings> = {
     topics: "Разделы",
     notes: "Заметки",
     drafts: "Черновики",
+    draftsEyebrow: "В работе",
     inProgress: "in-progress",
     changelog: "Изменения",
+    changelogEyebrow: "Журнал",
     changelogEmpty: "Изменения пока не добавлены.",
     changelogActions: {
       created: "создано",
@@ -101,8 +105,10 @@ export const ui: Record<Locale, UIStrings> = {
     topics: "Topics",
     notes: "Notes",
     drafts: "Drafts",
+    draftsEyebrow: "In progress",
     inProgress: "in-progress",
     changelog: "Changelog",
+    changelogEyebrow: "History",
     changelogEmpty: "No changes have been added yet.",
     changelogActions: {
       created: "created",
