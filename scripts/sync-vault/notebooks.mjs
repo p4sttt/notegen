@@ -1,6 +1,7 @@
 import { writeFileSync } from "node:fs";
 import path from "node:path";
 import { ensureParentDir } from "./fs-utils.mjs";
+import { parseFrontmatter } from "./markdown.mjs";
 
 function asNotebookText(value) {
   return Array.isArray(value) ? value.join("") : String(value ?? "");
@@ -40,6 +41,45 @@ export function notebookTitle(notebook, fallbackTitle) {
   }
 
   return fallbackTitle;
+}
+
+function isRecord(value) {
+  return value && typeof value === "object" && !Array.isArray(value);
+}
+
+function pickNotebookNoteMetadata(notebook) {
+  const metadata = isRecord(notebook.metadata) ? notebook.metadata : {};
+  const notegenMetadata = isRecord(metadata.notegen) ? metadata.notegen : {};
+  const scopedNotegenMetadata = isRecord(notegenMetadata.note) ? notegenMetadata.note : notegenMetadata;
+  const rootMetadata = {};
+
+  for (const key of ["title", "slug", "description", "date", "draft", "status"]) {
+    if (metadata[key] !== undefined) {
+      rootMetadata[key] = metadata[key];
+    }
+  }
+
+  return {
+    ...rootMetadata,
+    ...scopedNotegenMetadata
+  };
+}
+
+export function notebookNoteFrontmatter(notebook, markdown, fallbackTitle) {
+  const parsedMarkdown = parseFrontmatter(markdown);
+  const metadata = pickNotebookNoteMetadata(notebook);
+  const data = {
+    ...metadata,
+    ...parsedMarkdown.data
+  };
+
+  return {
+    data: {
+      ...data,
+      title: data.title || notebookTitle(notebook, fallbackTitle)
+    },
+    body: parsedMarkdown.body
+  };
 }
 
 function getNotebookLanguage(notebook) {
