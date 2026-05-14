@@ -13,8 +13,8 @@ export default defineConfig({
     rehypePlugins: [rehypeKatex],
     shikiConfig: {
       themes: {
-        light: "github-light",
-        dark: "github-dark"
+        light: "light-plus",
+        dark: "gruvbox-dark-medium"
       },
       defaultColor: false
     }
