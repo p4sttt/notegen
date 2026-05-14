@@ -7,7 +7,7 @@ const locale = Astro.url ? getLocaleFromUrl(Astro.url) : defaultLocale;
 const copy = siteText[locale];
 ---
 
-<BaseLayout title={`404 | ${copy.brand}`} description="Page not found">
+<BaseLayout title={`404 | ${copy.brand}`} description="Page not found" titlePrefix="404" titleSuffixI18nKey="brand">
   <section class="section-block home-panel home-panel-section">
     <div class="empty-state">
       <p>Страница не найдена.</p>

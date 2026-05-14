@@ -89,3 +89,33 @@
   --accent-rgb: 161, 79, 121;
   --accent-soft: rgba(161, 79, 121, 0.12);
 }
+
+:root[data-theme="dark"][data-accent="violet"] {
+  --accent: #a99cff;
+  --accent-rgb: 169, 156, 255;
+  --accent-soft: rgba(169, 156, 255, 0.13);
+}
+
+:root[data-theme="dark"][data-accent="teal"] {
+  --accent: #56c7b8;
+  --accent-rgb: 86, 199, 184;
+  --accent-soft: rgba(86, 199, 184, 0.13);
+}
+
+:root[data-theme="dark"][data-accent="blue"] {
+  --accent: #79a8ff;
+  --accent-rgb: 121, 168, 255;
+  --accent-soft: rgba(121, 168, 255, 0.14);
+}
+
+:root[data-theme="dark"][data-accent="olive"] {
+  --accent: #b8c96c;
+  --accent-rgb: 184, 201, 108;
+  --accent-soft: rgba(184, 201, 108, 0.13);
+}
+
+:root[data-theme="dark"][data-accent="rose"] {
+  --accent: #f09ac3;
+  --accent-rgb: 240, 154, 195;
+  --accent-soft: rgba(240, 154, 195, 0.13);
+}

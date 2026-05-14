@@ -5,7 +5,6 @@ import { topics, topLevelNotes } from "../data/generated/topics";
 import { isInProgressNote } from "../entities/topic/model";
 import { defaultLocale, getLocaleFromUrl, ui } from "../i18n/ui";
 import EntityCard from "../shared/ui/EntityCard.astro";
-import SectionBlock from "../widgets/section-block/SectionBlock.astro";
 
 const locale = Astro.url ? getLocaleFromUrl(Astro.url) : defaultLocale;
 const t = ui[locale];
@@ -14,13 +13,31 @@ const baseUrl = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_UR
 const inProgressNotes = [...topics.flatMap((topic) => topic.notes), ...topLevelNotes].filter(isInProgressNote);
 ---
 
-<BaseLayout title={`${t.drafts} | ${copy.brand}`} description={copy.metaDescription}>
+<BaseLayout
+  title={`${t.drafts} | ${copy.brand}`}
+  description={copy.metaDescription}
+  titleI18nKey="drafts"
+  titleSuffixI18nKey="brand"
+  descriptionI18nKey="metaDescription"
+>
   <div class="home-panel">
-    <SectionBlock id="drafts" title={t.drafts} count={inProgressNotes.length} i18nKey="drafts">
+    <header class="hero home-panel-section">
+      <div class="hero-kicker">
+        <p class="eyebrow" data-i18n="draftsEyebrow">{t.draftsEyebrow}</p>
+        <span class="hero-tag">{inProgressNotes.length}</span>
+      </div>
+      <div class="hero-copy-block">
+        <h1 data-i18n="drafts">{t.drafts}</h1>
+      </div>
+    </header>
+
+    <hr class="section-divider" />
+
+    <section id="drafts" class="section-block home-panel-section">
       {
         inProgressNotes.length === 0 ? (
           <div class="empty-state">
-            <p>{t.empty}</p>
+            <p data-i18n="empty">{t.empty}</p>
           </div>
         ) : (
           <div class="entity-grid">
@@ -30,6 +47,7 @@ const inProgressNotes = [...topics.flatMap((topic) => topic.notes), ...topLevelN
                 summary={note.summary}
                 href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`}
                 badgeLabel={t.inProgress}
+                badgeI18nKey="inProgress"
               >
                 <Fragment slot="meta">{note.updatedAt || note.sourcePath}</Fragment>
               </EntityCard>
@@ -37,6 +55,6 @@ const inProgressNotes = [...topics.flatMap((topic) => topic.notes), ...topLevelN
           </div>
         )
       }
-    </SectionBlock>
+    </section>
   </div>
 </BaseLayout>

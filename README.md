@@ -137,13 +137,15 @@ Each notes repository can override frontend text by adding `notegen.config.json`
 {
   "changelogPath": "changelog.json",
   "siteText": {
-    "brand": "pig-ai articles",
-    "heroTitle": "pig-ai articles",
     "ru": {
+      "brand": "Статьи pig-ai",
+      "heroTitle": "Статьи pig-ai",
       "metaDescription": "Статьи и заметки pig-ai.",
       "heroBody": "Материалы, заметки и длинные тексты."
     },
     "en": {
+      "brand": "pig-ai articles",
+      "heroTitle": "pig-ai articles",
       "metaDescription": "pig-ai articles and notes.",
       "heroBody": "Articles, notes, and long-form writing."
     }

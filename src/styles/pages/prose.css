@@ -258,6 +258,26 @@
   text-decoration: var(--shiki-dark-text-decoration, inherit);
 }
 
+:root:not([data-accent="white"]) .astro-code span[style*="--shiki-light:#AF00DB"],
+:root:not([data-accent="white"]) .astro-code span[style*="--shiki-light:#0000FF"] {
+  color: color-mix(in srgb, var(--accent) 46%, var(--shiki-light, inherit));
+}
+
+:root:not([data-accent="white"]) .astro-code span[style*="--shiki-light:#795E26"],
+:root:not([data-accent="white"]) .astro-code span[style*="--shiki-light:#001080"] {
+  color: color-mix(in srgb, var(--accent) 34%, var(--shiki-light, inherit));
+}
+
+:root[data-theme="dark"]:not([data-accent="white"]) .astro-code span[style*="--shiki-dark:#FB4934"],
+:root[data-theme="dark"]:not([data-accent="white"]) .astro-code span[style*="--shiki-dark:#8EC07C"] {
+  color: color-mix(in srgb, var(--accent) 46%, var(--shiki-dark, inherit));
+}
+
+:root[data-theme="dark"]:not([data-accent="white"]) .astro-code span[style*="--shiki-dark:#FE8019"],
+:root[data-theme="dark"]:not([data-accent="white"]) .astro-code span[style*="--shiki-dark:#83A598"] {
+  color: color-mix(in srgb, var(--accent) 34%, var(--shiki-dark, inherit));
+}
+
 .prose blockquote {
   padding-left: 1rem;
   border-left: 2px solid rgba(var(--accent-rgb), 0.35);

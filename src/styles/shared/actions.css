@@ -146,12 +146,15 @@
 .swatch {
   appearance: none;
   position: relative;
-  width: 2.35rem;
-  height: 2.35rem;
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface-strong);
   cursor: pointer;
+  line-height: 0;
   transition:
     transform 180ms ease,
     border-color 180ms ease,
@@ -161,22 +164,26 @@
 .swatch::before {
   content: "";
   position: absolute;
-  inset: 0.35rem;
+  top: 50%;
+  left: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
   border-radius: inherit;
   background: var(--swatch-color);
+  transform: translate(-50%, -50%);
 }
 
 .swatch::after {
   content: "";
   position: absolute;
-  inset: -0.2rem;
+  inset: -0.25rem;
   border-radius: inherit;
   border: 1px solid transparent;
   transition: border-color 180ms ease;
 }
 
 .swatch[data-accent-value="white"] {
-  --swatch-color: #f5f1e7;
+  --swatch-color: #1a1a1a;
 }
 
 .swatch[data-accent-value="violet"] {
@@ -197,6 +204,30 @@
 
 .swatch[data-accent-value="rose"] {
   --swatch-color: #a14f79;
+}
+
+:root[data-theme="dark"] .swatch[data-accent-value="white"] {
+  --swatch-color: #f4f0e8;
+}
+
+:root[data-theme="dark"] .swatch[data-accent-value="violet"] {
+  --swatch-color: #a99cff;
+}
+
+:root[data-theme="dark"] .swatch[data-accent-value="teal"] {
+  --swatch-color: #56c7b8;
+}
+
+:root[data-theme="dark"] .swatch[data-accent-value="blue"] {
+  --swatch-color: #79a8ff;
+}
+
+:root[data-theme="dark"] .swatch[data-accent-value="olive"] {
+  --swatch-color: #b8c96c;
+}
+
+:root[data-theme="dark"] .swatch[data-accent-value="rose"] {
+  --swatch-color: #f09ac3;
 }
 
 .swatch[aria-pressed="true"] {
