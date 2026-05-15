@@ -196,10 +196,182 @@
   background: var(--surface-strong);
 }
 
+.prose pre,
+.prose table,
+.prose .katex-display,
+.prose :not(.katex-display) > .katex,
+.prose .notebook-output-html {
+  scrollbar-width: thin;
+  scrollbar-color:
+    transparent
+    transparent;
+}
+
+.prose pre:hover,
+.prose pre:focus-within,
+.prose table:hover,
+.prose table:focus-within,
+.prose .katex-display:hover,
+.prose .katex-display:focus-within,
+.prose :not(.katex-display) > .katex:hover,
+.prose :not(.katex-display) > .katex:focus-within,
+.prose .notebook-output-html:hover,
+.prose .notebook-output-html:focus-within {
+  scrollbar-color:
+    color-mix(in srgb, var(--accent) 34%, transparent)
+    transparent;
+}
+
+.prose pre::-webkit-scrollbar,
+.prose table::-webkit-scrollbar,
+.prose .katex-display::-webkit-scrollbar,
+.prose :not(.katex-display) > .katex::-webkit-scrollbar,
+.prose .notebook-output-html::-webkit-scrollbar {
+  width: 0.28rem;
+  height: 0.28rem;
+}
+
+.prose pre::-webkit-scrollbar-button,
+.prose table::-webkit-scrollbar-button,
+.prose .katex-display::-webkit-scrollbar-button,
+.prose :not(.katex-display) > .katex::-webkit-scrollbar-button,
+.prose .notebook-output-html::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.prose pre::-webkit-scrollbar-corner,
+.prose table::-webkit-scrollbar-corner,
+.prose .katex-display::-webkit-scrollbar-corner,
+.prose :not(.katex-display) > .katex::-webkit-scrollbar-corner,
+.prose .notebook-output-html::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.prose pre::-webkit-scrollbar-track,
+.prose table::-webkit-scrollbar-track,
+.prose .katex-display::-webkit-scrollbar-track,
+.prose :not(.katex-display) > .katex::-webkit-scrollbar-track,
+.prose .notebook-output-html::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: transparent;
+}
+
+.prose pre::-webkit-scrollbar-thumb,
+.prose table::-webkit-scrollbar-thumb,
+.prose .katex-display::-webkit-scrollbar-thumb,
+.prose :not(.katex-display) > .katex::-webkit-scrollbar-thumb,
+.prose .notebook-output-html::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: transparent;
+}
+
+.prose pre:hover::-webkit-scrollbar-track,
+.prose pre:focus-within::-webkit-scrollbar-track,
+.prose table:hover::-webkit-scrollbar-track,
+.prose table:focus-within::-webkit-scrollbar-track,
+.prose .katex-display:hover::-webkit-scrollbar-track,
+.prose .katex-display:focus-within::-webkit-scrollbar-track,
+.prose :not(.katex-display) > .katex:hover::-webkit-scrollbar-track,
+.prose :not(.katex-display) > .katex:focus-within::-webkit-scrollbar-track,
+.prose .notebook-output-html:hover::-webkit-scrollbar-track,
+.prose .notebook-output-html:focus-within::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.prose pre:hover::-webkit-scrollbar-thumb,
+.prose pre:focus-within::-webkit-scrollbar-thumb,
+.prose table:hover::-webkit-scrollbar-thumb,
+.prose table:focus-within::-webkit-scrollbar-thumb,
+.prose .katex-display:hover::-webkit-scrollbar-thumb,
+.prose .katex-display:focus-within::-webkit-scrollbar-thumb,
+.prose :not(.katex-display) > .katex:hover::-webkit-scrollbar-thumb,
+.prose :not(.katex-display) > .katex:focus-within::-webkit-scrollbar-thumb,
+.prose .notebook-output-html:hover::-webkit-scrollbar-thumb,
+.prose .notebook-output-html:focus-within::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--accent) 38%, transparent);
+}
+
+.prose pre::-webkit-scrollbar-thumb:hover,
+.prose table::-webkit-scrollbar-thumb:hover,
+.prose .katex-display::-webkit-scrollbar-thumb:hover,
+.prose :not(.katex-display) > .katex::-webkit-scrollbar-thumb:hover,
+.prose .notebook-output-html::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--accent) 54%, transparent);
+}
+
 .prose pre code {
   padding: 0;
   border: 0;
   background: transparent;
+}
+
+.prose table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  border-collapse: collapse;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-strong) 62%, transparent);
+}
+
+.prose thead {
+  background: color-mix(in srgb, var(--surface-strong) 78%, var(--text) 3%);
+}
+
+.prose th,
+.prose td {
+  min-width: 8rem;
+  padding: 0.65rem 0.8rem;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  color: var(--text-muted);
+  text-align: left;
+  vertical-align: top;
+}
+
+.prose th {
+  color: color-mix(in srgb, var(--text) 92%, var(--text-muted));
+  font-weight: 650;
+}
+
+.prose th:last-child,
+.prose td:last-child {
+  border-right: 0;
+}
+
+.prose tr:last-child td {
+  border-bottom: 0;
+}
+
+.prose .katex-display {
+  max-width: 100%;
+  margin: 1.25rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.2rem;
+}
+
+.prose :not(.katex-display) > .katex {
+  display: inline-block;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  vertical-align: middle;
+}
+
+.prose .katex-display.is-overflowing-x {
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 1.35rem), transparent);
+  mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 1.35rem), transparent);
+}
+
+.prose :not(.katex-display) > .katex.is-overflowing-x {
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 1rem), transparent);
+  mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 1rem), transparent);
 }
 
 .prose .notebook-output {
