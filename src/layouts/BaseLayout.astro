@@ -171,6 +171,17 @@ const pageI18n = {
         url.searchParams.set("lang", locale);
         element.setAttribute("href", `${url.pathname}${url.search}${url.hash}`);
       });
+
+      const overflowTargets = Array.from(document.querySelectorAll(".prose .katex-display, .prose :not(.katex-display) > .katex"));
+      const updateOverflowState = () => {
+        overflowTargets.forEach((element) => {
+          element.classList.toggle("is-overflowing-x", element.scrollWidth > element.clientWidth + 1);
+        });
+      };
+
+      updateOverflowState();
+      window.addEventListener("resize", updateOverflowState, { passive: true });
+      document.fonts?.ready?.then(updateOverflowState);
     </script>
   </body>
 </html>
