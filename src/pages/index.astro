@@ -1,9 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { siteText } from "../config/site";
-import { topics, topLevelNotes } from "../data/generated/topics";
+import { topics, topLevelDatabases, topLevelNotes } from "../data/generated/topics";
 import { getTopicNotesCount, isInProgressNote, isPublishedNote } from "../entities/topic/model";
-import { defaultLocale, formatNotesCount, getLocaleFromUrl, ui } from "../i18n/ui";
+import { defaultLocale, formatDatabaseRowsCount, formatNotesCount, getLocaleFromUrl, ui } from "../i18n/ui";
 import EntityCard from "../shared/ui/EntityCard.astro";
 import Hero from "../widgets/hero/Hero.astro";
 import SectionBlock from "../widgets/section-block/SectionBlock.astro";
@@ -16,6 +16,7 @@ const includeDrafts = import.meta.env.DEV;
 const visibleTopics = includeDrafts ? topics : topics.filter((topic) => !topic.draft);
 const rootTopics = visibleTopics.filter((topic) => !topic.parentSlug);
 const visibleTopLevelNotes = topLevelNotes.filter(isPublishedNote);
+const visibleTopLevelDatabases = topLevelDatabases;
 ---
 
 <BaseLayout title={copy.brand} description={copy.metaDescription} titleI18nKey="brand" descriptionI18nKey="metaDescription">
@@ -77,6 +78,30 @@ const visibleTopLevelNotes = topLevelNotes.filter(isPublishedNote);
                 badgeI18nKey={isInProgressNote(note) ? "inProgress" : undefined}
               >
                 <Fragment slot="meta">{note.updatedAt ?? note.sourcePath}</Fragment>
+              </EntityCard>
+            ))}
+          </div>
+        )
+      }
+    </SectionBlock>
+
+    <hr class="section-divider" />
+
+    <SectionBlock id="databases" title={t.databases} count={visibleTopLevelDatabases.length} i18nKey="databases">
+      {
+        visibleTopLevelDatabases.length === 0 ? (
+          <div class="empty-state">
+            <p data-i18n="empty">{t.empty}</p>
+          </div>
+        ) : (
+          <div class="entity-grid">
+            {visibleTopLevelDatabases.map((database) => (
+              <EntityCard
+                title={database.title}
+                summary={database.summary}
+                href={`${baseUrl}${database.collectionSlug}/?lang=${locale}`}
+              >
+                <Fragment slot="meta">{formatDatabaseRowsCount(locale, database.rows.length)}</Fragment>
               </EntityCard>
             ))}
           </div>
