@@ -7,6 +7,7 @@ Static notes site generated from a private Obsidian vault.
 - imports topics from vault directories that contain `_index.md`
 - imports note pages from markdown files inside each topic directory
 - imports Jupyter notebooks (`.ipynb`) as note pages
+- imports CSV files (`.csv`) as interactive database pages
 - copies relative assets from `./assets/...`
 - builds a static Astro site with light/dark themes
 - renders LaTeX via KaTeX
@@ -37,6 +38,7 @@ scripts/
 - `ignore-rules.mjs` parses `.notegenignore` and checks ignored paths
 - `markdown.mjs` parses frontmatter and prepares Markdown summaries/content
 - `notebooks.mjs` converts Jupyter notebooks into Markdown and output assets
+- `csv.mjs` parses CSV files and infers database column types
 - `assets.mjs` copies local assets and rewrites Markdown/HTML asset links
 - `changelog.mjs` parses changelog events and renders generated changelog data
 - `vault-files.mjs` walks the vault and resolves topic ancestry
@@ -79,9 +81,11 @@ Each topic is a directory in the vault:
 
 ```text
 vault/
+  database.csv
   optimization_methods/
     _index.md
     karush_kuhn-tucker.md
+    papers.csv
     assets/
       image.png
 ```
@@ -92,10 +96,28 @@ Expected conventions:
 - `_index.md` may contain frontmatter such as `title`, `slug`, `draft`, `description`
 - note files may be Markdown (`.md`) or Jupyter notebooks (`.ipynb`)
 - Markdown note files may contain frontmatter such as `title`, `slug`, `date`, `status`
+- CSV files (`.csv`) are imported as database pages; top-level CSV files appear on the home page, and CSV files inside a topic appear in that topic
 - note `status` values are `draft`, `in-progress`, or `done`; legacy `draft: true` maps to `status: draft`, and legacy `draft: false` maps to `status: done`
 - Jupyter notebooks are converted during `npm run sync:vault`: markdown cells become page Markdown, code cells become syntax-highlighted code blocks, and supported outputs are rendered as HTML, text blocks, or copied image assets
 - Jupyter notebooks may define note metadata through `notebook.metadata.notegen` or through YAML frontmatter in the first markdown cell
 - relative assets should be referenced like `![desc](./assets/file.png)`
+
+CSV database pages:
+
+- use the first row as column headers
+- support comma, semicolon, and tab delimiters
+- infer column types as `text`, `number`, `date`, or `boolean`
+- render boolean values as compact checked/unchecked controls
+- include search, per-column filters, column sorting, column visibility controls, and visible-row counts
+- use the filename as the database title and slug
+
+CSV example:
+
+```csv
+title;year;read
+Attention Is All You Need;2017;true
+Scaling Laws;2020;false
+```
 
 Notebook metadata example:
 
@@ -351,7 +373,7 @@ Event fields:
 
 - `timestamp`: ISO date string, for example `2026-05-06T22:40:00Z`
 - `action`: `created`, `updated`, `deleted`, `renamed`; unknown values become `changed`
-- `kind`: `note`, `topic`, `asset`; unknown or missing values become `other`
+- `kind`: `note`, `topic`, `database`, `asset`; unknown or missing values become `other`
 - `path`: current path relative to the vault root
 - `oldPath`: previous path for renamed files
 - `title`: optional display title; if omitted, `notegen` tries to use the current generated note or topic title
