@@ -49,6 +49,7 @@ const pageI18n = {
         <a href={`${baseUrl}?lang=${locale}`} class="brand" data-lang-link data-i18n="brand">{copy.brand}</a>
         <nav class="top-nav">
           <a href={`${baseUrl}?lang=${locale}#topics`} data-lang-link data-i18n="topics">{ui[locale].topics}</a>
+          <a href={`${baseUrl}?lang=${locale}#databases`} data-lang-link data-i18n="databases">{ui[locale].databases}</a>
           <a href={`${baseUrl}drafts/?lang=${locale}`} data-lang-link data-i18n="drafts">{ui[locale].drafts}</a>
           <a href={`${baseUrl}changelog/?lang=${locale}`} data-lang-link data-i18n="changelog">{ui[locale].changelog}</a>
         </nav>
@@ -171,6 +172,17 @@ const pageI18n = {
         url.searchParams.set("lang", locale);
         element.setAttribute("href", `${url.pathname}${url.search}${url.hash}`);
       });
+
+      const overflowTargets = Array.from(document.querySelectorAll(".prose .katex-display, .prose :not(.katex-display) > .katex"));
+      const updateOverflowState = () => {
+        overflowTargets.forEach((element) => {
+          element.classList.toggle("is-overflowing-x", element.scrollWidth > element.clientWidth + 1);
+        });
+      };
+
+      updateOverflowState();
+      window.addEventListener("resize", updateOverflowState, { passive: true });
+      document.fonts?.ready?.then(updateOverflowState);
     </script>
   </body>
 </html>

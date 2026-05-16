@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } 
 import path from "node:path";
 import { createAssetTools } from "./sync-vault/assets.mjs";
 import { defaultChangelogPath, readChangelogEvents, renderChangelogDataFile } from "./sync-vault/changelog.mjs";
+import { parseCsvDatabase } from "./sync-vault/csv.mjs";
 import { renderTopicsDataFile } from "./sync-vault/data-file.mjs";
 import { readEnvValue } from "./sync-vault/env.mjs";
 import { ensureParentDir } from "./sync-vault/fs-utils.mjs";
@@ -16,7 +17,7 @@ import {
 import { createNotebookConverter, notebookNoteFrontmatter } from "./sync-vault/notebooks.mjs";
 import { contentFileName, normalizeSiteBase, relativePathSegments, slugify, slugifyPath } from "./sync-vault/paths.mjs";
 import { readSiteConfig, resolveVaultConfigPath } from "./sync-vault/site-config.mjs";
-import { findNearestTopic, listDirectories, listNoteFiles } from "./sync-vault/vault-files.mjs";
+import { findNearestTopic, listDatabaseFiles, listDirectories, listNoteFiles } from "./sync-vault/vault-files.mjs";
 
 const vaultPath = process.env.VAULT_PATH || readEnvValue("VAULT_PATH");
 const siteBase = process.env.ASTRO_BASE || readEnvValue("ASTRO_BASE") || "/notegen";
@@ -67,8 +68,11 @@ mkdirSync(topicsDataDir, { recursive: true });
 
 const topics = [];
 const topLevelNotes = [];
+const topLevelDatabases = [];
 let generatedNotesCount = 0;
+let generatedDatabasesCount = 0;
 const topicBySourcePath = new Map();
+const usedCollectionSlugs = new Set();
 
 function normalizeNoteStatus(data) {
   if (data.status === "draft" || data.status === "in-progress" || data.status === "done") {
@@ -128,11 +132,29 @@ for (const topicPath of topicDirectories) {
     draft: parsedIndex.data.draft ?? false,
     parentSlug: parentTopic?.slug,
     sourcePath: sourceRelativePath,
-    notes: []
+    notes: [],
+    databases: []
   };
 
   topics.push(topic);
   topicBySourcePath.set(sourceRelativePath, topic);
+  usedCollectionSlugs.add(topicSlug);
+}
+
+function uniqueCollectionSlug(baseSlug) {
+  if (!usedCollectionSlugs.has(baseSlug)) {
+    usedCollectionSlugs.add(baseSlug);
+    return baseSlug;
+  }
+
+  let counter = 2;
+  while (usedCollectionSlugs.has(`${baseSlug}-${counter}`)) {
+    counter += 1;
+  }
+
+  const slug = `${baseSlug}-${counter}`;
+  usedCollectionSlugs.add(slug);
+  return slug;
 }
 
 for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
@@ -162,7 +184,7 @@ for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
 
   noteRelativeSegments[noteRelativeSegments.length - 1] = parsed.data.slug || originalName;
   const noteSlug = noteRelativeSegments.map(slugify).join("/");
-  const collectionSlug = topic ? `${topic.slug}/${noteSlug}` : noteSlug;
+  const collectionSlug = uniqueCollectionSlug(topic ? `${topic.slug}/${noteSlug}` : noteSlug);
   const noteTitle = parsed.data.title || originalName;
   const noteDescription = parsed.data.description || excerpt(parsed.body);
   const noteStatus = normalizeNoteStatus(parsed.data);
@@ -202,11 +224,60 @@ for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
   }
 }
 
-writeFileSync(topicsDataPath, renderTopicsDataFile(topics, topLevelNotes), "utf8");
+for (const sourcePath of listDatabaseFiles(resolvedVaultPath, isIgnoredPath)) {
+  const sourceRelativePath = path.relative(resolvedVaultPath, sourcePath);
+  const sourceRelativeDir = path.dirname(sourceRelativePath);
+  const topic = findNearestTopic(sourceRelativeDir, topicBySourcePath);
+  const isTopLevelDatabase = sourceRelativeDir === ".";
+
+  if (!topic && !isTopLevelDatabase) {
+    continue;
+  }
+
+  const raw = readFileSync(sourcePath, "utf8");
+  const databaseRelativePath = topic
+    ? path.relative(path.join(resolvedVaultPath, topic.sourcePath), sourcePath)
+    : sourceRelativePath;
+  const databaseRelativeSegments = relativePathSegments(databaseRelativePath.replace(/\.csv$/i, ""));
+  const originalName = databaseRelativeSegments.at(-1) || path.basename(sourcePath, ".csv");
+  databaseRelativeSegments[databaseRelativeSegments.length - 1] = originalName;
+
+  const databaseSlug = databaseRelativeSegments.map(slugify).join("/");
+  const collectionSlug = uniqueCollectionSlug(topic ? `${topic.slug}/${databaseSlug}` : databaseSlug);
+  const parsedDatabase = parseCsvDatabase(raw);
+  const rowCount = parsedDatabase.rows.length;
+  const columnCount = parsedDatabase.columns.length;
+  const databaseTitle = originalName;
+  const databaseDescription = `${rowCount} rows · ${columnCount} columns`;
+  const database = {
+    slug: databaseSlug,
+    collectionSlug,
+    title: databaseTitle,
+    summary: databaseDescription,
+    description: databaseDescription,
+    sourcePath: sourceRelativePath,
+    topic: topic?.title,
+    topicSlug: topic?.slug,
+    parentSlug: topic?.parentSlug,
+    columns: parsedDatabase.columns,
+    rows: parsedDatabase.rows
+  };
+
+  generatedDatabasesCount += 1;
+  if (topic) {
+    topic.databases.push(database);
+  } else {
+    topLevelDatabases.push(database);
+  }
+}
+
+writeFileSync(topicsDataPath, renderTopicsDataFile(topics, topLevelNotes, topLevelDatabases), "utf8");
 writeFileSync(
   changelogDataPath,
-  renderChangelogDataFile(readChangelogEvents(changelogPath), topics, topLevelNotes),
+  renderChangelogDataFile(readChangelogEvents(changelogPath), topics, topLevelNotes, topLevelDatabases),
   "utf8"
 );
 
-console.log(`Imported ${topics.length} topics and ${generatedNotesCount} notes from ${resolvedVaultPath}`);
+console.log(
+  `Imported ${topics.length} topics, ${generatedNotesCount} notes and ${generatedDatabasesCount} databases from ${resolvedVaultPath}`
+);

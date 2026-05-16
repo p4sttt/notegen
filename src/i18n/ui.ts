@@ -6,6 +6,8 @@ type UIStrings = {
   home: string;
   topics: string;
   notes: string;
+  databases: string;
+  database: string;
   drafts: string;
   draftsEyebrow: string;
   inProgress: string;
@@ -22,6 +24,7 @@ type UIStrings = {
   changelogKinds: {
     note: string;
     topic: string;
+    database: string;
     asset: string;
     other: string;
   };
@@ -40,7 +43,20 @@ type UIStrings = {
   menu: string;
   open: string;
   contents: string;
+  search: string;
+  filters: string;
+  sort: string;
+  columns: string;
+  reset: string;
+  allColumns: string;
+  visibleRows: string;
   notesCount: {
+    one: string;
+    few?: string;
+    many?: string;
+    other: string;
+  };
+  databaseRowsCount: {
     one: string;
     few?: string;
     many?: string;
@@ -56,6 +72,8 @@ export const ui: Record<Locale, UIStrings> = {
     home: "Главная",
     topics: "Разделы",
     notes: "Заметки",
+    databases: "Базы данных",
+    database: "База данных",
     drafts: "Черновики",
     draftsEyebrow: "В работе",
     inProgress: "in-progress",
@@ -72,6 +90,7 @@ export const ui: Record<Locale, UIStrings> = {
     changelogKinds: {
       note: "заметка",
       topic: "раздел",
+      database: "база данных",
       asset: "ассет",
       other: "объект"
     },
@@ -90,11 +109,24 @@ export const ui: Record<Locale, UIStrings> = {
     menu: "Параметры",
     open: "Открыть",
     contents: "Содержание",
+    search: "Поиск",
+    filters: "Фильтры",
+    sort: "Сортировка",
+    columns: "Колонки",
+    reset: "Сбросить",
+    allColumns: "Все колонки",
+    visibleRows: "Показано",
     notesCount: {
       one: "заметка",
       few: "заметки",
       many: "заметок",
       other: "заметки"
+    },
+    databaseRowsCount: {
+      one: "строка",
+      few: "строки",
+      many: "строк",
+      other: "строки"
     },
     sourceData: "Источник данных",
     empty: "Контент пока не импортирован.",
@@ -104,6 +136,8 @@ export const ui: Record<Locale, UIStrings> = {
     home: "Home",
     topics: "Topics",
     notes: "Notes",
+    databases: "Databases",
+    database: "Database",
     drafts: "Drafts",
     draftsEyebrow: "In progress",
     inProgress: "in-progress",
@@ -120,6 +154,7 @@ export const ui: Record<Locale, UIStrings> = {
     changelogKinds: {
       note: "note",
       topic: "topic",
+      database: "database",
       asset: "asset",
       other: "item"
     },
@@ -138,9 +173,20 @@ export const ui: Record<Locale, UIStrings> = {
     menu: "Controls",
     open: "Open",
     contents: "Contents",
+    search: "Search",
+    filters: "Filters",
+    sort: "Sort",
+    columns: "Columns",
+    reset: "Reset",
+    allColumns: "All columns",
+    visibleRows: "Showing",
     notesCount: {
       one: "note",
       other: "notes"
+    },
+    databaseRowsCount: {
+      one: "row",
+      other: "rows"
     },
     sourceData: "Source",
     empty: "Content has not been imported yet.",
@@ -156,6 +202,13 @@ export function getLocaleFromUrl(url: URL): Locale {
 export function formatNotesCount(locale: Locale, count: number): string {
   const category = new Intl.PluralRules(locale).select(count);
   const forms = ui[locale].notesCount;
+  const label = forms[category as keyof typeof forms] ?? forms.other;
+  return `${count} ${label}`;
+}
+
+export function formatDatabaseRowsCount(locale: Locale, count: number): string {
+  const category = new Intl.PluralRules(locale).select(count);
+  const forms = ui[locale].databaseRowsCount;
   const label = forms[category as keyof typeof forms] ?? forms.other;
   return `${count} ${label}`;
 }
