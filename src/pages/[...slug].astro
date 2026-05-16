@@ -2,11 +2,12 @@
 import { getCollection, render } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { siteText } from "../config/site";
-import { topics, topLevelNotes } from "../data/generated/topics";
+import { topics, topLevelDatabases, topLevelNotes } from "../data/generated/topics";
 import { getTopicNotesCount, isInProgressNote, isPublishedNote } from "../entities/topic/model";
-import { defaultLocale, formatNotesCount, getLocaleFromUrl, ui } from "../i18n/ui";
+import { defaultLocale, formatDatabaseRowsCount, formatNotesCount, getLocaleFromUrl, ui } from "../i18n/ui";
 import EntityCard from "../shared/ui/EntityCard.astro";
 import ContentNavigation from "../widgets/content-navigation/ContentNavigation.astro";
+import CsvDatabase from "../widgets/csv-database/CsvDatabase.astro";
 import SectionBlock from "../widgets/section-block/SectionBlock.astro";
 
 export async function getStaticPaths() {
@@ -30,6 +31,7 @@ export async function getStaticPaths() {
     .filter(Boolean);
 
   const generatedNotes = [...topics.flatMap((topic) => topic.notes), ...topLevelNotes];
+  const generatedDatabases = [...topics.flatMap((topic) => topic.databases), ...topLevelDatabases];
   const notePaths = notes.map((note) => {
     const generatedNote = generatedNotes.find((item) => item.sourcePath === note.data.sourcePath);
     return {
@@ -37,8 +39,12 @@ export async function getStaticPaths() {
       props: { kind: "note", note }
     };
   });
+  const databasePaths = generatedDatabases.map((database) => ({
+    params: { slug: database.collectionSlug },
+    props: { kind: "database", database }
+  }));
 
-  return [...topicPaths, ...notePaths];
+  return [...topicPaths, ...notePaths, ...databasePaths];
 }
 
 const locale = Astro.url ? getLocaleFromUrl(Astro.url) : defaultLocale;
@@ -61,6 +67,7 @@ const headings = noteRender?.headings ?? [];
       const { topic } = props;
       const childTopics = visibleTopics.filter((item) => item.parentSlug === topic.slug);
       const visibleNotes = topic.notes.filter(isPublishedNote);
+      const visibleDatabases = topic.databases ?? [];
       const totalNotesCount = getTopicNotesCount(topic, visibleTopics, includeDrafts);
       return (
         <BaseLayout
@@ -130,7 +137,66 @@ const headings = noteRender?.headings ?? [];
                 </div>
               )}
             </SectionBlock>
+
+            <hr class="section-divider" />
+
+            <SectionBlock title={t.databases} count={visibleDatabases.length} i18nKey="databases">
+              {visibleDatabases.length === 0 ? (
+                <div class="empty-state">
+                  <p data-i18n="empty">{t.empty}</p>
+                </div>
+              ) : (
+                <div class="entity-grid">
+                  {visibleDatabases.map((database: any) => (
+                    <EntityCard
+                      title={database.title}
+                      summary={database.summary}
+                      href={`${baseUrl}${database.collectionSlug}/?lang=${locale}`}
+                    >
+                      <Fragment slot="meta">{formatDatabaseRowsCount(locale, database.rows.length)}</Fragment>
+                    </EntityCard>
+                  ))}
+                </div>
+              )}
+            </SectionBlock>
           </div>
+        </BaseLayout>
+      );
+    })()
+  ) : props.kind === "database" ? (
+    (() => {
+      const { database } = props;
+      return (
+        <BaseLayout
+          title={`${database.title} | ${copy.brand}`}
+          description={database.description ?? database.title}
+          titlePrefix={database.title}
+          titleSuffixI18nKey="brand"
+        >
+          <article class="database-shell home-panel">
+            <header class="note-header note-header-compact home-panel-section">
+              <div class="hero-kicker">
+                <p class="eyebrow">{database.topic ?? t.database}</p>
+                <div class="note-status-line">
+                  <span class="hero-tag">{formatDatabaseRowsCount(locale, database.rows.length)}</span>
+                </div>
+              </div>
+              <div class="hero-copy-block">
+                <h1 class="note-title">{database.title}</h1>
+              </div>
+            </header>
+
+            <hr class="section-divider" />
+
+            <div class="database-layout">
+              {database.topicSlug ? (
+                <p class="note-backline">
+                  <a href={`${baseUrl}${database.topicSlug}/?lang=${locale}`} data-lang-link>{database.topic}</a>
+                </p>
+              ) : null}
+              <CsvDatabase database={database} locale={locale} />
+            </div>
+          </article>
         </BaseLayout>
       );
     })()

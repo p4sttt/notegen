@@ -61,6 +61,34 @@ export function listNoteFiles(rootPath, isIgnoredPath) {
   return files;
 }
 
+export function listDatabaseFiles(rootPath, isIgnoredPath) {
+  const files = [];
+
+  function visit(directoryPath) {
+    const entries = readdirSync(directoryPath, { withFileTypes: true }).sort((left, right) =>
+      left.name.localeCompare(right.name)
+    );
+
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const childPath = path.join(directoryPath, entry.name);
+        if (entry.name !== "assets" && !isIgnoredPath(childPath, true)) {
+          visit(childPath);
+        }
+        continue;
+      }
+
+      const childPath = path.join(directoryPath, entry.name);
+      if (entry.isFile() && entry.name.toLowerCase().endsWith(".csv") && !isIgnoredPath(childPath, false)) {
+        files.push(childPath);
+      }
+    }
+  }
+
+  visit(rootPath);
+  return files;
+}
+
 export function findNearestTopic(relativeDirectory, topicBySourcePath) {
   let current = relativeDirectory;
 

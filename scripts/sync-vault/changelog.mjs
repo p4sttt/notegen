@@ -23,7 +23,7 @@ function normalizeAction(value) {
 
 function normalizeKind(value) {
   const kind = asString(value).toLowerCase();
-  return ["note", "topic", "asset"].includes(kind) ? kind : "other";
+  return ["note", "topic", "database", "asset"].includes(kind) ? kind : "other";
 }
 
 function parseJsonLines(content, sourcePath) {
@@ -100,7 +100,7 @@ export function readChangelogEvents(changelogPath) {
     .filter((event) => event.path || event.oldPath);
 }
 
-function createContentLookup(topics, topLevelNotes) {
+function createContentLookup(topics, topLevelNotes, topLevelDatabases = []) {
   const lookup = new Map();
 
   for (const topic of topics) {
@@ -119,6 +119,15 @@ function createContentLookup(topics, topLevelNotes) {
         topic: topic.title
       });
     }
+
+    for (const database of topic.databases ?? []) {
+      lookup.set(normalizeVaultPath(database.sourcePath), {
+        kind: "database",
+        title: database.title,
+        href: database.collectionSlug,
+        topic: topic.title
+      });
+    }
   }
 
   for (const note of topLevelNotes) {
@@ -126,6 +135,15 @@ function createContentLookup(topics, topLevelNotes) {
       kind: "note",
       title: note.title,
       href: note.collectionSlug,
+      topic: ""
+    });
+  }
+
+  for (const database of topLevelDatabases) {
+    lookup.set(normalizeVaultPath(database.sourcePath), {
+      kind: "database",
+      title: database.title,
+      href: database.collectionSlug,
       topic: ""
     });
   }
@@ -153,13 +171,13 @@ function renderEvent(event) {
   return `  { id: '${escapeSingleQuotes(event.id)}', timestamp: '${escapeSingleQuotes(event.timestamp)}', action: '${escapeSingleQuotes(event.action)}', kind: '${escapeSingleQuotes(event.kind)}', path: '${escapeSingleQuotes(event.path)}', oldPath: '${escapeSingleQuotes(event.oldPath)}', title: '${escapeSingleQuotes(event.title)}', topic: '${escapeSingleQuotes(event.topic)}', source: '${escapeSingleQuotes(event.source)}', href: '${escapeSingleQuotes(event.href)}' }`;
 }
 
-export function renderChangelogDataFile(events, topics, topLevelNotes) {
-  const lookup = createContentLookup(topics, topLevelNotes);
+export function renderChangelogDataFile(events, topics, topLevelNotes, topLevelDatabases = []) {
+  const lookup = createContentLookup(topics, topLevelNotes, topLevelDatabases);
   const enrichedEvents = events.map((event) => enrichEvent(event, lookup));
 
   return `${[
     "export type ChangelogAction = 'created' | 'updated' | 'deleted' | 'renamed' | 'changed';",
-    "export type ChangelogKind = 'note' | 'topic' | 'asset' | 'other';",
+    "export type ChangelogKind = 'note' | 'topic' | 'database' | 'asset' | 'other';",
     "",
     "export type ChangelogEvent = {",
     "  id: string;",
