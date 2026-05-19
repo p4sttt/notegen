@@ -17,6 +17,7 @@ Status legend: `planned`, `in_progress`, `done`
 | Vault sync script | done | Local import and CI usage via `VAULT_PATH` are wired |
 | Topic detection via `_index.md` | done | Folder with `_index.md` becomes a topic |
 | Markdown note pages | done | Notes are generated into Astro content collection |
+| CSV database pages | done | `.csv` files are imported as typed database pages |
 | Relative image support | done | `./assets/...` links are rewritten to copied public assets |
 | External links | done | Render as standard markdown links |
 | Internal Obsidian wiki links | planned | Deferred for later implementation |
@@ -28,6 +29,7 @@ Status legend: `planned`, `in_progress`, `done`
 | Code block highlighting | in_progress | Astro prose styling is in place, visual tuning pending |
 | LaTeX rendering | done | `remark-math` + `rehype-katex` wired into Astro |
 | Table of contents | done | TOC is generated from note headings |
+| Interactive database table | done | CSV pages include search, filters, sorting, column visibility, and boolean controls |
 
 ## UI
 
@@ -38,6 +40,7 @@ Status legend: `planned`, `in_progress`, `done`
 | Responsive layout | done | Home, topic, and note layouts adapt across breakpoints |
 | Topic index page | done | Route is generated from imported topic metadata |
 | Note page template | done | Route renders imported markdown notes |
+| Database page template | done | Route renders CSV databases as the main page surface |
 
 ## Automation
 
