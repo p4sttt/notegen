@@ -29,7 +29,20 @@ export function parseFrontmatter(raw) {
       value = value.slice(1, -1);
     }
 
-    if (value === "true") {
+    if (value.startsWith("[") && value.endsWith("]")) {
+      const inner = value.slice(1, -1).trim();
+      if (inner === "") {
+        data[key] = [];
+      } else {
+        data[key] = inner.split(",").map((s) => {
+          s = s.trim();
+          if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+            return s.slice(1, -1);
+          }
+          return s;
+        });
+      }
+    } else if (value === "true") {
       data[key] = true;
     } else if (value === "false") {
       data[key] = false;
@@ -116,6 +129,11 @@ export function toFrontmatter(data) {
     }
     if (typeof value === "boolean") {
       lines.push(`${key}: ${value}`);
+      continue;
+    }
+    if (Array.isArray(value)) {
+      const items = value.map((v) => `"${String(v).replace(/"/g, '\\"')}"`).join(", ");
+      lines.push(`${key}: [${items}]`);
       continue;
     }
     lines.push(`${key}: "${String(value).replace(/"/g, '\\"')}"`);

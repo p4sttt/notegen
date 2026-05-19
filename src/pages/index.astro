@@ -34,13 +34,9 @@ const visibleTopLevelDatabases = topLevelDatabases;
 
     <hr class="section-divider" />
 
-    <SectionBlock id="topics" title={t.topics} count={rootTopics.length} i18nKey="topics">
-      {
-        rootTopics.length === 0 ? (
-          <div class="empty-state">
-            <p data-i18n="empty">{t.empty}</p>
-          </div>
-        ) : (
+    {rootTopics.length > 0 && (
+      <>
+        <SectionBlock id="topics" title={t.topics} count={rootTopics.length} i18nKey="topics">
           <div class="entity-grid">
             {rootTopics.map((topic) => {
               const notesCount = getTopicNotesCount(topic, visibleTopics, includeDrafts);
@@ -55,19 +51,14 @@ const visibleTopLevelDatabases = topLevelDatabases;
               );
             })}
           </div>
-        )
-      }
-    </SectionBlock>
+        </SectionBlock>
+        <hr class="section-divider" />
+      </>
+    )}
 
-    <hr class="section-divider" />
-
-    <SectionBlock id="notes" title={t.notes} count={visibleTopLevelNotes.length} i18nKey="notes">
-      {
-        visibleTopLevelNotes.length === 0 ? (
-          <div class="empty-state">
-            <p data-i18n="empty">{t.empty}</p>
-          </div>
-        ) : (
+    {visibleTopLevelNotes.length > 0 && (
+      <>
+        <SectionBlock id="notes" title={t.notes} count={visibleTopLevelNotes.length} i18nKey="notes">
           <div class="entity-grid">
             {visibleTopLevelNotes.map((note) => (
               <EntityCard
@@ -76,37 +67,37 @@ const visibleTopLevelDatabases = topLevelDatabases;
                 href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`}
                 badgeLabel={isInProgressNote(note) ? t.inProgress : undefined}
                 badgeI18nKey={isInProgressNote(note) ? "inProgress" : undefined}
+                tags={note.tags}
               >
                 <Fragment slot="meta">{note.updatedAt ?? note.sourcePath}</Fragment>
               </EntityCard>
             ))}
           </div>
-        )
-      }
-    </SectionBlock>
+        </SectionBlock>
+        <hr class="section-divider" />
+      </>
+    )}
 
-    <hr class="section-divider" />
+    {visibleTopLevelDatabases.length > 0 && (
+      <SectionBlock id="databases" title={t.databases} count={visibleTopLevelDatabases.length} i18nKey="databases">
+        <div class="entity-grid">
+          {visibleTopLevelDatabases.map((database) => (
+            <EntityCard
+              title={database.title}
+              summary={database.summary}
+              href={`${baseUrl}${database.collectionSlug}/?lang=${locale}`}
+            >
+              <Fragment slot="meta">{formatDatabaseRowsCount(locale, database.rows.length)}</Fragment>
+            </EntityCard>
+          ))}
+        </div>
+      </SectionBlock>
+    )}
 
-    <SectionBlock id="databases" title={t.databases} count={visibleTopLevelDatabases.length} i18nKey="databases">
-      {
-        visibleTopLevelDatabases.length === 0 ? (
-          <div class="empty-state">
-            <p data-i18n="empty">{t.empty}</p>
-          </div>
-        ) : (
-          <div class="entity-grid">
-            {visibleTopLevelDatabases.map((database) => (
-              <EntityCard
-                title={database.title}
-                summary={database.summary}
-                href={`${baseUrl}${database.collectionSlug}/?lang=${locale}`}
-              >
-                <Fragment slot="meta">{formatDatabaseRowsCount(locale, database.rows.length)}</Fragment>
-              </EntityCard>
-            ))}
-          </div>
-        )
-      }
-    </SectionBlock>
+    {rootTopics.length === 0 && visibleTopLevelNotes.length === 0 && visibleTopLevelDatabases.length === 0 && (
+      <div class="empty-state">
+        <p data-i18n="empty">{t.empty}</p>
+      </div>
+    )}
   </div>
 </BaseLayout>

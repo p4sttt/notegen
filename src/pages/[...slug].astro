@@ -9,6 +9,7 @@ import EntityCard from "../shared/ui/EntityCard.astro";
 import ContentNavigation from "../widgets/content-navigation/ContentNavigation.astro";
 import CsvDatabase from "../widgets/csv-database/CsvDatabase.astro";
 import SectionBlock from "../widgets/section-block/SectionBlock.astro";
+import TagBadge from "../shared/ui/TagBadge.astro";
 
 export async function getStaticPaths() {
   const includeDrafts = import.meta.env.DEV;
@@ -116,36 +117,30 @@ const headings = noteRender?.headings ?? [];
               </>
             ) : null}
 
-            <SectionBlock title={t.notes} count={visibleNotes.length} i18nKey="notes">
-              {visibleNotes.length === 0 ? (
-                <div class="empty-state">
-                  <p data-i18n="empty">{t.empty}</p>
-                </div>
-              ) : (
-                <div class="entity-grid">
-                  {visibleNotes.map((note: any) => (
-                    <EntityCard
-                      title={note.title}
-                      summary={note.summary}
-                      href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`}
-                      badgeLabel={isInProgressNote(note) ? t.inProgress : undefined}
-                      badgeI18nKey={isInProgressNote(note) ? "inProgress" : undefined}
-                    >
-                      <Fragment slot="meta">{note.updatedAt ?? note.sourcePath}</Fragment>
-                    </EntityCard>
-                  ))}
-                </div>
-              )}
-            </SectionBlock>
+            {visibleNotes.length > 0 ? (
+              <>
+                <SectionBlock title={t.notes} count={visibleNotes.length} i18nKey="notes">
+                  <div class="entity-grid">
+                    {visibleNotes.map((note: any) => (
+                      <EntityCard
+                        title={note.title}
+                        summary={note.summary}
+                        href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`}
+                        badgeLabel={isInProgressNote(note) ? t.inProgress : undefined}
+                        badgeI18nKey={isInProgressNote(note) ? "inProgress" : undefined}
+                        tags={note.tags}
+                      >
+                        <Fragment slot="meta">{note.updatedAt ?? note.sourcePath}</Fragment>
+                      </EntityCard>
+                    ))}
+                  </div>
+                </SectionBlock>
+                <hr class="section-divider" />
+              </>
+            ) : null}
 
-            <hr class="section-divider" />
-
-            <SectionBlock title={t.databases} count={visibleDatabases.length} i18nKey="databases">
-              {visibleDatabases.length === 0 ? (
-                <div class="empty-state">
-                  <p data-i18n="empty">{t.empty}</p>
-                </div>
-              ) : (
+            {visibleDatabases.length > 0 ? (
+              <SectionBlock title={t.databases} count={visibleDatabases.length} i18nKey="databases">
                 <div class="entity-grid">
                   {visibleDatabases.map((database: any) => (
                     <EntityCard
@@ -157,8 +152,14 @@ const headings = noteRender?.headings ?? [];
                     </EntityCard>
                   ))}
                 </div>
-              )}
-            </SectionBlock>
+              </SectionBlock>
+            ) : null}
+
+            {childTopics.length === 0 && visibleNotes.length === 0 && visibleDatabases.length === 0 && !props.entry.body?.trim() ? (
+              <div class="empty-state">
+                <p data-i18n="empty">{t.empty}</p>
+              </div>
+            ) : null}
           </div>
         </BaseLayout>
       );
@@ -218,6 +219,11 @@ const headings = noteRender?.headings ?? [];
               </div>
               <div class="hero-copy-block">
                 <h1 class="note-title">{note.data.title}</h1>
+                {note.data.tags && note.data.tags.length > 0 && (
+                  <div class="note-tags-list">
+                    {note.data.tags.map((tag: string) => <TagBadge tag={tag} />)}
+                  </div>
+                )}
               </div>
             </header>
 
@@ -241,3 +247,12 @@ const headings = noteRender?.headings ?? [];
     })()
   )
 }
+
+<style>
+  .note-tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: var(--space-3);
+  }
+</style>
