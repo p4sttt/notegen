@@ -129,7 +129,7 @@ export const ui: Record<Locale, UIStrings> = {
       other: "строки"
     },
     sourceData: "Источник данных",
-    empty: "Контент пока не импортирован.",
+    empty: "Тут пока пусто, но скоро обязательно что-нибудь появится.",
     intro: "Статический сайт конспектов, собранный из Obsidian vault."
   },
   en: {
@@ -189,7 +189,7 @@ export const ui: Record<Locale, UIStrings> = {
       other: "rows"
     },
     sourceData: "Source",
-    empty: "Content has not been imported yet.",
+    empty: "It's a bit empty here for now, but something will definitely appear soon.",
     intro: "A static notes site generated from an Obsidian vault."
   }
 };

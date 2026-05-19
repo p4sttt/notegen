@@ -22,7 +22,8 @@ const notes = defineCollection({
     topic: z.string().optional(),
     topicSlug: z.string().optional(),
     parentSlug: z.string().optional(),
-    sourcePath: z.string().optional()
+    sourcePath: z.string().optional(),
+    tags: z.array(z.string()).optional()
   })
 });
 

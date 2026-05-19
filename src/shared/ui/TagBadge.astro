@@ -1,0 +1,48 @@
+---
+import { tagColorMap } from "../../data/generated/topics";
+
+interface Props {
+  tag: string;
+}
+
+const { tag } = Astro.props;
+
+const colorIndex = tagColorMap[tag] || 1;
+---
+
+<span class={`tag-badge tag-color-${colorIndex}`}>{tag}</span>
+
+<style>
+  .tag-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 550;
+    line-height: 1.2;
+    white-space: nowrap;
+    transition: all 150ms ease;
+    border: 1px solid transparent;
+    opacity: 0.6;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+  }
+
+  :global(.entity-card:hover) .tag-badge {
+    opacity: 0.8;
+  }
+
+  .tag-badge:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .tag-color-1 { --tag-bg: var(--tag-1-bg); --tag-text: var(--tag-1-text); }
+  .tag-color-2 { --tag-bg: var(--tag-2-bg); --tag-text: var(--tag-2-text); }
+  .tag-color-3 { --tag-bg: var(--tag-3-bg); --tag-text: var(--tag-3-text); }
+  .tag-color-4 { --tag-bg: var(--tag-4-bg); --tag-text: var(--tag-4-text); }
+  .tag-color-5 { --tag-bg: var(--tag-5-bg); --tag-text: var(--tag-5-text); }
+  .tag-color-6 { --tag-bg: var(--tag-6-bg); --tag-text: var(--tag-6-text); }
+</style>

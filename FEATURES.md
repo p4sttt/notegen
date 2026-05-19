@@ -40,6 +40,7 @@ Status legend: `planned`, `in_progress`, `done`
 | Responsive layout | done | Home, topic, and note layouts adapt across breakpoints |
 | Topic index page | done | Route is generated from imported topic metadata |
 | Note page template | done | Route renders imported markdown notes |
+| Tags support | done | Color-coded badges for notes with accent-based palettes |
 | Database page template | done | Route renders CSV databases as the main page surface |
 
 ## Automation
