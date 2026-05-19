@@ -3,14 +3,15 @@ function escapeSingleQuotes(input) {
 }
 
 function renderNote(note, indent = "  ") {
-  return `${indent}{ slug: '${escapeSingleQuotes(note.slug)}', collectionSlug: '${escapeSingleQuotes(note.collectionSlug)}', title: '${escapeSingleQuotes(note.title)}', summary: '${escapeSingleQuotes(note.summary ?? "")}', description: '${escapeSingleQuotes(note.description ?? "")}', status: '${escapeSingleQuotes(note.status ?? "done")}', sourcePath: '${escapeSingleQuotes(note.sourcePath ?? "")}', updatedAt: '${escapeSingleQuotes(note.updatedAt ?? "")}' }`;
+  const tagsStr = note.tags ? `[${note.tags.map(t => `'${escapeSingleQuotes(t)}'`).join(", ")}]` : "undefined";
+  return `${indent}{ slug: '${escapeSingleQuotes(note.slug)}', collectionSlug: '${escapeSingleQuotes(note.collectionSlug)}', title: '${escapeSingleQuotes(note.title)}', summary: '${escapeSingleQuotes(note.summary ?? "")}', description: '${escapeSingleQuotes(note.description ?? "")}', status: '${escapeSingleQuotes(note.status ?? "done")}', sourcePath: '${escapeSingleQuotes(note.sourcePath ?? "")}', updatedAt: '${escapeSingleQuotes(note.updatedAt ?? "")}', tags: ${tagsStr} }`;
 }
 
 function renderDatabase(database, indent = "  ") {
   return `${indent}${JSON.stringify(database)}`;
 }
 
-export function renderTopicsDataFile(topics, topLevelNotes, topLevelDatabases = []) {
+export function renderTopicsDataFile(topics, topLevelNotes, topLevelDatabases = [], tagColorMap = {}) {
   return `${[
     "export type Note = {",
     "  slug: string;",
@@ -21,6 +22,7 @@ export function renderTopicsDataFile(topics, topLevelNotes, topLevelDatabases = 
     "  status: 'draft' | 'in-progress' | 'done';",
     "  sourcePath?: string;",
     "  updatedAt?: string;",
+    "  tags?: string[];",
     "};",
     "",
     "export type DatabaseColumnType = 'text' | 'number' | 'date' | 'boolean';",
@@ -81,5 +83,7 @@ ${topLevelNotes.map((note) => renderNote(note)).join(",\n")}
 export const topLevelDatabases: Database[] = [
 ${topLevelDatabases.map((database) => renderDatabase(database)).join(",\n")}
 ];
+
+export const tagColorMap: Record<string, number> = ${JSON.stringify(tagColorMap, null, 2)};
 `;
 }

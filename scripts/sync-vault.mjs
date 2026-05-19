@@ -198,7 +198,8 @@ for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
     topic: topic?.title,
     topicSlug: topic?.slug,
     parentSlug: topic?.parentSlug,
-    sourcePath: sourceRelativePath
+    sourcePath: sourceRelativePath,
+    tags: parsed.data.tags
   });
   const noteOutputPath = path.join(contentRoot, contentFileName(collectionSlug));
 
@@ -214,7 +215,8 @@ for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
     description: noteDescription,
     status: noteStatus,
     sourcePath: sourceRelativePath,
-    updatedAt: parsed.data.date || undefined
+    updatedAt: parsed.data.date || undefined,
+    tags: parsed.data.tags
   };
 
   if (topic) {
@@ -271,7 +273,23 @@ for (const sourcePath of listDatabaseFiles(resolvedVaultPath, isIgnoredPath)) {
   }
 }
 
-writeFileSync(topicsDataPath, renderTopicsDataFile(topics, topLevelNotes, topLevelDatabases), "utf8");
+const allTags = new Set();
+for (const topic of topics) {
+  for (const note of topic.notes) {
+    if (note.tags) note.tags.forEach((tag) => allTags.add(tag));
+  }
+}
+for (const note of topLevelNotes) {
+  if (note.tags) note.tags.forEach((tag) => allTags.add(tag));
+}
+
+const sortedTags = Array.from(allTags).sort();
+const tagColorMap = {};
+sortedTags.forEach((tag, index) => {
+  tagColorMap[tag] = (index % 6) + 1;
+});
+
+writeFileSync(topicsDataPath, renderTopicsDataFile(topics, topLevelNotes, topLevelDatabases, tagColorMap), "utf8");
 writeFileSync(
   changelogDataPath,
   renderChangelogDataFile(readChangelogEvents(changelogPath), topics, topLevelNotes, topLevelDatabases),

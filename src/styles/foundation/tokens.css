@@ -32,6 +32,20 @@
   --accent-soft: rgba(26, 26, 26, 0.06);
   --grid-line: rgba(17, 17, 17, 0.018);
   --grid-dot: rgba(17, 17, 17, 0.028);
+
+  /* Tag Colors - Default (Subtle Google inspired) */
+  --tag-1-bg: rgba(66, 133, 244, 0.08);
+  --tag-1-text: #4285f4;
+  --tag-2-bg: rgba(234, 67, 53, 0.08);
+  --tag-2-text: #ea4335;
+  --tag-3-bg: rgba(251, 188, 5, 0.08);
+  --tag-3-text: #b08d2b;
+  --tag-4-bg: rgba(52, 168, 83, 0.08);
+  --tag-4-text: #34a853;
+  --tag-5-bg: rgba(255, 109, 1, 0.08);
+  --tag-5-text: #ff6d01;
+  --tag-6-bg: rgba(161, 79, 121, 0.08);
+  --tag-6-text: #a14f79;
 }
 
 :root[data-theme="dark"] {
@@ -46,6 +60,55 @@
   --line: rgba(244, 240, 232, 0.11);
   --grid-line: rgba(244, 240, 232, 0.018);
   --grid-dot: rgba(244, 240, 232, 0.034);
+
+  /* Tag Colors - Dark Mode Default */
+  --tag-1-bg: rgba(66, 133, 244, 0.12);
+  --tag-1-text: #8ab4f8;
+  --tag-2-bg: rgba(234, 67, 53, 0.12);
+  --tag-2-text: #f28b82;
+  --tag-3-bg: rgba(251, 188, 5, 0.12);
+  --tag-3-text: #fdd663;
+  --tag-4-bg: rgba(52, 168, 83, 0.12);
+  --tag-4-text: #81c995;
+  --tag-5-bg: rgba(255, 109, 1, 0.12);
+  --tag-5-text: #ff9e67;
+  --tag-6-bg: rgba(240, 154, 195, 0.12);
+  --tag-6-text: #f09ac3;
+}
+
+/* Accent-based Tag Variations (Subtle & Continuous-ish) */
+[data-accent="violet"], [data-accent="teal"], [data-accent="blue"], [data-accent="olive"], [data-accent="rose"] {
+  --tag-1-bg: oklch(from var(--accent) 0.96 0.01 h);
+  --tag-1-text: oklch(from var(--accent) 0.5 0.15 h);
+  --tag-2-bg: oklch(from var(--accent) 0.96 0.01 calc(h + 25));
+  --tag-2-text: oklch(from var(--accent) 0.5 0.15 calc(h + 25));
+  --tag-3-bg: oklch(from var(--accent) 0.96 0.01 calc(h + 50));
+  --tag-3-text: oklch(from var(--accent) 0.5 0.15 calc(h + 50));
+  --tag-4-bg: oklch(from var(--accent) 0.96 0.01 calc(h - 25));
+  --tag-4-text: oklch(from var(--accent) 0.5 0.15 calc(h - 25));
+  --tag-5-bg: oklch(from var(--accent) 0.96 0.01 calc(h - 50));
+  --tag-5-text: oklch(from var(--accent) 0.5 0.15 calc(h - 50));
+  --tag-6-bg: oklch(from var(--accent) 0.94 0.02 h);
+  --tag-6-text: oklch(from var(--accent) 0.4 0.15 h);
+}
+
+:root[data-theme="dark"][data-accent="violet"],
+:root[data-theme="dark"][data-accent="teal"],
+:root[data-theme="dark"][data-accent="blue"],
+:root[data-theme="dark"][data-accent="olive"],
+:root[data-theme="dark"][data-accent="rose"] {
+  --tag-1-bg: oklch(from var(--accent) 0.22 0.03 h);
+  --tag-1-text: oklch(from var(--accent) 0.85 0.08 h);
+  --tag-2-bg: oklch(from var(--accent) 0.22 0.03 calc(h + 25));
+  --tag-2-text: oklch(from var(--accent) 0.85 0.08 calc(h + 25));
+  --tag-3-bg: oklch(from var(--accent) 0.22 0.03 calc(h + 50));
+  --tag-3-text: oklch(from var(--accent) 0.85 0.08 calc(h + 50));
+  --tag-4-bg: oklch(from var(--accent) 0.22 0.03 calc(h - 25));
+  --tag-4-text: oklch(from var(--accent) 0.85 0.08 calc(h - 25));
+  --tag-5-bg: oklch(from var(--accent) 0.22 0.03 calc(h - 50));
+  --tag-5-text: oklch(from var(--accent) 0.85 0.08 calc(h - 50));
+  --tag-6-bg: oklch(from var(--accent) 0.18 0.03 h);
+  --tag-6-text: oklch(from var(--accent) 0.75 0.08 h);
 }
 
 :root[data-accent="white"] {

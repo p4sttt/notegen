@@ -95,7 +95,8 @@ Expected conventions:
 - a topic directory must contain `_index.md`
 - `_index.md` may contain frontmatter such as `title`, `slug`, `draft`, `description`
 - note files may be Markdown (`.md`) or Jupyter notebooks (`.ipynb`)
-- Markdown note files may contain frontmatter such as `title`, `slug`, `date`, `status`
+- Markdown note files may contain frontmatter such as `title`, `slug`, `date`, `status`, `tags`
+- `tags` should be an array of strings: `tags: ["ai", "nlp"]`. Tags are color-coded based on the site accent color.
 - CSV files (`.csv`) are imported as database pages; top-level CSV files appear on the home page, and CSV files inside a topic appear in that topic
 - note `status` values are `draft`, `in-progress`, or `done`; legacy `draft: true` maps to `status: draft`, and legacy `draft: false` maps to `status: done`
 - Jupyter notebooks are converted during `npm run sync:vault`: markdown cells become page Markdown, code cells become syntax-highlighted code blocks, and supported outputs are rendered as HTML, text blocks, or copied image assets
