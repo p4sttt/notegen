@@ -83,7 +83,8 @@ export function notebookNoteFrontmatter(notebook, markdown, fallbackTitle) {
 }
 
 function getNotebookLanguage(notebook) {
-  return notebook.metadata?.language_info?.name || notebook.metadata?.kernelspec?.language || "python";
+  const lang = notebook.metadata?.language_info?.name || notebook.metadata?.kernelspec?.language || "python";
+  return lang.toLowerCase();
 }
 
 export function createNotebookConverter({ assetsRoot, publicBasePath }) {
