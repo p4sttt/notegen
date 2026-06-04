@@ -83,6 +83,10 @@ export default defineConfig({
         light: "light-plus",
         dark: "gruvbox-dark-medium"
       },
+      langAlias: {
+        "Java": "java",
+        "JAVA": "java"
+      },
       defaultColor: false
     }
   }
