@@ -470,3 +470,29 @@
 .topic-prose {
   margin-bottom: 0;
 }
+
+.mermaid-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 1.8rem 0;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-strong);
+  overflow-x: auto;
+}
+
+.mermaid {
+  width: 100%;
+  max-width: 100%;
+}
+
+.mermaid svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}
+

@@ -75,7 +75,10 @@ export default defineConfig({
     plugins: [notegenSiteConfigWatcher()]
   },
   markdown: {
-    syntaxHighlight: "shiki",
+    syntaxHighlight: {
+      type: "shiki",
+      excludeLangs: ["mermaid"]
+    },
     remarkPlugins: [remarkMath, remarkLinkChips],
     rehypePlugins: [rehypeKatex],
     shikiConfig: {
