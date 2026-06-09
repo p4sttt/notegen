@@ -1,21 +1,16 @@
 ---
-import { getCollection, render } from 'astro:content';
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { siteText } from '../config/site';
-import { topics, topLevelDatabases, topLevelNotes } from '../data/generated/topics';
-import { getTopicNotesCount, isInProgressNote, isPublishedNote } from '../entities/topic/model';
+import { getCollection } from 'astro:content';
 import {
-  defaultLocale,
-  formatDatabaseRowsCount,
-  formatNotesCount,
-  getLocaleFromUrl,
-  ui,
-} from '../i18n/ui';
-import EntityCard from '../shared/ui/EntityCard.astro';
-import ContentNavigation from '../widgets/content-navigation/ContentNavigation.astro';
-import CsvDatabase from '../widgets/csv-database/CsvDatabase.astro';
-import SectionBlock from '../widgets/section-block/SectionBlock.astro';
-import TagBadge from '../shared/ui/TagBadge.astro';
+  topics as rawTopics,
+  topLevelDatabases as rawDatabases,
+  topLevelNotes as rawNotes,
+} from '../data/generated/topics';
+import { isPublishedNote } from '../entities/topic/model';
+import { defaultLocale, getLocaleFromUrl } from '../i18n/ui';
+import { Topic, Note, Database } from '../entities/domain';
+import TopicPage from '../layouts/TopicPage.astro';
+import DatabasePage from '../layouts/DatabasePage.astro';
+import NotePage from '../layouts/NotePage.astro';
 
 export async function getStaticPaths() {
   const includeDrafts = import.meta.env.DEV;
@@ -25,7 +20,7 @@ export async function getStaticPaths() {
   const topicPaths = topicEntries
     .map((entry) => {
       const topicSlug = entry.data.slug ?? entry.slug;
-      const topic = topics.find((item) => item.slug === topicSlug);
+      const topic = rawTopics.find((item) => item.slug === topicSlug);
       if (!topic) {
         return null;
       }
@@ -37,13 +32,13 @@ export async function getStaticPaths() {
     })
     .filter(Boolean);
 
-  const generatedNotes = [...topics.flatMap((topic) => topic.notes), ...topLevelNotes];
-  const generatedDatabases = [...topics.flatMap((topic) => topic.databases), ...topLevelDatabases];
+  const generatedNotes = [...rawTopics.flatMap((topic) => topic.notes), ...rawNotes];
+  const generatedDatabases = [...rawTopics.flatMap((topic) => topic.databases), ...rawDatabases];
   const notePaths = notes.map((note) => {
     const generatedNote = generatedNotes.find((item) => item.sourcePath === note.data.sourcePath);
     return {
       params: { slug: generatedNote?.collectionSlug ?? note.slug },
-      props: { kind: 'note', note },
+      props: { kind: 'note', note, generatedNote },
     };
   });
   const databasePaths = generatedDatabases.map((database) => ({
@@ -55,252 +50,40 @@ export async function getStaticPaths() {
 }
 
 const locale = Astro.url ? getLocaleFromUrl(Astro.url) : defaultLocale;
-const copy = siteText[locale];
-const t = ui[locale];
 const baseUrl = import.meta.env.BASE_URL.endsWith('/')
   ? import.meta.env.BASE_URL
   : `${import.meta.env.BASE_URL}/`;
-const props = Astro.props as any;
+const props = Astro.props;
 const includeDrafts = import.meta.env.DEV;
-const visibleTopics = includeDrafts ? topics : topics.filter((topic) => !topic.draft);
-const topicRender = props.kind === 'topic' ? await render(props.entry) : null;
-const noteRender = props.kind === 'note' ? await render(props.note) : null;
-const TopicContent = topicRender?.Content;
-const NoteContent = noteRender?.Content;
-const headings = noteRender?.headings ?? [];
+const visibleTopics = (includeDrafts ? rawTopics : rawTopics.filter((topic) => !topic.draft)).map(
+  (t) => new Topic(t),
+);
+
+// Instantiate OOP model depending on kind
+const topicModel = props.kind === 'topic' ? new Topic(props.topic) : null;
+const databaseModel = props.kind === 'database' ? new Database(props.database) : null;
+const noteModel = props.kind === 'note' ? new Note(props.generatedNote || props.note.data) : null;
 ---
 
 {
-  props.kind === 'topic'
-    ? (() => {
-        const { topic } = props;
-        const childTopics = visibleTopics.filter((item) => item.parentSlug === topic.slug);
-        const visibleNotes = topic.notes.filter(isPublishedNote);
-        const visibleDatabases = topic.databases ?? [];
-        const totalNotesCount = getTopicNotesCount(topic, visibleTopics, includeDrafts);
-        return (
-          <BaseLayout
-            title={`${topic.title} | ${copy.brand}`}
-            description={topic.summary ?? copy.metaDescription}
-            titlePrefix={topic.title}
-            titleSuffixI18nKey="brand"
-            descriptionI18nKey={topic.summary ? undefined : 'metaDescription'}
-          >
-            <div class="home-panel">
-              <section class="hero home-panel-section">
-                <div class="hero-kicker">
-                  <p class="eyebrow" data-i18n="topics">
-                    {t.topics}
-                  </p>
-                  <span class="hero-tag">
-                    <span data-i18n-plural="notesCount" data-i18n-count={totalNotesCount}>
-                      {formatNotesCount(locale, totalNotesCount)}
-                    </span>
-                  </span>
-                </div>
-                <div class="hero-copy-block">
-                  <h1>{topic.title}</h1>
-                </div>
-                <div class="prose topic-prose">{TopicContent ? <TopicContent /> : null}</div>
-              </section>
-
-              <hr class="section-divider" />
-
-              {childTopics.length > 0 ? (
-                <>
-                  <SectionBlock title={t.topics} count={childTopics.length} i18nKey="topics">
-                    <div class="entity-grid">
-                      {childTopics.map((child) => (
-                        <EntityCard
-                          title={child.title}
-                          summary={child.description || child.summary}
-                          href={`${baseUrl}${child.slug}/?lang=${locale}`}
-                        >
-                          <Fragment slot="meta">
-                            <span
-                              data-i18n-plural="notesCount"
-                              data-i18n-count={getTopicNotesCount(
-                                child,
-                                visibleTopics,
-                                includeDrafts,
-                              )}
-                            >
-                              {formatNotesCount(
-                                locale,
-                                getTopicNotesCount(child, visibleTopics, includeDrafts),
-                              )}
-                            </span>
-                          </Fragment>
-                        </EntityCard>
-                      ))}
-                    </div>
-                  </SectionBlock>
-                  <hr class="section-divider" />
-                </>
-              ) : null}
-
-              {visibleNotes.length > 0 ? (
-                <>
-                  <SectionBlock title={t.notes} count={visibleNotes.length} i18nKey="notes">
-                    <div class="entity-grid">
-                      {visibleNotes.map((note: any) => (
-                        <EntityCard
-                          title={note.title}
-                          summary={note.summary}
-                          href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`}
-                          badgeLabel={isInProgressNote(note) ? t.inProgress : undefined}
-                          badgeI18nKey={isInProgressNote(note) ? 'inProgress' : undefined}
-                          tags={note.tags}
-                        >
-                          <Fragment slot="meta">{note.updatedAt ?? note.sourcePath}</Fragment>
-                        </EntityCard>
-                      ))}
-                    </div>
-                  </SectionBlock>
-                  <hr class="section-divider" />
-                </>
-              ) : null}
-
-              {visibleDatabases.length > 0 ? (
-                <SectionBlock
-                  title={t.databases}
-                  count={visibleDatabases.length}
-                  i18nKey="databases"
-                >
-                  <div class="entity-grid">
-                    {visibleDatabases.map((database: any) => (
-                      <EntityCard
-                        title={database.title}
-                        summary={database.summary}
-                        href={`${baseUrl}${database.collectionSlug}/?lang=${locale}`}
-                      >
-                        <Fragment slot="meta">
-                          {formatDatabaseRowsCount(locale, database.rows.length)}
-                        </Fragment>
-                      </EntityCard>
-                    ))}
-                  </div>
-                </SectionBlock>
-              ) : null}
-
-              {childTopics.length === 0 &&
-              visibleNotes.length === 0 &&
-              visibleDatabases.length === 0 &&
-              !props.entry.body?.trim() ? (
-                <div class="empty-state">
-                  <p data-i18n="empty">{t.empty}</p>
-                </div>
-              ) : null}
-            </div>
-          </BaseLayout>
-        );
-      })()
-    : props.kind === 'database'
-      ? (() => {
-          const { database } = props;
-          return (
-            <BaseLayout
-              title={`${database.title} | ${copy.brand}`}
-              description={database.description ?? database.title}
-              titlePrefix={database.title}
-              titleSuffixI18nKey="brand"
-            >
-              <article class="database-shell home-panel">
-                <header class="note-header note-header-compact home-panel-section">
-                  <div class="hero-kicker">
-                    <p class="eyebrow">{database.topic ?? t.database}</p>
-                    <div class="note-status-line">
-                      <span class="hero-tag">
-                        {formatDatabaseRowsCount(locale, database.rows.length)}
-                      </span>
-                    </div>
-                  </div>
-                  <div class="hero-copy-block">
-                    <h1 class="note-title">{database.title}</h1>
-                  </div>
-                </header>
-
-                <hr class="section-divider" />
-
-                <div class="database-layout">
-                  {database.topicSlug ? (
-                    <p class="note-backline">
-                      <a href={`${baseUrl}${database.topicSlug}/?lang=${locale}`} data-lang-link>
-                        {database.topic}
-                      </a>
-                    </p>
-                  ) : null}
-                  <CsvDatabase database={database} locale={locale} />
-                </div>
-              </article>
-            </BaseLayout>
-          );
-        })()
-      : (() => {
-          const { note } = props;
-          const isNotebook = note.data.sourcePath?.endsWith('.ipynb') ?? false;
-          const isInProgress = note.data.status === 'in-progress';
-          return (
-            <BaseLayout
-              title={`${note.data.title} | ${copy.brand}`}
-              description={note.data.title}
-              titlePrefix={note.data.title}
-              titleSuffixI18nKey="brand"
-            >
-              <article class="note-shell home-panel">
-                <header class="note-header note-header-compact home-panel-section">
-                  <div class="hero-kicker">
-                    <p class="eyebrow">{note.data.topic ?? copy.brand}</p>
-                    <div class="note-status-line">
-                      {isInProgress ? (
-                        <span class="note-status-badge" data-i18n="inProgress">
-                          {t.inProgress}
-                        </span>
-                      ) : null}
-                      <span class="hero-tag" data-i18n={note.data.date ? undefined : 'sourceData'}>
-                        {note.data.date ? note.data.date.toISOString().slice(0, 10) : t.sourceData}
-                      </span>
-                    </div>
-                  </div>
-                  <div class="hero-copy-block">
-                    <h1 class="note-title">{note.data.title}</h1>
-                    {note.data.tags && note.data.tags.length > 0 && (
-                      <div class="note-tags-list">
-                        {note.data.tags.map((tag: string) => (
-                          <TagBadge tag={tag} />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </header>
-
-                <hr class="section-divider" />
-
-                <div class={`note-layout note-panel-body${isNotebook ? ' note-layout-full' : ''}`}>
-                  {isNotebook ? null : <ContentNavigation headings={headings} title={t.contents} />}
-
-                  <div class="note-card prose">
-                    {note.data.topicSlug ? (
-                      <p class="note-backline">
-                        <a href={`${baseUrl}${note.data.topicSlug}/?lang=${locale}`} data-lang-link>
-                          {note.data.topic}
-                        </a>
-                      </p>
-                    ) : null}
-                    {NoteContent ? <NoteContent /> : null}
-                  </div>
-                </div>
-              </article>
-            </BaseLayout>
-          );
-        })()
+  props.kind === 'topic' && topicModel && (
+    <TopicPage
+      topic={topicModel}
+      entry={props.entry}
+      visibleTopics={visibleTopics}
+      includeDrafts={includeDrafts}
+      locale={locale}
+      baseUrl={baseUrl}
+    />
+  )
 }
-
-<style>
-  .note-tags-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: var(--space-3);
-  }
-</style>
+{
+  props.kind === 'database' && databaseModel && (
+    <DatabasePage database={databaseModel} locale={locale} baseUrl={baseUrl} />
+  )
+}
+{
+  props.kind === 'note' && noteModel && (
+    <NotePage note={noteModel} entry={props.note} locale={locale} baseUrl={baseUrl} />
+  )
+}

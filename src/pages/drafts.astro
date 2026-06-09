@@ -1,8 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { siteText } from '../config/site';
-import { topics, topLevelNotes } from '../data/generated/topics';
-import { isInProgressNote } from '../entities/topic/model';
+import { topics as rawTopics, topLevelNotes as rawNotes } from '../data/generated/topics';
+import { Topic, Note } from '../entities/domain';
 import { defaultLocale, getLocaleFromUrl, ui } from '../i18n/ui';
 import EntityCard from '../shared/ui/EntityCard.astro';
 
@@ -12,8 +12,11 @@ const copy = siteText[locale];
 const baseUrl = import.meta.env.BASE_URL.endsWith('/')
   ? import.meta.env.BASE_URL
   : `${import.meta.env.BASE_URL}/`;
-const inProgressNotes = [...topics.flatMap((topic) => topic.notes), ...topLevelNotes].filter(
-  isInProgressNote,
+
+const allTopics = rawTopics.map((t) => new Topic(t));
+const allTopLevelNotes = rawNotes.map((n) => new Note(n));
+const inProgressNotes = [...allTopics.flatMap((topic) => topic.notes), ...allTopLevelNotes].filter(
+  (note) => note.isInProgress(),
 );
 ---
 

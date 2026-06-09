@@ -1,0 +1,142 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import SectionBlock from '../widgets/section-block/SectionBlock.astro';
+import EntityCard from '../shared/ui/EntityCard.astro';
+import { formatDatabaseRowsCount, formatNotesCount, ui, type Locale } from '../i18n/ui';
+import { siteText } from '../config/site';
+import { render } from 'astro:content';
+import { Topic } from '../entities/domain';
+
+interface Props {
+  topic: Topic;
+  entry: any;
+  visibleTopics: Topic[];
+  includeDrafts: boolean;
+  locale: Locale;
+  baseUrl: string;
+}
+
+const { topic, entry, visibleTopics, includeDrafts, locale, baseUrl } = Astro.props;
+const copy = siteText[locale];
+const t = ui[locale];
+
+const childTopics = topic.getChildTopics(visibleTopics);
+const visibleNotes = topic.getVisibleNotes();
+const visibleDatabases = topic.getVisibleDatabases();
+const totalNotesCount = topic.getRecursiveNotesCount(visibleTopics, includeDrafts);
+
+const topicRender = await render(entry);
+const TopicContent = topicRender?.Content;
+---
+
+<BaseLayout
+  title={`${topic.title} | ${copy.brand}`}
+  description={topic.summary ?? copy.metaDescription}
+  titlePrefix={topic.title}
+  titleSuffixI18nKey="brand"
+  descriptionI18nKey={topic.summary ? undefined : 'metaDescription'}
+>
+  <div class="home-panel">
+    <section class="hero home-panel-section">
+      <div class="hero-kicker">
+        <p class="eyebrow" data-i18n="topics">
+          {t.topics}
+        </p>
+        <span class="hero-tag">
+          <span data-i18n-plural="notesCount" data-i18n-count={totalNotesCount}>
+            {formatNotesCount(locale, totalNotesCount)}
+          </span>
+        </span>
+      </div>
+      <div class="hero-copy-block">
+        <h1>{topic.title}</h1>
+      </div>
+      <div class="prose topic-prose">{TopicContent ? <TopicContent /> : null}</div>
+    </section>
+
+    <hr class="section-divider" />
+
+    {
+      childTopics.length > 0 ? (
+        <>
+          <SectionBlock title={t.topics} count={childTopics.length} i18nKey="topics">
+            <div class="entity-grid">
+              {childTopics.map((child) => {
+                const notesCount = child.getRecursiveNotesCount(visibleTopics, includeDrafts);
+                return (
+                  <EntityCard
+                    title={child.title}
+                    summary={child.description || child.summary}
+                    href={`${baseUrl}${child.slug}/?lang=${locale}`}
+                  >
+                    <Fragment slot="meta">
+                      <span data-i18n-plural="notesCount" data-i18n-count={notesCount}>
+                        {formatNotesCount(locale, notesCount)}
+                      </span>
+                    </Fragment>
+                  </EntityCard>
+                );
+              })}
+            </div>
+          </SectionBlock>
+          <hr class="section-divider" />
+        </>
+      ) : null
+    }
+
+    {
+      visibleNotes.length > 0 ? (
+        <>
+          <SectionBlock title={t.notes} count={visibleNotes.length} i18nKey="notes">
+            <div class="entity-grid">
+              {visibleNotes.map((note) => (
+                <EntityCard
+                  title={note.title}
+                  summary={note.summary}
+                  href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`}
+                  badgeLabel={note.isInProgress() ? t.inProgress : undefined}
+                  badgeI18nKey={note.isInProgress() ? 'inProgress' : undefined}
+                  tags={note.tags}
+                >
+                  <Fragment slot="meta">{note.updatedAt ?? note.sourcePath}</Fragment>
+                </EntityCard>
+              ))}
+            </div>
+          </SectionBlock>
+          <hr class="section-divider" />
+        </>
+      ) : null
+    }
+
+    {
+      visibleDatabases.length > 0 ? (
+        <SectionBlock title={t.databases} count={visibleDatabases.length} i18nKey="databases">
+          <div class="entity-grid">
+            {visibleDatabases.map((database) => (
+              <EntityCard
+                title={database.title}
+                summary={database.summary}
+                href={`${baseUrl}${database.collectionSlug}/?lang=${locale}`}
+              >
+                <Fragment slot="meta">
+                  {formatDatabaseRowsCount(locale, database.getRowsCount())}
+                </Fragment>
+              </EntityCard>
+            ))}
+          </div>
+        </SectionBlock>
+      ) : null
+    }
+
+    {
+      childTopics.length === 0 &&
+      visibleNotes.length === 0 &&
+      visibleDatabases.length === 0 &&
+      !entry.body?.trim() ? (
+        <div class="empty-state">
+          <p data-i18n="empty">{t.empty}</p>
+        </div>
+      ) : null
+    }
+  </div>
+</BaseLayout>

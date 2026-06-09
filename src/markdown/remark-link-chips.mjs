@@ -108,35 +108,39 @@ function linkifyTextNode(node) {
   return children;
 }
 
-function visit(node, parent = null, index = null) {
+function visit(node) {
   if (!node) {
     return;
   }
 
   if (node.type === 'link') {
     const raw =
-      node.children.length === 1 &&
+      node.children?.length === 1 &&
       node.children[0].type === 'text' &&
       node.children[0].value === node.url;
     decorateExternalLink(node, { raw });
     return;
   }
 
-  if (node.type === 'text' && parent && Array.isArray(parent.children)) {
-    const linkedChildren = linkifyTextNode(node);
-    if (linkedChildren) {
-      parent.children.splice(index, 1, ...linkedChildren);
-      return;
-    }
-  }
-
   if (!Array.isArray(node.children)) {
     return;
   }
 
-  for (let childIndex = 0; childIndex < node.children.length; childIndex += 1) {
-    visit(node.children[childIndex], node, childIndex);
+  const newChildren = [];
+  for (const child of node.children) {
+    if (child.type === 'text') {
+      const linkedChildren = linkifyTextNode(child);
+      if (linkedChildren) {
+        newChildren.push(...linkedChildren);
+      } else {
+        newChildren.push(child);
+      }
+    } else {
+      visit(child);
+      newChildren.push(child);
+    }
   }
+  node.children = newChildren;
 }
 
 export default function remarkLinkChips() {

@@ -1,0 +1,55 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import CsvDatabase from '../widgets/csv-database/CsvDatabase.astro';
+import { formatDatabaseRowsCount, ui, type Locale } from '../i18n/ui';
+import { siteText } from '../config/site';
+import { Database } from '../entities/domain';
+
+interface Props {
+  database: Database;
+  locale: Locale;
+  baseUrl: string;
+}
+
+const { database, locale, baseUrl } = Astro.props;
+const copy = siteText[locale];
+const t = ui[locale];
+---
+
+<BaseLayout
+  title={`${database.title} | ${copy.brand}`}
+  description={database.description ?? database.title}
+  titlePrefix={database.title}
+  titleSuffixI18nKey="brand"
+>
+  <article class="database-shell home-panel">
+    <header class="note-header note-header-compact home-panel-section">
+      <div class="hero-kicker">
+        <p class="eyebrow">{database.topic ?? t.database}</p>
+        <div class="note-status-line">
+          <span class="hero-tag">
+            {formatDatabaseRowsCount(locale, database.getRowsCount())}
+          </span>
+        </div>
+      </div>
+      <div class="hero-copy-block">
+        <h1 class="note-title">{database.title}</h1>
+      </div>
+    </header>
+
+    <hr class="section-divider" />
+
+    <div class="database-layout">
+      {
+        database.topicSlug ? (
+          <p class="note-backline">
+            <a href={`${baseUrl}${database.topicSlug}/?lang=${locale}`} data-lang-link>
+              {database.topic}
+            </a>
+          </p>
+        ) : null
+      }
+      <CsvDatabase database={database} locale={locale} />
+    </div>
+  </article>
+</BaseLayout>

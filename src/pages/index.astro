@@ -1,8 +1,12 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { siteText } from '../config/site';
-import { topics, topLevelDatabases, topLevelNotes } from '../data/generated/topics';
-import { getTopicNotesCount, isInProgressNote, isPublishedNote } from '../entities/topic/model';
+import {
+  topics as rawTopics,
+  topLevelDatabases as rawDatabases,
+  topLevelNotes as rawNotes,
+} from '../data/generated/topics';
+import { Topic, Note, Database } from '../entities/domain';
 import {
   defaultLocale,
   formatDatabaseRowsCount,
@@ -21,10 +25,12 @@ const baseUrl = import.meta.env.BASE_URL.endsWith('/')
   ? import.meta.env.BASE_URL
   : `${import.meta.env.BASE_URL}/`;
 const includeDrafts = import.meta.env.DEV;
-const visibleTopics = includeDrafts ? topics : topics.filter((topic) => !topic.draft);
+const visibleTopics = (includeDrafts ? rawTopics : rawTopics.filter((topic) => !topic.draft)).map(
+  (t) => new Topic(t),
+);
 const rootTopics = visibleTopics.filter((topic) => !topic.parentSlug);
-const visibleTopLevelNotes = topLevelNotes.filter(isPublishedNote);
-const visibleTopLevelDatabases = topLevelDatabases;
+const visibleTopLevelNotes = rawNotes.map((n) => new Note(n)).filter((n) => n.isPublished());
+const visibleTopLevelDatabases = rawDatabases.map((d) => new Database(d));
 ---
 
 <BaseLayout
@@ -53,7 +59,7 @@ const visibleTopLevelDatabases = topLevelDatabases;
           <SectionBlock id="topics" title={t.topics} count={rootTopics.length} i18nKey="topics">
             <div class="entity-grid">
               {rootTopics.map((topic) => {
-                const notesCount = getTopicNotesCount(topic, visibleTopics, includeDrafts);
+                const notesCount = topic.getRecursiveNotesCount(visibleTopics, includeDrafts);
                 return (
                   <EntityCard
                     title={topic.title}
@@ -90,8 +96,8 @@ const visibleTopLevelDatabases = topLevelDatabases;
                   title={note.title}
                   summary={note.summary}
                   href={`${baseUrl}${note.collectionSlug}/?lang=${locale}`}
-                  badgeLabel={isInProgressNote(note) ? t.inProgress : undefined}
-                  badgeI18nKey={isInProgressNote(note) ? 'inProgress' : undefined}
+                  badgeLabel={note.isInProgress() ? t.inProgress : undefined}
+                  badgeI18nKey={note.isInProgress() ? 'inProgress' : undefined}
                   tags={note.tags}
                 >
                   <Fragment slot="meta">{note.updatedAt ?? note.sourcePath}</Fragment>
@@ -120,7 +126,7 @@ const visibleTopLevelDatabases = topLevelDatabases;
                 href={`${baseUrl}${database.collectionSlug}/?lang=${locale}`}
               >
                 <Fragment slot="meta">
-                  {formatDatabaseRowsCount(locale, database.rows.length)}
+                  {formatDatabaseRowsCount(locale, database.getRowsCount())}
                 </Fragment>
               </EntityCard>
             ))}
