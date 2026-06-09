@@ -86,9 +86,9 @@ const payload = JSON.stringify({
       </thead>
       <tbody data-database-body>
         {database.rows.map((row) => (
-          <tr>
+          <tr data-row-id={row._id}>
             {database.columns.map((column) => (
-              <td data-column={column.key}>
+              <td data-column={column.key} class={column.type === "boolean" ? "database-boolean-td" : null}>
                 {column.type === "boolean" ? (
                   <button
                     class="database-boolean-cell"
@@ -97,7 +97,7 @@ const payload = JSON.stringify({
                     aria-label={isTruthyBoolean(row[column.key]) ? "true" : "false"}
                     tabindex="-1"
                   >
-                    <span aria-hidden="true">{isTruthyBoolean(row[column.key]) ? "✓" : ""}</span>
+                    <span aria-hidden="true">✓</span>
                   </button>
                 ) : (
                   row[column.key]
@@ -171,7 +171,7 @@ const payload = JSON.stringify({
       button.setAttribute("aria-pressed", String(checked));
       button.setAttribute("aria-label", checked ? "true" : "false");
       mark.setAttribute("aria-hidden", "true");
-      mark.textContent = checked ? "✓" : "";
+      mark.textContent = "✓";
       button.append(mark);
 
       return button;
@@ -224,10 +224,12 @@ const payload = JSON.stringify({
 
       for (const row of nextRows) {
         const tr = document.createElement("tr");
+        tr.dataset.rowId = row._id;
         for (const column of columns) {
           const td = document.createElement("td");
           td.dataset.column = column.key;
           if (column.type === "boolean") {
+            td.className = "database-boolean-td";
             td.append(booleanButton(row[column.key]));
           } else {
             td.textContent = row[column.key] ?? "";
@@ -310,6 +312,52 @@ const payload = JSON.stringify({
       sortState.direction = "none";
       update();
     });
+
+    body.addEventListener("click", (e) => {
+      const td = e.target.closest(".database-boolean-td");
+      if (!td) return;
+
+      const button = td.querySelector(".database-boolean-cell");
+      if (!button) return;
+
+      const tr = td.closest("tr");
+      const rowId = tr.dataset.rowId;
+      const columnKey = td.dataset.column;
+
+      if (!rowId || !columnKey) return;
+
+      const rowValue = rows.find((r) => String(r._id) === String(rowId));
+      if (!rowValue) return;
+
+      const currentValue = /^(true|yes|да|1)$/i.test(String(rowValue[columnKey] ?? "").trim());
+      const newValue = !currentValue;
+      rowValue[columnKey] = String(newValue);
+
+      const event = new CustomEvent("database-cell-update", {
+        detail: {
+          databaseSlug: payload.collectionSlug,
+          rowId: Number(rowId),
+          columnKey: columnKey,
+          value: String(newValue)
+        },
+        bubbles: true
+      });
+      view.dispatchEvent(event);
+
+      update();
+    });
+
+    view.databaseApi = {
+      getRows: () => rows,
+      getColumns: () => columns,
+      update: () => update()
+    };
+
+    const initEvent = new CustomEvent("database-view-init", {
+      detail: { api: view.databaseApi, databaseSlug: payload.collectionSlug },
+      bubbles: true
+    });
+    view.dispatchEvent(initEvent);
 
     update();
   }

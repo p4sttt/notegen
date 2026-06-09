@@ -4,6 +4,7 @@ import path from "node:path";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import remarkLinkChips from "./src/markdown/remark-link-chips.mjs";
+import { loadPlugins } from "./scripts/sync-vault/plugins.mjs";
 
 function readEnvValue(name) {
   const envPath = path.resolve(".env");
@@ -67,10 +68,17 @@ function notegenSiteConfigWatcher() {
   };
 }
 
+const vaultPath = process.env.VAULT_PATH || readEnvValue("VAULT_PATH");
+const pluginManager = await loadPlugins(vaultPath ? path.resolve(vaultPath) : undefined);
+const pluginAstroConfig = pluginManager.getAstroConfigs();
+
 export default defineConfig({
   site: process.env.ASTRO_SITE || "https://example.github.io",
   base: process.env.ASTRO_BASE || "/notegen",
   output: "static",
+  integrations: [
+    ...pluginAstroConfig.integrations
+  ],
   vite: {
     plugins: [notegenSiteConfigWatcher()]
   },
@@ -79,8 +87,8 @@ export default defineConfig({
       type: "shiki",
       excludeLangs: ["mermaid"]
     },
-    remarkPlugins: [remarkMath, remarkLinkChips],
-    rehypePlugins: [rehypeKatex],
+    remarkPlugins: [remarkMath, remarkLinkChips, ...pluginAstroConfig.remarkPlugins],
+    rehypePlugins: [rehypeKatex, ...pluginAstroConfig.rehypePlugins],
     shikiConfig: {
       themes: {
         light: "light-plus",
@@ -88,9 +96,13 @@ export default defineConfig({
       },
       langAlias: {
         "Java": "java",
-        "JAVA": "java"
+        "JAVA": "java",
+        ...Object.assign({}, ...pluginAstroConfig.shikiConfigs.map(s => s.langAlias || {}))
       },
-      defaultColor: false
+      defaultColor: false,
+      transformers: [
+        ...pluginAstroConfig.shikiConfigs.flatMap(s => s.transformers || [])
+      ]
     }
   }
 });

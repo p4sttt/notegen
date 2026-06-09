@@ -71,7 +71,61 @@ function readEnvValue(name: string) {
   return undefined;
 }
 
+function loadEnv() {
+  const envPath = path.resolve(".env");
+  if (!existsSync(envPath)) {
+    return;
+  }
+  try {
+    const envContent = readFileSync(envPath, "utf8");
+    for (const rawLine of envContent.split("\n")) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith("#")) {
+        continue;
+      }
+      const separatorIndex = line.indexOf("=");
+      if (separatorIndex === -1) {
+        continue;
+      }
+      const key = line.slice(0, separatorIndex).trim();
+      let value = line.slice(separatorIndex + 1).trim();
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      if (process.env[key] === undefined) {
+        process.env[key] = value;
+      }
+    }
+  } catch (err) {
+    console.error(`[Env] Failed to load .env file:`, err);
+  }
+}
+
+function interpolateEnv(value: any): any {
+  if (typeof value === "string") {
+    return value.replace(/\${([a-zA-Z0-9_]+)(?::-([^}]*))?}/g, (match, envName, fallback) => {
+      const envValue = process.env[envName];
+      if (envValue !== undefined) {
+        return envValue;
+      }
+      return fallback !== undefined ? fallback : "";
+    });
+  }
+  if (Array.isArray(value)) {
+    return value.map(interpolateEnv);
+  }
+  if (value !== null && typeof value === "object") {
+    const result: any = {};
+    for (const [key, val] of Object.entries(value)) {
+      result[key] = interpolateEnv(val);
+    }
+    return result;
+  }
+  return value;
+}
+
 function readSiteConfig(): SiteConfig {
+  loadEnv();
   const vaultPath = process.env.VAULT_PATH || readEnvValue("VAULT_PATH");
   const configPath = process.env.SITE_CONFIG_PATH || (vaultPath ? path.join(vaultPath, "notegen.config.json") : "");
 
@@ -85,7 +139,8 @@ function readSiteConfig(): SiteConfig {
   }
 
   try {
-    return JSON.parse(readFileSync(resolvedConfigPath, "utf8")) as SiteConfig;
+    const rawConfig = JSON.parse(readFileSync(resolvedConfigPath, "utf8")) as SiteConfig;
+    return interpolateEnv(rawConfig);
   } catch (error) {
     throw new Error(`Failed to parse site config at ${resolvedConfigPath}: ${String(error)}`);
   }

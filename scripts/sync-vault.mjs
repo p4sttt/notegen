@@ -18,6 +18,7 @@ import { createNotebookConverter, notebookNoteFrontmatter } from "./sync-vault/n
 import { contentFileName, normalizeSiteBase, relativePathSegments, slugify, slugifyPath } from "./sync-vault/paths.mjs";
 import { readSiteConfig, resolveVaultConfigPath } from "./sync-vault/site-config.mjs";
 import { findNearestTopic, listDatabaseFiles, listDirectories, listNoteFiles } from "./sync-vault/vault-files.mjs";
+import { loadPlugins, PluginContext, writePluginsUiFile } from "./sync-vault/plugins.mjs";
 
 const vaultPath = process.env.VAULT_PATH || readEnvValue("VAULT_PATH");
 const siteBase = process.env.ASTRO_BASE || readEnvValue("ASTRO_BASE") || "/notegen";
@@ -49,6 +50,10 @@ const changelogPath = resolveVaultConfigPath(
   defaultChangelogPath(resolvedVaultPath)
 );
 const { isIgnoredPath } = createIgnoreMatcher(resolvedVaultPath);
+
+const pluginManager = await loadPlugins(resolvedVaultPath);
+const pluginContext = new PluginContext(siteConfig, resolvedVaultPath);
+await pluginManager.runBeforeSync(pluginContext);
 const { copyDirectoryFiltered, rewriteAssetLinks } = createAssetTools({
   assetsRoot,
   publicBasePath,
@@ -182,6 +187,16 @@ for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
     ? notebookNoteFrontmatter(notebookConversion.notebook, notebookConversion.markdown, originalName)
     : parseFrontmatter(raw);
 
+  const processedNote = await pluginManager.runProcessNote({
+    data: parsed.data,
+    body: parsed.body,
+    isNotebook,
+    originalName,
+    sourceRelativePath
+  }, pluginContext);
+  parsed.data = processedNote.data;
+  parsed.body = processedNote.body;
+
   noteRelativeSegments[noteRelativeSegments.length - 1] = parsed.data.slug || originalName;
   const noteSlug = noteRelativeSegments.map(slugify).join("/");
   const collectionSlug = uniqueCollectionSlug(topic ? `${topic.slug}/${noteSlug}` : noteSlug);
@@ -265,13 +280,17 @@ for (const sourcePath of listDatabaseFiles(resolvedVaultPath, isIgnoredPath)) {
     rows: parsedDatabase.rows
   };
 
+  const finalDatabase = await pluginManager.runProcessDatabase(database, pluginContext);
   generatedDatabasesCount += 1;
   if (topic) {
-    topic.databases.push(database);
+    topic.databases.push(finalDatabase);
   } else {
-    topLevelDatabases.push(database);
+    topLevelDatabases.push(finalDatabase);
   }
 }
+
+await pluginManager.runAfterSync(pluginContext, topics, topLevelNotes, topLevelDatabases);
+writePluginsUiFile(pluginContext.ui);
 
 const allTags = new Set();
 for (const topic of topics) {

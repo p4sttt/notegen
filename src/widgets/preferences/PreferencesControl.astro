@@ -1,6 +1,7 @@
 ---
 import type { Locale } from "../../i18n/ui";
 import { ui } from "../../i18n/ui";
+import { pluginsUi } from "../../data/generated/plugins-ui";
 
 interface Props {
   locale: Locale;
@@ -48,6 +49,16 @@ const t = ui[locale];
         <button type="button" class="swatch" data-accent-value="rose" aria-label={t.accentRose} data-i18n-attr="aria-label:accentRose"></button>
       </div>
     </section>
+
+    {pluginsUi.preferencesSections.map((section) => {
+      const resolvedTitle = section.i18n?.[locale] || section.title;
+      return (
+        <section class="prefs-group" aria-label={resolvedTitle}>
+          <p class="prefs-label">{resolvedTitle}</p>
+          <div set:html={section.html} />
+        </section>
+      );
+    })}
   </div>
 </details>
 

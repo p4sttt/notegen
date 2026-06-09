@@ -231,25 +231,49 @@
   overflow-wrap: anywhere;
 }
 
+.database-boolean-td {
+  cursor: pointer;
+  text-align: center !important;
+  vertical-align: middle !important;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.database-boolean-td:hover {
+  background: rgba(var(--accent-rgb), 0.06) !important;
+}
+
+.database-boolean-td:hover .database-boolean-cell {
+  border-color: var(--accent);
+  transform: scale(1.05);
+}
+
 .database-boolean-cell {
   display: inline-grid;
   place-items: center;
-  width: 1.1rem;
-  height: 1.1rem;
+  vertical-align: middle;
+  width: 1.45rem;
+  height: 1.45rem;
   padding: 0;
-  border: 1px solid var(--line);
-  border-radius: 3px;
-  background: transparent;
+  border: 1.5px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
   color: var(--text-muted);
-  cursor: default;
+  cursor: pointer;
   font: inherit;
-  font-size: 0.72rem;
-  font-weight: 650;
+  font-size: 0.95rem;
+  font-weight: 850;
   line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.database-boolean-cell:not([aria-pressed="true"]) span {
+  visibility: hidden;
 }
 
 .database-boolean-cell[aria-pressed="true"] {
-  border-color: color-mix(in srgb, var(--text-muted) 46%, var(--line));
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--accent);
 }
 
 .database-boolean-cell:focus {

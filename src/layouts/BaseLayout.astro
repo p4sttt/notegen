@@ -3,6 +3,7 @@ import "../styles/global.css";
 import { siteText } from "../config/site";
 import { defaultLocale, getLocaleFromUrl, ui } from "../i18n/ui";
 import PreferencesControl from "../widgets/preferences/PreferencesControl.astro";
+import { pluginsUi } from "../data/generated/plugins-ui";
 
 interface Props {
   title: string;
@@ -42,6 +43,9 @@ const pageI18n = {
       rel="stylesheet"
     />
     <title>{title}</title>
+    {pluginsUi.styles.map((style) => (
+      <style set:html={style} />
+    ))}
   </head>
   <body>
     <div class="page-shell">
@@ -50,6 +54,17 @@ const pageI18n = {
         <nav class="top-nav">
           <a href={`${baseUrl}drafts/?lang=${locale}`} data-lang-link data-i18n="drafts">{ui[locale].drafts}</a>
           <a href={`${baseUrl}changelog/?lang=${locale}`} data-lang-link data-i18n="changelog">{ui[locale].changelog}</a>
+          {pluginsUi.headerLinks.map((link) => {
+            const resolvedLabel = link.i18n?.[locale] || link.label;
+            return (
+              <a
+                href={link.href.startsWith("http") ? link.href : `${baseUrl}${link.href.replace(/^\//, "")}?lang=${locale}`}
+                data-lang-link={!link.href.startsWith("http")}
+              >
+                {resolvedLabel}
+              </a>
+            );
+          })}
         </nav>
         <PreferencesControl locale={locale} />
       </header>
@@ -252,5 +267,8 @@ const pageI18n = {
         }
       })();
     </script>
+    {pluginsUi.scripts.map((script) => (
+      <script is:inline set:html={script} />
+    ))}
   </body>
 </html>
