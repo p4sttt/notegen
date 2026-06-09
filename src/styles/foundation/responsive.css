@@ -13,7 +13,10 @@
   }
 
   html {
-    background-size: 22px 22px, 22px 22px, 22px 22px;
+    background-size:
+      22px 22px,
+      22px 22px,
+      22px 22px;
   }
 
   body {

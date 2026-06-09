@@ -1,12 +1,12 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
-import path from "node:path";
-import { ensureParentDir } from "./fs-utils.mjs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
+import path from 'node:path';
+import { ensureParentDir } from './fs-utils.mjs';
 
 function isLocalAssetTarget(target) {
   return (
     target &&
-    !target.startsWith("/") &&
-    !target.startsWith("#") &&
+    !target.startsWith('/') &&
+    !target.startsWith('#') &&
     !/^[a-z][a-z0-9+.-]*:/i.test(target)
   );
 }
@@ -14,23 +14,23 @@ function isLocalAssetTarget(target) {
 function splitAssetTarget(target) {
   const markerIndex = target.search(/[?#]/);
   if (markerIndex === -1) {
-    return { assetPath: target, suffix: "" };
+    return { assetPath: target, suffix: '' };
   }
 
   return {
     assetPath: target.slice(0, markerIndex),
-    suffix: target.slice(markerIndex)
+    suffix: target.slice(markerIndex),
   };
 }
 
 function normalizeAssetPath(assetPath) {
   return assetPath
-    .replace(/^<|>$/g, "")
-    .replace(/\\/g, "/")
-    .replace(/^\.\//, "")
-    .split("/")
-    .filter((segment) => segment && segment !== ".")
-    .join("/");
+    .replace(/^<|>$/g, '')
+    .replace(/\\/g, '/')
+    .replace(/^\.\//, '')
+    .split('/')
+    .filter((segment) => segment && segment !== '.')
+    .join('/');
 }
 
 export function createAssetTools({ assetsRoot, publicBasePath, isIgnoredPath }) {
@@ -38,7 +38,7 @@ export function createAssetTools({ assetsRoot, publicBasePath, isIgnoredPath }) 
     const { assetPath, suffix } = splitAssetTarget(rawTarget.trim());
     const normalized = normalizeAssetPath(assetPath);
 
-    if (!normalized || normalized.startsWith("../")) {
+    if (!normalized || normalized.startsWith('../')) {
       return rawTarget;
     }
 
@@ -71,13 +71,16 @@ export function createAssetTools({ assetsRoot, publicBasePath, isIgnoredPath }) 
         const rewrittenTarget = copyReferencedAsset(sourceDirectory, publicScope, trimmedTarget);
         return `![${alt}](${rewrittenTarget})`;
       })
-      .replace(/(<img\b[^>]*?\bsrc\s*=\s*)(["'])([^"']+)(\2)/gi, (match, prefix, quote, rawTarget, closingQuote) => {
-        if (!isLocalAssetTarget(rawTarget)) {
-          return match;
-        }
+      .replace(
+        /(<img\b[^>]*?\bsrc\s*=\s*)(["'])([^"']+)(\2)/gi,
+        (match, prefix, quote, rawTarget, closingQuote) => {
+          if (!isLocalAssetTarget(rawTarget)) {
+            return match;
+          }
 
-        return `${prefix}${quote}${copyReferencedAsset(sourceDirectory, publicScope, rawTarget)}${closingQuote}`;
-      })
+          return `${prefix}${quote}${copyReferencedAsset(sourceDirectory, publicScope, rawTarget)}${closingQuote}`;
+        },
+      )
       .replace(/(<img\b[^>]*?\bsrc\s*=\s*)([^\s>"']+)/gi, (match, prefix, rawTarget) => {
         if (!isLocalAssetTarget(rawTarget)) {
           return match;
@@ -89,7 +92,7 @@ export function createAssetTools({ assetsRoot, publicBasePath, isIgnoredPath }) 
 
   function copyDirectoryFiltered(sourceDir, targetDir) {
     const entries = readdirSync(sourceDir, { withFileTypes: true }).sort((left, right) =>
-      left.name.localeCompare(right.name)
+      left.name.localeCompare(right.name),
     );
 
     for (const entry of entries) {
@@ -115,6 +118,6 @@ export function createAssetTools({ assetsRoot, publicBasePath, isIgnoredPath }) 
   return {
     copyDirectoryFiltered,
     copyReferencedAsset,
-    rewriteAssetLinks
+    rewriteAssetLinks,
   };
 }

@@ -135,15 +135,14 @@
 }
 
 .prose a.link-chip::before {
-  content: "";
+  content: '';
   position: absolute;
   left: 0.46em;
   width: 1.05em;
   height: 1.05em;
   border-radius: 50%;
   background: color-mix(in srgb, var(--accent) 16%, var(--surface-strong));
-  mask:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M2 12h20'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E")
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M2 12h20'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E")
     center / contain no-repeat;
 }
 
@@ -202,9 +201,7 @@
 .prose :not(.katex-display) > .katex,
 .prose .notebook-output-html {
   scrollbar-width: thin;
-  scrollbar-color:
-    transparent
-    transparent;
+  scrollbar-color: transparent transparent;
 }
 
 .prose pre:hover,
@@ -217,9 +214,7 @@
 .prose :not(.katex-display) > .katex:focus-within,
 .prose .notebook-output-html:hover,
 .prose .notebook-output-html:focus-within {
-  scrollbar-color:
-    color-mix(in srgb, var(--accent) 34%, transparent)
-    transparent;
+  scrollbar-color: color-mix(in srgb, var(--accent) 34%, transparent) transparent;
 }
 
 .prose pre::-webkit-scrollbar,
@@ -417,41 +412,45 @@
   text-decoration: var(--shiki-light-text-decoration, inherit);
 }
 
-:root[data-theme="light"] .astro-code,
+:root[data-theme='light'] .astro-code,
 :root:not([data-theme]) .astro-code {
   background: var(--shiki-light-bg, #f8f6f1) !important;
   color: var(--shiki-light, #1f2328) !important;
 }
 
-:root[data-theme="dark"] .astro-code {
+:root[data-theme='dark'] .astro-code {
   background: var(--shiki-dark-bg, #16181d) !important;
   color: var(--shiki-dark, #e6edf3) !important;
 }
 
-:root[data-theme="dark"] .astro-code span {
+:root[data-theme='dark'] .astro-code span {
   color: var(--shiki-dark, inherit);
   font-style: var(--shiki-dark-font-style, inherit);
   font-weight: var(--shiki-dark-font-weight, inherit);
   text-decoration: var(--shiki-dark-text-decoration, inherit);
 }
 
-:root:not([data-accent="white"]) .astro-code span[style*="--shiki-light:#AF00DB"],
-:root:not([data-accent="white"]) .astro-code span[style*="--shiki-light:#0000FF"] {
+:root:not([data-accent='white']) .astro-code span[style*='--shiki-light:#AF00DB'],
+:root:not([data-accent='white']) .astro-code span[style*='--shiki-light:#0000FF'] {
   color: color-mix(in srgb, var(--accent) 46%, var(--shiki-light, inherit));
 }
 
-:root:not([data-accent="white"]) .astro-code span[style*="--shiki-light:#795E26"],
-:root:not([data-accent="white"]) .astro-code span[style*="--shiki-light:#001080"] {
+:root:not([data-accent='white']) .astro-code span[style*='--shiki-light:#795E26'],
+:root:not([data-accent='white']) .astro-code span[style*='--shiki-light:#001080'] {
   color: color-mix(in srgb, var(--accent) 34%, var(--shiki-light, inherit));
 }
 
-:root[data-theme="dark"]:not([data-accent="white"]) .astro-code span[style*="--shiki-dark:#FB4934"],
-:root[data-theme="dark"]:not([data-accent="white"]) .astro-code span[style*="--shiki-dark:#8EC07C"] {
+:root[data-theme='dark']:not([data-accent='white']) .astro-code span[style*='--shiki-dark:#FB4934'],
+:root[data-theme='dark']:not([data-accent='white'])
+  .astro-code
+  span[style*='--shiki-dark:#8EC07C'] {
   color: color-mix(in srgb, var(--accent) 46%, var(--shiki-dark, inherit));
 }
 
-:root[data-theme="dark"]:not([data-accent="white"]) .astro-code span[style*="--shiki-dark:#FE8019"],
-:root[data-theme="dark"]:not([data-accent="white"]) .astro-code span[style*="--shiki-dark:#83A598"] {
+:root[data-theme='dark']:not([data-accent='white']) .astro-code span[style*='--shiki-dark:#FE8019'],
+:root[data-theme='dark']:not([data-accent='white'])
+  .astro-code
+  span[style*='--shiki-dark:#83A598'] {
   color: color-mix(in srgb, var(--accent) 34%, var(--shiki-dark, inherit));
 }
 
@@ -495,4 +494,3 @@
   max-width: 100%;
   height: auto;
 }
-

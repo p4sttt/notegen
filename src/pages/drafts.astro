@@ -1,16 +1,20 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-import { siteText } from "../config/site";
-import { topics, topLevelNotes } from "../data/generated/topics";
-import { isInProgressNote } from "../entities/topic/model";
-import { defaultLocale, getLocaleFromUrl, ui } from "../i18n/ui";
-import EntityCard from "../shared/ui/EntityCard.astro";
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteText } from '../config/site';
+import { topics, topLevelNotes } from '../data/generated/topics';
+import { isInProgressNote } from '../entities/topic/model';
+import { defaultLocale, getLocaleFromUrl, ui } from '../i18n/ui';
+import EntityCard from '../shared/ui/EntityCard.astro';
 
 const locale = Astro.url ? getLocaleFromUrl(Astro.url) : defaultLocale;
 const t = ui[locale];
 const copy = siteText[locale];
-const baseUrl = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
-const inProgressNotes = [...topics.flatMap((topic) => topic.notes), ...topLevelNotes].filter(isInProgressNote);
+const baseUrl = import.meta.env.BASE_URL.endsWith('/')
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+const inProgressNotes = [...topics.flatMap((topic) => topic.notes), ...topLevelNotes].filter(
+  isInProgressNote,
+);
 ---
 
 <BaseLayout

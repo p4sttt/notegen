@@ -1,25 +1,25 @@
-import { defineConfig } from "astro/config";
-import { existsSync, readFileSync } from "node:fs";
-import path from "node:path";
-import rehypeKatex from "rehype-katex";
-import remarkMath from "remark-math";
-import remarkLinkChips from "./src/markdown/remark-link-chips.mjs";
-import { loadPlugins } from "./scripts/sync-vault/plugins.mjs";
+import { defineConfig } from 'astro/config';
+import { existsSync, readFileSync } from 'node:fs';
+import path from 'node:path';
+import rehypeKatex from 'rehype-katex';
+import remarkMath from 'remark-math';
+import remarkLinkChips from './src/markdown/remark-link-chips.mjs';
+import { loadPlugins } from './scripts/sync-vault/plugins.mjs';
 
 function readEnvValue(name) {
-  const envPath = path.resolve(".env");
+  const envPath = path.resolve('.env');
   if (!existsSync(envPath)) {
     return undefined;
   }
 
-  const envContent = readFileSync(envPath, "utf8");
-  for (const rawLine of envContent.split("\n")) {
+  const envContent = readFileSync(envPath, 'utf8');
+  for (const rawLine of envContent.split('\n')) {
     const line = rawLine.trim();
-    if (!line || line.startsWith("#")) {
+    if (!line || line.startsWith('#')) {
       continue;
     }
 
-    const separatorIndex = line.indexOf("=");
+    const separatorIndex = line.indexOf('=');
     if (separatorIndex === -1) {
       continue;
     }
@@ -30,7 +30,10 @@ function readEnvValue(name) {
     }
 
     let value = line.slice(separatorIndex + 1).trim();
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
       value = value.slice(1, -1);
     }
     return value;
@@ -40,9 +43,10 @@ function readEnvValue(name) {
 }
 
 function getSiteConfigPath() {
-  const vaultPath = process.env.VAULT_PATH || readEnvValue("VAULT_PATH");
-  const configuredPath = process.env.SITE_CONFIG_PATH || readEnvValue("SITE_CONFIG_PATH");
-  const configPath = configuredPath || (vaultPath ? path.join(vaultPath, "notegen.config.json") : "");
+  const vaultPath = process.env.VAULT_PATH || readEnvValue('VAULT_PATH');
+  const configuredPath = process.env.SITE_CONFIG_PATH || readEnvValue('SITE_CONFIG_PATH');
+  const configPath =
+    configuredPath || (vaultPath ? path.join(vaultPath, 'notegen.config.json') : '');
   return configPath ? path.resolve(configPath) : undefined;
 }
 
@@ -50,59 +54,55 @@ function notegenSiteConfigWatcher() {
   const configPath = getSiteConfigPath();
 
   return {
-    name: "notegen-site-config-watcher",
+    name: 'notegen-site-config-watcher',
     configureServer(server) {
       if (!configPath) {
         return;
       }
 
       server.watcher.add(configPath);
-      server.watcher.on("change", async (changedPath) => {
+      server.watcher.on('change', async (changedPath) => {
         if (path.resolve(changedPath) !== configPath) {
           return;
         }
 
         await server.restart();
       });
-    }
+    },
   };
 }
 
-const vaultPath = process.env.VAULT_PATH || readEnvValue("VAULT_PATH");
+const vaultPath = process.env.VAULT_PATH || readEnvValue('VAULT_PATH');
 const pluginManager = await loadPlugins(vaultPath ? path.resolve(vaultPath) : undefined);
 const pluginAstroConfig = pluginManager.getAstroConfigs();
 
 export default defineConfig({
-  site: process.env.ASTRO_SITE || "https://example.github.io",
-  base: process.env.ASTRO_BASE || "/notegen",
-  output: "static",
-  integrations: [
-    ...pluginAstroConfig.integrations
-  ],
+  site: process.env.ASTRO_SITE || 'https://example.github.io',
+  base: process.env.ASTRO_BASE || '/notegen',
+  output: 'static',
+  integrations: [...pluginAstroConfig.integrations],
   vite: {
-    plugins: [notegenSiteConfigWatcher()]
+    plugins: [notegenSiteConfigWatcher()],
   },
   markdown: {
     syntaxHighlight: {
-      type: "shiki",
-      excludeLangs: ["mermaid"]
+      type: 'shiki',
+      excludeLangs: ['mermaid'],
     },
     remarkPlugins: [remarkMath, remarkLinkChips, ...pluginAstroConfig.remarkPlugins],
     rehypePlugins: [rehypeKatex, ...pluginAstroConfig.rehypePlugins],
     shikiConfig: {
       themes: {
-        light: "light-plus",
-        dark: "gruvbox-dark-medium"
+        light: 'light-plus',
+        dark: 'gruvbox-dark-medium',
       },
       langAlias: {
-        "Java": "java",
-        "JAVA": "java",
-        ...Object.assign({}, ...pluginAstroConfig.shikiConfigs.map(s => s.langAlias || {}))
+        Java: 'java',
+        JAVA: 'java',
+        ...Object.assign({}, ...pluginAstroConfig.shikiConfigs.map((s) => s.langAlias || {})),
       },
       defaultColor: false,
-      transformers: [
-        ...pluginAstroConfig.shikiConfigs.flatMap(s => s.transformers || [])
-      ]
-    }
-  }
+      transformers: [...pluginAstroConfig.shikiConfigs.flatMap((s) => s.transformers || [])],
+    },
+  },
 });

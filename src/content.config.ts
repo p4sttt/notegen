@@ -1,30 +1,30 @@
-import { defineCollection, z } from "astro:content";
+import { defineCollection, z } from 'astro:content';
 
 const topics = defineCollection({
-  type: "content",
+  type: 'content',
   schema: z.object({
     title: z.string(),
     slug: z.string().optional(),
     description: z.string().optional(),
     draft: z.boolean().optional(),
-    sourcePath: z.string().optional()
-  })
+    sourcePath: z.string().optional(),
+  }),
 });
 
 const notes = defineCollection({
-  type: "content",
+  type: 'content',
   schema: z.object({
     title: z.string(),
     slug: z.string().optional(),
     date: z.coerce.date().optional(),
-    status: z.enum(["draft", "in-progress", "done"]).optional(),
+    status: z.enum(['draft', 'in-progress', 'done']).optional(),
     draft: z.boolean().optional(),
     topic: z.string().optional(),
     topicSlug: z.string().optional(),
     parentSlug: z.string().optional(),
     sourcePath: z.string().optional(),
-    tags: z.array(z.string()).optional()
-  })
+    tags: z.array(z.string()).optional(),
+  }),
 });
 
 export const collections = { topics, notes };

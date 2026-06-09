@@ -1,5 +1,5 @@
 function normalizeCell(value) {
-  return String(value ?? "").trim();
+  return String(value ?? '').trim();
 }
 
 function uniqueHeader(label, index, seen) {
@@ -11,7 +11,7 @@ function uniqueHeader(label, index, seen) {
 }
 
 function detectDelimiter(input) {
-  const candidates = [",", ";", "\t"];
+  const candidates = [',', ';', '\t'];
   const counts = Object.fromEntries(candidates.map((candidate) => [candidate, 0]));
   let quoted = false;
 
@@ -30,7 +30,7 @@ function detectDelimiter(input) {
 
     if (char === '"') {
       quoted = true;
-    } else if (char === "\n" || char === "\r") {
+    } else if (char === '\n' || char === '\r') {
       break;
     } else if (char in counts) {
       counts[char] += 1;
@@ -43,10 +43,10 @@ function detectDelimiter(input) {
 function parseCsvRows(input) {
   const rows = [];
   let row = [];
-  let cell = "";
+  let cell = '';
   let quoted = false;
 
-  const source = input.replace(/^\uFEFF/, "");
+  const source = input.replace(/^\uFEFF/, '');
   const delimiter = detectDelimiter(source);
 
   for (let index = 0; index < source.length; index += 1) {
@@ -69,13 +69,13 @@ function parseCsvRows(input) {
       quoted = true;
     } else if (char === delimiter) {
       row.push(cell);
-      cell = "";
-    } else if (char === "\n") {
+      cell = '';
+    } else if (char === '\n') {
       row.push(cell);
       rows.push(row);
       row = [];
-      cell = "";
-    } else if (char !== "\r") {
+      cell = '';
+    } else if (char !== '\r') {
       cell += char;
     }
   }
@@ -89,43 +89,43 @@ function parseCsvRows(input) {
 function inferValueType(value) {
   const normalized = normalizeCell(value);
   if (!normalized) {
-    return "empty";
+    return 'empty';
   }
 
   if (/^(true|false|yes|no|да|нет)$/i.test(normalized)) {
-    return "boolean";
+    return 'boolean';
   }
 
   if (/^-?\d+(?:[.,]\d+)?%?$/.test(normalized)) {
-    return "number";
+    return 'number';
   }
 
   if (/^\d{4}-\d{2}-\d{2}(?:[T\s].*)?$/.test(normalized) && !Number.isNaN(Date.parse(normalized))) {
-    return "date";
+    return 'date';
   }
 
-  return "text";
+  return 'text';
 }
 
 function inferColumnType(values) {
-  const types = values.map(inferValueType).filter((type) => type !== "empty");
+  const types = values.map(inferValueType).filter((type) => type !== 'empty');
   if (types.length === 0) {
-    return "text";
+    return 'text';
   }
 
-  if (types.every((type) => type === "number")) {
-    return "number";
+  if (types.every((type) => type === 'number')) {
+    return 'number';
   }
 
-  if (types.every((type) => type === "date")) {
-    return "date";
+  if (types.every((type) => type === 'date')) {
+    return 'date';
   }
 
-  if (types.every((type) => type === "boolean")) {
-    return "boolean";
+  if (types.every((type) => type === 'boolean')) {
+    return 'boolean';
   }
 
-  return "text";
+  return 'text';
 }
 
 export function parseCsvDatabase(raw) {
@@ -136,12 +136,14 @@ export function parseCsvDatabase(raw) {
 
   const columnCount = Math.max(...parsedRows.map((row) => row.length));
   const seenHeaders = new Map();
-  const headers = Array.from({ length: columnCount }, (_, index) => uniqueHeader(parsedRows[0]?.[index], index, seenHeaders));
+  const headers = Array.from({ length: columnCount }, (_, index) =>
+    uniqueHeader(parsedRows[0]?.[index], index, seenHeaders),
+  );
   const bodyRows = parsedRows.slice(1);
   const columns = headers.map((label, index) => ({
     key: `c${index}`,
     label,
-    type: inferColumnType(bodyRows.map((row) => row[index]))
+    type: inferColumnType(bodyRows.map((row) => row[index])),
   }));
 
   const rows = bodyRows.map((row, rowIndex) => {

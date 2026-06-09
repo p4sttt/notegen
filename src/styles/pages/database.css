@@ -235,7 +235,9 @@
   cursor: pointer;
   text-align: center !important;
   vertical-align: middle !important;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .database-boolean-td:hover {
@@ -266,11 +268,11 @@
   transition: all 0.2s ease;
 }
 
-.database-boolean-cell:not([aria-pressed="true"]) span {
+.database-boolean-cell:not([aria-pressed='true']) span {
   visibility: hidden;
 }
 
-.database-boolean-cell[aria-pressed="true"] {
+.database-boolean-cell[aria-pressed='true'] {
   border-color: var(--accent);
   background: rgba(var(--accent-rgb), 0.1);
   color: var(--accent);

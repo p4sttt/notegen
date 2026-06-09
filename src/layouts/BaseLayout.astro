@@ -1,9 +1,9 @@
 ---
-import "../styles/global.css";
-import { siteText } from "../config/site";
-import { defaultLocale, getLocaleFromUrl, ui } from "../i18n/ui";
-import PreferencesControl from "../widgets/preferences/PreferencesControl.astro";
-import { pluginsUi } from "../data/generated/plugins-ui";
+import '../styles/global.css';
+import { siteText } from '../config/site';
+import { defaultLocale, getLocaleFromUrl, ui } from '../i18n/ui';
+import PreferencesControl from '../widgets/preferences/PreferencesControl.astro';
+import { pluginsUi } from '../data/generated/plugins-ui';
 
 interface Props {
   title: string;
@@ -14,17 +14,20 @@ interface Props {
   descriptionI18nKey?: string;
 }
 
-const { title, description, titleI18nKey, titlePrefix, titleSuffixI18nKey, descriptionI18nKey } = Astro.props;
+const { title, description, titleI18nKey, titlePrefix, titleSuffixI18nKey, descriptionI18nKey } =
+  Astro.props;
 const locale = Astro.url ? getLocaleFromUrl(Astro.url) : defaultLocale;
 const copy = siteText[locale];
 const metaDescription = description ?? copy.metaDescription;
-const baseUrl = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+const baseUrl = import.meta.env.BASE_URL.endsWith('/')
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
 const i18nMessages = { ui, site: siteText };
 const pageI18n = {
   titleKey: titleI18nKey,
   titlePrefix,
   titleSuffixKey: titleSuffixI18nKey,
-  descriptionKey: descriptionI18nKey
+  descriptionKey: descriptionI18nKey,
 };
 ---
 
@@ -43,28 +46,38 @@ const pageI18n = {
       rel="stylesheet"
     />
     <title>{title}</title>
-    {pluginsUi.styles.map((style) => (
-      <style set:html={style} />
-    ))}
+    {pluginsUi.styles.map((style) => <style set:html={style} />)}
   </head>
   <body>
     <div class="page-shell">
       <header class="site-header">
-        <a href={`${baseUrl}?lang=${locale}`} class="brand" data-lang-link data-i18n="brand">{copy.brand}</a>
+        <a href={`${baseUrl}?lang=${locale}`} class="brand" data-lang-link data-i18n="brand"
+          >{copy.brand}</a
+        >
         <nav class="top-nav">
-          <a href={`${baseUrl}drafts/?lang=${locale}`} data-lang-link data-i18n="drafts">{ui[locale].drafts}</a>
-          <a href={`${baseUrl}changelog/?lang=${locale}`} data-lang-link data-i18n="changelog">{ui[locale].changelog}</a>
-          {pluginsUi.headerLinks.map((link) => {
-            const resolvedLabel = link.i18n?.[locale] || link.label;
-            return (
-              <a
-                href={link.href.startsWith("http") ? link.href : `${baseUrl}${link.href.replace(/^\//, "")}?lang=${locale}`}
-                data-lang-link={!link.href.startsWith("http")}
-              >
-                {resolvedLabel}
-              </a>
-            );
-          })}
+          <a href={`${baseUrl}drafts/?lang=${locale}`} data-lang-link data-i18n="drafts"
+            >{ui[locale].drafts}</a
+          >
+          <a href={`${baseUrl}changelog/?lang=${locale}`} data-lang-link data-i18n="changelog"
+            >{ui[locale].changelog}</a
+          >
+          {
+            pluginsUi.headerLinks.map((link) => {
+              const resolvedLabel = link.i18n?.[locale] || link.label;
+              return (
+                <a
+                  href={
+                    link.href.startsWith('http')
+                      ? link.href
+                      : `${baseUrl}${link.href.replace(/^\//, '')}?lang=${locale}`
+                  }
+                  data-lang-link={!link.href.startsWith('http')}
+                >
+                  {resolvedLabel}
+                </a>
+              );
+            })
+          }
         </nav>
         <PreferencesControl locale={locale} />
       </header>
@@ -75,25 +88,24 @@ const pageI18n = {
     <script is:inline define:vars={{ i18nMessages, defaultLocale, pageI18n }}>
       const uiDict = i18nMessages.ui;
       const siteDict = i18nMessages.site;
-      const languageStorageKey = "notegen-language";
-      const isSupportedLocale = (value) => value === "en" || value === "ru";
+      const languageStorageKey = 'notegen-language';
+      const isSupportedLocale = (value) => value === 'en' || value === 'ru';
       const currentUrl = new URL(window.location.href);
-      const queryLocale = currentUrl.searchParams.get("lang");
+      const queryLocale = currentUrl.searchParams.get('lang');
       const savedLocale = localStorage.getItem(languageStorageKey);
       const locale = isSupportedLocale(queryLocale)
         ? queryLocale
-        : (isSupportedLocale(savedLocale) ? savedLocale : defaultLocale);
+        : isSupportedLocale(savedLocale)
+          ? savedLocale
+          : defaultLocale;
 
       const resolveMessage = (key) => {
         if (!key) return undefined;
-        const parts = key.split(".");
+        const parts = key.split('.');
         const firstPart = parts[0];
-        const sources = firstPart === "ui"
-          ? [uiDict]
-          : firstPart === "site"
-            ? [siteDict]
-            : [uiDict, siteDict];
-        const keyParts = firstPart === "ui" || firstPart === "site" ? parts.slice(1) : parts;
+        const sources =
+          firstPart === 'ui' ? [uiDict] : firstPart === 'site' ? [siteDict] : [uiDict, siteDict];
+        const keyParts = firstPart === 'ui' || firstPart === 'site' ? parts.slice(1) : parts;
 
         for (const source of sources) {
           let value = source?.[locale];
@@ -108,9 +120,9 @@ const pageI18n = {
         return undefined;
       };
 
-      if (currentUrl.searchParams.get("lang") !== locale) {
-        currentUrl.searchParams.set("lang", locale);
-        history.replaceState(null, "", currentUrl.toString());
+      if (currentUrl.searchParams.get('lang') !== locale) {
+        currentUrl.searchParams.set('lang', locale);
+        history.replaceState(null, '', currentUrl.toString());
       }
 
       document.documentElement.lang = locale;
@@ -119,28 +131,30 @@ const pageI18n = {
       const titleParts = [
         pageI18n.titlePrefix,
         resolveMessage(pageI18n.titleKey),
-        resolveMessage(pageI18n.titleSuffixKey)
-      ].filter((part) => typeof part === "string" && part.length > 0);
+        resolveMessage(pageI18n.titleSuffixKey),
+      ].filter((part) => typeof part === 'string' && part.length > 0);
       if (titleParts.length > 0) {
-        document.title = titleParts.join(" | ");
+        document.title = titleParts.join(' | ');
       }
 
       const metaDescription = resolveMessage(pageI18n.descriptionKey);
-      if (typeof metaDescription === "string") {
-        document.querySelector('meta[name="description"]')?.setAttribute("content", metaDescription);
+      if (typeof metaDescription === 'string') {
+        document
+          .querySelector('meta[name="description"]')
+          ?.setAttribute('content', metaDescription);
       }
 
-      document.querySelectorAll("[data-i18n]").forEach((element) => {
-        const key = element.getAttribute("data-i18n");
+      document.querySelectorAll('[data-i18n]').forEach((element) => {
+        const key = element.getAttribute('data-i18n');
         const value = resolveMessage(key);
-        if (typeof value === "string" || typeof value === "number") {
+        if (typeof value === 'string' || typeof value === 'number') {
           element.textContent = value;
         }
       });
 
-      document.querySelectorAll("[data-i18n-plural]").forEach((element) => {
-        const key = element.getAttribute("data-i18n-plural");
-        const count = Number(element.getAttribute("data-i18n-count"));
+      document.querySelectorAll('[data-i18n-plural]').forEach((element) => {
+        const key = element.getAttribute('data-i18n-plural');
+        const count = Number(element.getAttribute('data-i18n-count'));
         const forms = resolveMessage(key);
         if (!forms || Number.isNaN(count)) return;
         const category = new Intl.PluralRules(locale).select(count);
@@ -150,8 +164,9 @@ const pageI18n = {
         }
       });
 
-      document.querySelectorAll("[data-i18n-datetime]").forEach((element) => {
-        const value = element.getAttribute("datetime") || element.getAttribute("data-i18n-datetime");
+      document.querySelectorAll('[data-i18n-datetime]').forEach((element) => {
+        const value =
+          element.getAttribute('datetime') || element.getAttribute('data-i18n-datetime');
         if (!value) return;
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) {
@@ -159,59 +174,64 @@ const pageI18n = {
           return;
         }
         element.textContent = new Intl.DateTimeFormat(locale, {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit"
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
         }).format(date);
       });
 
-      document.querySelectorAll("[data-i18n-attr]").forEach((element) => {
-        const entries = element.getAttribute("data-i18n-attr")?.split(",") ?? [];
+      document.querySelectorAll('[data-i18n-attr]').forEach((element) => {
+        const entries = element.getAttribute('data-i18n-attr')?.split(',') ?? [];
         entries.forEach((entry) => {
-          const [attribute, key] = entry.split(":").map((part) => part.trim());
+          const [attribute, key] = entry.split(':').map((part) => part.trim());
           const value = resolveMessage(key);
-          if (attribute && (typeof value === "string" || typeof value === "number")) {
+          if (attribute && (typeof value === 'string' || typeof value === 'number')) {
             element.setAttribute(attribute, String(value));
           }
         });
       });
 
-      document.querySelectorAll("[data-lang-link]").forEach((element) => {
-        const href = element.getAttribute("href");
+      document.querySelectorAll('[data-lang-link]').forEach((element) => {
+        const href = element.getAttribute('href');
         if (!href) return;
         const url = new URL(href, window.location.origin);
-        url.searchParams.set("lang", locale);
-        element.setAttribute("href", `${url.pathname}${url.search}${url.hash}`);
+        url.searchParams.set('lang', locale);
+        element.setAttribute('href', `${url.pathname}${url.search}${url.hash}`);
       });
 
-      const overflowTargets = Array.from(document.querySelectorAll(".prose .katex-display, .prose :not(.katex-display) > .katex"));
+      const overflowTargets = Array.from(
+        document.querySelectorAll('.prose .katex-display, .prose :not(.katex-display) > .katex'),
+      );
       const updateOverflowState = () => {
         overflowTargets.forEach((element) => {
-          element.classList.toggle("is-overflowing-x", element.scrollWidth > element.clientWidth + 10);
+          element.classList.toggle(
+            'is-overflowing-x',
+            element.scrollWidth > element.clientWidth + 10,
+          );
         });
       };
 
       updateOverflowState();
-      window.addEventListener("resize", updateOverflowState, { passive: true });
+      window.addEventListener('resize', updateOverflowState, { passive: true });
       document.fonts?.ready?.then(updateOverflowState);
     </script>
     <script>
       (async () => {
-        const codeBlocks = document.querySelectorAll("pre > code.language-mermaid");
+        const codeBlocks = document.querySelectorAll('pre > code.language-mermaid');
         if (codeBlocks.length === 0) return;
 
         codeBlocks.forEach((codeEl, index) => {
           const preEl = codeEl.parentElement;
           if (!preEl) return;
-          const code = codeEl.textContent || "";
+          const code = codeEl.textContent || '';
 
-          const container = document.createElement("div");
-          container.className = "mermaid-container";
+          const container = document.createElement('div');
+          container.className = 'mermaid-container';
 
-          const target = document.createElement("div");
-          target.className = "mermaid";
+          const target = document.createElement('div');
+          target.className = 'mermaid';
           target.id = `mermaid-${index}`;
           target.dataset.originalCode = code;
 
@@ -220,29 +240,28 @@ const pageI18n = {
         });
 
         try {
-          const { default: mermaid } = await import(
-            "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs"
-          );
+          const { default: mermaid } =
+            await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
 
           const renderDiagrams = async () => {
-            const isDark = document.documentElement.dataset.theme === "dark";
+            const isDark = document.documentElement.dataset.theme === 'dark';
             mermaid.initialize({
               startOnLoad: false,
-              theme: isDark ? "dark" : "default",
-              securityLevel: "loose"
+              theme: isDark ? 'dark' : 'default',
+              securityLevel: 'loose',
             });
 
-            const targets = document.querySelectorAll(".mermaid");
+            const targets = document.querySelectorAll('.mermaid');
             for (const target of targets) {
               const code = target.dataset.originalCode;
               const id = target.id;
               if (code) {
                 try {
-                  target.innerHTML = "";
+                  target.innerHTML = '';
                   const { svg } = await mermaid.render(`${id}-svg`, code);
                   target.innerHTML = svg;
                 } catch (err) {
-                  console.error("Mermaid render error:", err);
+                  console.error('Mermaid render error:', err);
                   target.innerHTML = `<pre class="notebook-output notebook-output-error"><code>${err.message || err}</code></pre>`;
                 }
               }
@@ -253,22 +272,20 @@ const pageI18n = {
 
           const observer = new MutationObserver(async (mutations) => {
             for (const mutation of mutations) {
-              if (mutation.attributeName === "data-theme") {
+              if (mutation.attributeName === 'data-theme') {
                 await renderDiagrams();
               }
             }
           });
           observer.observe(document.documentElement, {
             attributes: true,
-            attributeFilter: ["data-theme"]
+            attributeFilter: ['data-theme'],
           });
         } catch (err) {
-          console.error("Failed to load Mermaid:", err);
+          console.error('Failed to load Mermaid:', err);
         }
       })();
     </script>
-    {pluginsUi.scripts.map((script) => (
-      <script is:inline set:html={script} />
-    ))}
+    {pluginsUi.scripts.map((script) => <script is:inline set:html={script} />)}
   </body>
 </html>

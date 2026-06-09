@@ -1,41 +1,43 @@
-import { existsSync, readFileSync } from "node:fs";
-import path from "node:path";
+import { existsSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 
 function escapeSingleQuotes(input) {
-  return String(input).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+  return String(input).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
 function normalizeVaultPath(input) {
-  return String(input ?? "")
-    .replace(/\\/g, "/")
-    .replace(/^\/+/, "")
-    .replace(/^\.\//, "");
+  return String(input ?? '')
+    .replace(/\\/g, '/')
+    .replace(/^\/+/, '')
+    .replace(/^\.\//, '');
 }
 
 function asString(value) {
-  return value === undefined || value === null ? "" : String(value);
+  return value === undefined || value === null ? '' : String(value);
 }
 
 function normalizeAction(value) {
   const action = asString(value).toLowerCase();
-  return ["created", "updated", "deleted", "renamed"].includes(action) ? action : "changed";
+  return ['created', 'updated', 'deleted', 'renamed'].includes(action) ? action : 'changed';
 }
 
 function normalizeKind(value) {
   const kind = asString(value).toLowerCase();
-  return ["note", "topic", "database", "asset"].includes(kind) ? kind : "other";
+  return ['note', 'topic', 'database', 'asset'].includes(kind) ? kind : 'other';
 }
 
 function parseJsonLines(content, sourcePath) {
   return content
-    .split("\n")
+    .split('\n')
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line, index) => {
       try {
         return JSON.parse(line);
       } catch (error) {
-        throw new Error(`Failed to parse changelog JSONL line ${index + 1} at ${sourcePath}: ${String(error)}`);
+        throw new Error(
+          `Failed to parse changelog JSONL line ${index + 1} at ${sourcePath}: ${String(error)}`,
+        );
       }
     });
 }
@@ -46,7 +48,7 @@ function parseRawChangelog(content, sourcePath) {
     return [];
   }
 
-  if (trimmed.startsWith("[")) {
+  if (trimmed.startsWith('[')) {
     const parsed = JSON.parse(trimmed);
     if (!Array.isArray(parsed)) {
       throw new Error(`Changelog JSON at ${sourcePath} must be an array.`);
@@ -54,7 +56,7 @@ function parseRawChangelog(content, sourcePath) {
     return parsed;
   }
 
-  if (trimmed.startsWith("{")) {
+  if (trimmed.startsWith('{')) {
     try {
       const parsed = JSON.parse(trimmed);
       if (Array.isArray(parsed.events)) {
@@ -62,7 +64,7 @@ function parseRawChangelog(content, sourcePath) {
       }
       return [parsed];
     } catch (error) {
-      if (!trimmed.includes("\n")) {
+      if (!trimmed.includes('\n')) {
         throw error;
       }
       return parseJsonLines(content, sourcePath);
@@ -77,7 +79,9 @@ function normalizeEvent(rawEvent, index) {
   const oldPath = normalizeVaultPath(rawEvent.oldPath ?? rawEvent.previousPath);
 
   return {
-    id: asString(rawEvent.id) || `${asString(rawEvent.timestamp) || "event"}-${pathValue || oldPath || index}`,
+    id:
+      asString(rawEvent.id) ||
+      `${asString(rawEvent.timestamp) || 'event'}-${pathValue || oldPath || index}`,
     timestamp: asString(rawEvent.timestamp || rawEvent.date),
     action: normalizeAction(rawEvent.action || rawEvent.type),
     kind: normalizeKind(rawEvent.kind),
@@ -85,7 +89,7 @@ function normalizeEvent(rawEvent, index) {
     oldPath,
     title: asString(rawEvent.title),
     topic: asString(rawEvent.topic),
-    source: asString(rawEvent.source)
+    source: asString(rawEvent.source),
   };
 }
 
@@ -94,7 +98,7 @@ export function readChangelogEvents(changelogPath) {
     return [];
   }
 
-  const content = readFileSync(changelogPath, "utf8");
+  const content = readFileSync(changelogPath, 'utf8');
   return parseRawChangelog(content, changelogPath)
     .map(normalizeEvent)
     .filter((event) => event.path || event.oldPath);
@@ -105,46 +109,46 @@ function createContentLookup(topics, topLevelNotes, topLevelDatabases = []) {
 
   for (const topic of topics) {
     lookup.set(normalizeVaultPath(topic.sourcePath), {
-      kind: "topic",
+      kind: 'topic',
       title: topic.title,
       href: topic.slug,
-      topic: ""
+      topic: '',
     });
 
     for (const note of topic.notes) {
       lookup.set(normalizeVaultPath(note.sourcePath), {
-        kind: "note",
+        kind: 'note',
         title: note.title,
         href: note.collectionSlug,
-        topic: topic.title
+        topic: topic.title,
       });
     }
 
     for (const database of topic.databases ?? []) {
       lookup.set(normalizeVaultPath(database.sourcePath), {
-        kind: "database",
+        kind: 'database',
         title: database.title,
         href: database.collectionSlug,
-        topic: topic.title
+        topic: topic.title,
       });
     }
   }
 
   for (const note of topLevelNotes) {
     lookup.set(normalizeVaultPath(note.sourcePath), {
-      kind: "note",
+      kind: 'note',
       title: note.title,
       href: note.collectionSlug,
-      topic: ""
+      topic: '',
     });
   }
 
   for (const database of topLevelDatabases) {
     lookup.set(normalizeVaultPath(database.sourcePath), {
-      kind: "database",
+      kind: 'database',
       title: database.title,
       href: database.collectionSlug,
-      topic: ""
+      topic: '',
     });
   }
 
@@ -155,15 +159,17 @@ function enrichEvent(event, lookup) {
   const current = lookup.get(event.path);
   const previous = event.oldPath ? lookup.get(event.oldPath) : undefined;
   const matched = current ?? previous;
-  const id = event.id || `${event.timestamp || "event"}-${event.path || event.oldPath || matched?.href || "unknown"}`;
+  const id =
+    event.id ||
+    `${event.timestamp || 'event'}-${event.path || event.oldPath || matched?.href || 'unknown'}`;
 
   return {
     ...event,
     id,
-    kind: event.kind === "other" && matched ? matched.kind : event.kind,
+    kind: event.kind === 'other' && matched ? matched.kind : event.kind,
     title: event.title || matched?.title || event.path || event.oldPath,
-    topic: event.topic || matched?.topic || "",
-    href: current?.href || ""
+    topic: event.topic || matched?.topic || '',
+    href: current?.href || '',
   };
 }
 
@@ -178,27 +184,27 @@ export function renderChangelogDataFile(events, topics, topLevelNotes, topLevelD
   return `${[
     "export type ChangelogAction = 'created' | 'updated' | 'deleted' | 'renamed' | 'changed';",
     "export type ChangelogKind = 'note' | 'topic' | 'database' | 'asset' | 'other';",
-    "",
-    "export type ChangelogEvent = {",
-    "  id: string;",
-    "  timestamp: string;",
-    "  action: ChangelogAction;",
-    "  kind: ChangelogKind;",
-    "  path: string;",
-    "  oldPath?: string;",
-    "  title: string;",
-    "  topic?: string;",
-    "  source?: string;",
-    "  href?: string;",
-    "};",
-    "",
-    "export const changelog: ChangelogEvent[] = ["
-  ].join("\n")}
-${enrichedEvents.map(renderEvent).join(",\n")}
+    '',
+    'export type ChangelogEvent = {',
+    '  id: string;',
+    '  timestamp: string;',
+    '  action: ChangelogAction;',
+    '  kind: ChangelogKind;',
+    '  path: string;',
+    '  oldPath?: string;',
+    '  title: string;',
+    '  topic?: string;',
+    '  source?: string;',
+    '  href?: string;',
+    '};',
+    '',
+    'export const changelog: ChangelogEvent[] = [',
+  ].join('\n')}
+${enrichedEvents.map(renderEvent).join(',\n')}
 ];
 `;
 }
 
 export function defaultChangelogPath(vaultPath) {
-  return path.join(vaultPath, "changelog.json");
+  return path.join(vaultPath, 'changelog.json');
 }

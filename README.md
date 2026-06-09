@@ -55,6 +55,7 @@ plugins/          Git submodules containing extensible plugins
 ## Code Style & Version Control
 
 To maintain a consistent codebase across developers and environments, the repository includes standard files:
+
 - **[.editorconfig](file:///home/d4y2k/progs/notegen/.editorconfig)**: Enforces uniform indent sizes, trim whitespace, line endings, and file formatting in editors.
 - **[.gitattributes](file:///home/d4y2k/progs/notegen/.gitattributes)**: Normalizes code file line endings (`lf`) and specifies binary attributes for media assets.
 
@@ -97,15 +98,20 @@ Notegen features a plugin architecture allowing you to extend the core compilati
 Available plugins live under the `plugins/` directory.
 
 ### Supabase Plugin
+
 An active plugin `plugins/supabase` provides database state synchronization and OAuth/Email user auth.
 
 #### Local Integration Showcase
+
 A fully self-contained showcase testing environment exists inside `plugins/supabase/showcase/`. It spins up local PostgreSQL, GoTrue auth, PostgREST API gateway, and an Astro client replica.
 Run it locally:
+
 ```bash
 ./plugins/supabase/showcase/run-test.sh
 ```
+
 Access points:
+
 - Astro Client: `http://localhost:4321`
 - pgweb Database Explorer: `http://localhost:8082`
 

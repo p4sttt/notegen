@@ -15,3 +15,5 @@ vault/
 public/generated/
 src/content/
 src/data/generated/
+
+.agents/
