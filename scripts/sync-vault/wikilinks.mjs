@@ -151,10 +151,20 @@ function renderInternalWikiLink(inner, linkResolver) {
   return `<span class="internal-link is-unresolved" title="Page not found: ${escapeHtml(targetName)}">${escapeHtml(displayText)}</span>`;
 }
 
-function renderEmbeddedWikiLink(inner, linkResolver, copyReferencedAsset, sourceDirectory, publicScope, onAssetCopied) {
+function renderEmbeddedWikiLink(
+  inner,
+  linkResolver,
+  copyReferencedAsset,
+  sourceDirectory,
+  publicScope,
+  onAssetCopied,
+) {
   const { targetName, headerSection, rawParam } = parseWikiLinkInner(inner);
 
-  if (isMediaFile(targetName) || (copyReferencedAsset && (targetName.includes('/') || targetName.includes('.')))) {
+  if (
+    isMediaFile(targetName) ||
+    (copyReferencedAsset && (targetName.includes('/') || targetName.includes('.')))
+  ) {
     let width = '';
     let height = '';
     let alt = '';
