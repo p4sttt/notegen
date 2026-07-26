@@ -92,22 +92,37 @@ function getNotebookLanguage(notebook) {
 }
 
 export function createNotebookConverter({ assetsRoot, publicBasePath }) {
-  function writeNotebookImageOutput(data, mimeType, publicScope, cellIndex, outputIndex) {
+  function writeNotebookImageOutput(
+    data,
+    mimeType,
+    publicScope,
+    cellIndex,
+    outputIndex,
+    onAssetGenerated,
+  ) {
     const extension = mimeType === 'image/svg+xml' ? 'svg' : mimeType.split('/').at(-1) || 'png';
     const filename = `notebook-output-${cellIndex + 1}-${outputIndex + 1}.${extension}`;
     const outputPath = path.join(assetsRoot, publicScope, filename);
 
     ensureParentDir(outputPath);
+    let buf;
     if (mimeType === 'image/svg+xml') {
-      writeFileSync(outputPath, asNotebookText(data), 'utf8');
+      const text = asNotebookText(data);
+      buf = Buffer.from(text, 'utf8');
+      writeFileSync(outputPath, text, 'utf8');
     } else {
-      writeFileSync(outputPath, decodeBase64Data(asNotebookText(data)));
+      buf = decodeBase64Data(asNotebookText(data));
+      writeFileSync(outputPath, buf);
+    }
+
+    if (typeof onAssetGenerated === 'function') {
+      onAssetGenerated({ targetPath: outputPath, contentBuffer: buf });
     }
 
     return `${publicBasePath}/generated/notes/${publicScope}/${filename}`;
   }
 
-  function renderNotebookOutput(output, publicScope, cellIndex, outputIndex) {
+  function renderNotebookOutput(output, publicScope, cellIndex, outputIndex, onAssetGenerated) {
     const outputType = output.output_type;
 
     if (outputType === 'stream') {
@@ -139,6 +154,7 @@ export function createNotebookConverter({ assetsRoot, publicBasePath }) {
         publicScope,
         cellIndex,
         outputIndex,
+        onAssetGenerated,
       );
       return `<p class="notebook-output notebook-output-image"><img src="${imageUrl}" alt="Notebook output"></p>`;
     }
@@ -158,7 +174,7 @@ export function createNotebookConverter({ assetsRoot, publicBasePath }) {
     return '';
   }
 
-  function notebookToMarkdown(raw, publicScope) {
+  function notebookToMarkdown(raw, publicScope, onAssetGenerated) {
     const notebook = JSON.parse(raw);
     const language = getNotebookLanguage(notebook);
     const chunks = [];
@@ -184,7 +200,7 @@ export function createNotebookConverter({ assetsRoot, publicBasePath }) {
 
       const outputs = (cell.outputs ?? [])
         .map((output, outputIndex) =>
-          renderNotebookOutput(output, publicScope, cellIndex, outputIndex),
+          renderNotebookOutput(output, publicScope, cellIndex, outputIndex, onAssetGenerated),
         )
         .filter(Boolean);
 

@@ -60,6 +60,9 @@ export function parseFrontmatter(raw) {
 export function stripMarkdown(markdown) {
   return markdown
     .replace(/^---[\s\S]*?---\n?/, '')
+    .replace(/!\[\[[^\]]*?\]\]/g, '')
+    .replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '$2')
+    .replace(/\[\[([^\]]+)\]\]/g, '$1')
     .replace(/!\[[^\]]*?\]\([^)]+\)/g, '')
     .replace(/\[[^\]]+]\(([^)]+)\)/g, '$1')
     .replace(/[*_`>#-]/g, '')

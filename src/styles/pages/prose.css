@@ -104,6 +104,80 @@
   text-underline-offset: 0.18em;
 }
 
+.prose a.internal-link {
+  color: color-mix(in srgb, var(--accent) 85%, var(--text));
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  text-underline-offset: 0.18em;
+  font-weight: 520;
+  transition:
+    color 150ms ease,
+    text-decoration-color 150ms ease;
+}
+
+.prose a.internal-link:hover {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
+
+.prose .internal-link.is-unresolved {
+  color: var(--text-soft);
+  text-decoration: underline dashed color-mix(in srgb, var(--text-soft) 50%, transparent);
+  cursor: help;
+  opacity: 0.8;
+}
+
+.prose img.internal-embed-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.5rem auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.prose .internal-embed-note {
+  margin: 1.25rem 0;
+  padding: 0.85rem 1.15rem;
+  border: 1px solid color-mix(in srgb, var(--line) 80%, rgba(var(--accent-rgb), 0.25));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-strong) 85%, rgba(var(--accent-rgb), 0.05));
+  transition:
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.prose .internal-embed-note:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: color-mix(in srgb, var(--surface-strong) 92%, rgba(var(--accent-rgb), 0.1));
+}
+
+.prose a.internal-embed-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text);
+  font-weight: 580;
+  text-decoration: none;
+}
+
+.prose .internal-embed-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1em;
+}
+
+.prose .internal-embed-broken {
+  display: inline-block;
+  padding: 0.2em 0.5em;
+  border: 1px dashed color-mix(in srgb, var(--line) 60%, #b42318);
+  border-radius: var(--radius-sm);
+  color: var(--text-soft);
+  font-size: 0.9em;
+}
+
 .prose a.link-chip {
   display: inline-flex;
   position: relative;

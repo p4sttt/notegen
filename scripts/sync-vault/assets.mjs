@@ -34,7 +34,7 @@ function normalizeAssetPath(assetPath) {
 }
 
 export function createAssetTools({ assetsRoot, publicBasePath, isIgnoredPath }) {
-  function copyReferencedAsset(sourceDirectory, publicScope, rawTarget) {
+  function copyReferencedAsset(sourceDirectory, publicScope, rawTarget, onAssetCopied) {
     const { assetPath, suffix } = splitAssetTarget(rawTarget.trim());
     const normalized = normalizeAssetPath(assetPath);
 
@@ -57,10 +57,18 @@ export function createAssetTools({ assetsRoot, publicBasePath, isIgnoredPath }) 
     ensureParentDir(targetAssetPath);
     copyFileSync(sourceAssetPath, targetAssetPath);
 
+    if (typeof onAssetCopied === 'function') {
+      onAssetCopied({
+        sourceAssetPath,
+        targetAssetPath,
+        relAssetPath: normalized,
+      });
+    }
+
     return `${publicBasePath}/generated/notes/${publicScope}/${normalized}${suffix}`;
   }
 
-  function rewriteAssetLinks(markdown, sourceDirectory, publicScope) {
+  function rewriteAssetLinks(markdown, sourceDirectory, publicScope, onAssetCopied) {
     return markdown
       .replace(/!\[([^\]]*)]\(([^)]+)\)/g, (match, alt, rawTarget) => {
         const trimmedTarget = rawTarget.trim();
@@ -68,7 +76,12 @@ export function createAssetTools({ assetsRoot, publicBasePath, isIgnoredPath }) 
           return match;
         }
 
-        const rewrittenTarget = copyReferencedAsset(sourceDirectory, publicScope, trimmedTarget);
+        const rewrittenTarget = copyReferencedAsset(
+          sourceDirectory,
+          publicScope,
+          trimmedTarget,
+          onAssetCopied,
+        );
         return `![${alt}](${rewrittenTarget})`;
       })
       .replace(
@@ -78,7 +91,7 @@ export function createAssetTools({ assetsRoot, publicBasePath, isIgnoredPath }) 
             return match;
           }
 
-          return `${prefix}${quote}${copyReferencedAsset(sourceDirectory, publicScope, rawTarget)}${closingQuote}`;
+          return `${prefix}${quote}${copyReferencedAsset(sourceDirectory, publicScope, rawTarget, onAssetCopied)}${closingQuote}`;
         },
       )
       .replace(/(<img\b[^>]*?\bsrc\s*=\s*)([^\s>"']+)/gi, (match, prefix, rawTarget) => {
@@ -86,11 +99,11 @@ export function createAssetTools({ assetsRoot, publicBasePath, isIgnoredPath }) 
           return match;
         }
 
-        return `${prefix}${copyReferencedAsset(sourceDirectory, publicScope, rawTarget)}`;
+        return `${prefix}${copyReferencedAsset(sourceDirectory, publicScope, rawTarget, onAssetCopied)}`;
       });
   }
 
-  function copyDirectoryFiltered(sourceDir, targetDir) {
+  function copyDirectoryFiltered(sourceDir, targetDir, onAssetCopied) {
     const entries = readdirSync(sourceDir, { withFileTypes: true }).sort((left, right) =>
       left.name.localeCompare(right.name),
     );
@@ -104,13 +117,16 @@ export function createAssetTools({ assetsRoot, publicBasePath, isIgnoredPath }) 
       const targetPath = path.join(targetDir, entry.name);
       if (entry.isDirectory()) {
         mkdirSync(targetPath, { recursive: true });
-        copyDirectoryFiltered(sourcePath, targetPath);
+        copyDirectoryFiltered(sourcePath, targetPath, onAssetCopied);
         continue;
       }
 
       if (entry.isFile()) {
         ensureParentDir(targetPath);
         copyFileSync(sourcePath, targetPath);
+        if (typeof onAssetCopied === 'function') {
+          onAssetCopied({ sourceAssetPath: sourcePath, targetAssetPath: targetPath });
+        }
       }
     }
   }
