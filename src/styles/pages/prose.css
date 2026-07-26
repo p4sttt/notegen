@@ -647,3 +647,95 @@
   border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
   color: var(--accent);
 }
+
+/* Reading Progress Bar */
+.reading-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent);
+  transform-origin: left;
+  transform: scaleX(0);
+  z-index: 10000;
+  transition: transform 100ms ease-out;
+}
+
+/* Collapsible Headings */
+.prose h2.is-collapsible,
+.prose h3.is-collapsible {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.prose h2.is-collapsible::before,
+.prose h3.is-collapsible::before {
+  content: '▾';
+  display: inline-block;
+  font-size: 0.8em;
+  color: var(--text-soft);
+  transition: transform 150ms ease;
+}
+
+.prose h2.is-collapsible.is-folded::before,
+.prose h3.is-collapsible.is-folded::before {
+  transform: rotate(-90deg);
+}
+
+.prose-section-content.is-folded {
+  display: none;
+}
+
+/* Code Copy Bar */
+.code-block-wrapper {
+  position: relative;
+  margin: 1.5rem 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface-strong);
+}
+
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.85rem;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface-strong) 85%, var(--text) 2%);
+  color: var(--text-soft);
+  font-size: 0.76rem;
+  font-family: var(--font-mono, monospace);
+  text-transform: lowercase;
+}
+
+.code-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
+}
+
+.code-copy-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.code-block-wrapper pre {
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}

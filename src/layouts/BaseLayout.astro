@@ -51,6 +51,7 @@ const pageI18n = {
     {pluginsUi.styles.map((style) => <style set:html={style} />)}
   </head>
   <body>
+    <div class="reading-progress-bar" id="reading-progress-bar"></div>
     <div class="page-shell">
       <header class="site-header">
         <a href={`${baseUrl}?lang=${locale}`} class="brand" data-lang-link data-i18n="brand"
@@ -298,6 +299,86 @@ const pageI18n = {
         } catch (err) {
           console.error('Failed to load Mermaid:', err);
         }
+      })();
+    </script>
+    <script is:inline>
+      (() => {
+        // 1. Reading Progress Bar
+        const progressBar = document.getElementById('reading-progress-bar');
+        if (progressBar) {
+          window.addEventListener(
+            'scroll',
+            () => {
+              const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+              const progress =
+                totalHeight > 0 ? Math.min(1, Math.max(0, window.scrollY / totalHeight)) : 0;
+              progressBar.style.transform = `scaleX(${progress})`;
+            },
+            { passive: true },
+          );
+        }
+
+        // 2. Code Copy Buttons & Language Badges
+        document.querySelectorAll('.prose pre').forEach((pre) => {
+          if (pre.parentElement && pre.parentElement.classList.contains('code-block-wrapper'))
+            return;
+
+          const wrapper = document.createElement('div');
+          wrapper.className = 'code-block-wrapper';
+          if (pre.parentNode) {
+            pre.parentNode.insertBefore(wrapper, pre);
+          }
+
+          const header = document.createElement('div');
+          header.className = 'code-block-header';
+
+          const code = pre.querySelector('code');
+          const langClass = Array.from(code?.classList || []).find((c) =>
+            c.startsWith('language-'),
+          );
+          const langName = langClass ? langClass.replace('language-', '') : 'code';
+
+          const langSpan = document.createElement('span');
+          langSpan.textContent = langName;
+          header.appendChild(langSpan);
+
+          const copyBtn = document.createElement('button');
+          copyBtn.type = 'button';
+          copyBtn.className = 'code-copy-btn';
+          copyBtn.textContent = '📋 Copy';
+          copyBtn.addEventListener('click', async () => {
+            const textToCopy = code?.innerText || pre.innerText;
+            try {
+              await navigator.clipboard.writeText(textToCopy);
+              copyBtn.textContent = '✓ Copied';
+              setTimeout(() => {
+                copyBtn.textContent = '📋 Copy';
+              }, 2000);
+            } catch (_err) {
+              copyBtn.textContent = 'Error';
+            }
+          });
+          header.appendChild(copyBtn);
+
+          wrapper.appendChild(header);
+          wrapper.appendChild(pre);
+        });
+
+        // 3. Collapsible Headings (h2, h3)
+        document.querySelectorAll('.prose h2, .prose h3').forEach((heading) => {
+          heading.classList.add('is-collapsible');
+          heading.addEventListener('click', (e) => {
+            if (e.target.closest('a')) return;
+            heading.classList.toggle('is-folded');
+
+            let next = heading.nextElementSibling;
+            while (next && !['H1', 'H2', 'H3'].includes(next.tagName)) {
+              if (heading.tagName === 'H3' && next.tagName === 'H2') break;
+              next.classList.toggle('is-folded');
+              next = next.nextElementSibling;
+            }
+          });
+        });
       })();
     </script>
     {pluginsUi.scripts.map((script) => <script is:inline set:html={script} />)}
