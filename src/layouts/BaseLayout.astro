@@ -5,6 +5,7 @@ import { defaultLocale, getLocaleFromUrl, ui } from '../i18n/ui';
 import PreferencesControl from '../widgets/preferences/PreferencesControl.astro';
 import SearchModal from '../widgets/search/SearchModal.astro';
 import LinkPreview from '../widgets/preview/LinkPreview.astro';
+import MobileBottomBar from '../widgets/navigation/MobileBottomBar.astro';
 import { pluginsUi } from '../data/generated/plugins-ui';
 
 interface Props {
@@ -99,6 +100,7 @@ const pageI18n = {
       </main>
       <SearchModal locale={locale} baseUrl={baseUrl} />
       <LinkPreview locale={locale} baseUrl={baseUrl} />
+      <MobileBottomBar locale={locale} baseUrl={baseUrl} />
     </div>
     <script is:inline define:vars={{ i18nMessages, defaultLocale, pageI18n }}>
       const uiDict = i18nMessages.ui;
