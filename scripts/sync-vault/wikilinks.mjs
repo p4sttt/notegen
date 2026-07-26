@@ -41,19 +41,12 @@ export class VaultLinkResolver {
   constructor({ publicBasePath }) {
     this.publicBasePath = publicBasePath;
     this.targets = new Map();
-    this.backlinksMap = new Map();
   }
 
   registerTopic(topic) {
     if (!topic || !topic.slug) return;
     const url = `${this.publicBasePath}/${topic.slug}`;
-    const item = {
-      url,
-      slug: topic.slug,
-      collectionSlug: topic.slug,
-      title: topic.title || topic.slug,
-      type: 'topic',
-    };
+    const item = { url, title: topic.title || topic.slug, type: 'topic' };
 
     this.addTarget(topic.sourcePath, item);
     this.addTarget(path.join(topic.sourcePath, '_index.md'), item);
@@ -65,13 +58,7 @@ export class VaultLinkResolver {
   registerNote(note) {
     if (!note || !note.collectionSlug) return;
     const url = `${this.publicBasePath}/${note.collectionSlug}`;
-    const item = {
-      url,
-      slug: note.slug,
-      collectionSlug: note.collectionSlug,
-      title: note.title || note.slug,
-      type: 'note',
-    };
+    const item = { url, title: note.title || note.slug, type: 'note' };
 
     this.addTarget(note.sourcePath, item);
     const pathNoExt = note.sourcePath.replace(/\.(md|ipynb)$/i, '');
@@ -86,13 +73,7 @@ export class VaultLinkResolver {
   registerDatabase(database) {
     if (!database || !database.collectionSlug) return;
     const url = `${this.publicBasePath}/${database.collectionSlug}`;
-    const item = {
-      url,
-      slug: database.slug,
-      collectionSlug: database.collectionSlug,
-      title: database.title || database.slug,
-      type: 'database',
-    };
+    const item = { url, title: database.title || database.slug, type: 'database' };
 
     this.addTarget(database.sourcePath, item);
     const pathNoExt = database.sourcePath.replace(/\.csv$/i, '');
@@ -127,28 +108,6 @@ export class VaultLinkResolver {
 
     return null;
   }
-
-  addBacklink(targetCollectionSlug, sourceNote) {
-    if (!targetCollectionSlug || !sourceNote || !sourceNote.collectionSlug) return;
-    if (targetCollectionSlug === sourceNote.collectionSlug) return;
-
-    if (!this.backlinksMap.has(targetCollectionSlug)) {
-      this.backlinksMap.set(targetCollectionSlug, new Map());
-    }
-    const targetMap = this.backlinksMap.get(targetCollectionSlug);
-    if (!targetMap.has(sourceNote.collectionSlug)) {
-      targetMap.set(sourceNote.collectionSlug, {
-        collectionSlug: sourceNote.collectionSlug,
-        title: sourceNote.title,
-        summary: sourceNote.summary || '',
-      });
-    }
-  }
-
-  getBacklinks(collectionSlug) {
-    if (!collectionSlug || !this.backlinksMap.has(collectionSlug)) return [];
-    return Array.from(this.backlinksMap.get(collectionSlug).values());
-  }
 }
 
 function parseWikiLinkInner(inner) {
@@ -168,7 +127,7 @@ function parseWikiLinkInner(inner) {
   };
 }
 
-function renderInternalWikiLink(inner, linkResolver, currentSourceNote) {
+function renderInternalWikiLink(inner, linkResolver) {
   const { targetName, headerSection, rawParam } = parseWikiLinkInner(inner);
   const headerAnchor = headerSection ? `#${slugify(headerSection)}` : '';
 
@@ -180,9 +139,6 @@ function renderInternalWikiLink(inner, linkResolver, currentSourceNote) {
 
   const resolved = linkResolver ? linkResolver.resolve(targetName) : null;
   if (resolved) {
-    if (linkResolver && currentSourceNote && resolved.collectionSlug) {
-      linkResolver.addBacklink(resolved.collectionSlug, currentSourceNote);
-    }
     const url = `${resolved.url}${headerAnchor}`;
     const defaultText = headerSection ? `${resolved.title} > ${headerSection}` : resolved.title;
     const displayText = rawParam || defaultText;
@@ -195,7 +151,7 @@ function renderInternalWikiLink(inner, linkResolver, currentSourceNote) {
   return `<span class="internal-link is-unresolved" title="Page not found: ${escapeHtml(targetName)}">${escapeHtml(displayText)}</span>`;
 }
 
-function renderEmbeddedWikiLink(inner, linkResolver, currentSourceNote, copyReferencedAsset, sourceDirectory, publicScope, onAssetCopied) {
+function renderEmbeddedWikiLink(inner, linkResolver, copyReferencedAsset, sourceDirectory, publicScope, onAssetCopied) {
   const { targetName, headerSection, rawParam } = parseWikiLinkInner(inner);
 
   if (isMediaFile(targetName) || (copyReferencedAsset && (targetName.includes('/') || targetName.includes('.')))) {
@@ -237,9 +193,6 @@ function renderEmbeddedWikiLink(inner, linkResolver, currentSourceNote, copyRefe
   const headerAnchor = headerSection ? `#${slugify(headerSection)}` : '';
 
   if (resolved) {
-    if (linkResolver && currentSourceNote && resolved.collectionSlug) {
-      linkResolver.addBacklink(resolved.collectionSlug, currentSourceNote);
-    }
     const url = `${resolved.url}${headerAnchor}`;
     const titleText = headerSection ? `${resolved.title} > ${headerSection}` : resolved.title;
     return `<div class="internal-embed-note"><a href="${url}" class="internal-embed-link"><span class="internal-embed-icon">📄</span> <span class="internal-embed-title">${escapeHtml(titleText)}</span></a></div>`;
@@ -253,7 +206,6 @@ export function rewriteWikiLinks({
   sourceDirectory,
   publicScope,
   linkResolver,
-  currentSourceNote,
   copyReferencedAsset,
   onAssetCopied,
 }) {
@@ -289,7 +241,6 @@ export function rewriteWikiLinks({
       return renderEmbeddedWikiLink(
         inner,
         linkResolver,
-        currentSourceNote,
         copyReferencedAsset,
         sourceDirectory,
         publicScope,
@@ -299,7 +250,7 @@ export function rewriteWikiLinks({
 
     // 2. Process internal links [[...]]
     processedLine = processedLine.replace(/\[\[([^\]]+)\]\]/g, (_match, inner) => {
-      return renderInternalWikiLink(inner, linkResolver, currentSourceNote);
+      return renderInternalWikiLink(inner, linkResolver);
     });
 
     // Restore inline code placeholders
