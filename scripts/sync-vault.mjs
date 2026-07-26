@@ -454,10 +454,10 @@ for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
     : null;
   const parsed = isNotebook
     ? notebookNoteFrontmatter(
-        notebookConversion.notebook,
-        notebookConversion.markdown,
-        originalName,
-      )
+      notebookConversion.notebook,
+      notebookConversion.markdown,
+      originalName,
+    )
     : parseFrontmatter(raw);
 
   const processedNote = await pluginManager.runProcessNote(
@@ -479,6 +479,17 @@ for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
   const noteTitle = parsed.data.title || originalName;
   const noteDescription = parsed.data.description || excerpt(parsed.body);
   const noteStatus = normalizeNoteStatus(parsed.data);
+  const note = {
+    slug: noteSlug,
+    collectionSlug,
+    title: noteTitle,
+    summary: noteDescription,
+    description: noteDescription,
+    status: noteStatus,
+    sourcePath: sourceRelativePath,
+    updatedAt: parsed.data.date || undefined,
+    tags: parsed.data.tags,
+  };
 
   const rewrittenBodyWithAssets = rewriteAssetLinks(
     normalizeBlockquoteMath(parsed.body),
@@ -517,17 +528,6 @@ for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
   writeFileSync(noteOutputPath, outputContent, 'utf8');
 
   generatedNotesCount += 1;
-  const note = {
-    slug: noteSlug,
-    collectionSlug,
-    title: noteTitle,
-    summary: noteDescription,
-    description: noteDescription,
-    status: noteStatus,
-    sourcePath: sourceRelativePath,
-    updatedAt: parsed.data.date || undefined,
-    tags: parsed.data.tags,
-  };
 
   cacheManager.setNote(sourceRelativePath, sourcePath, {
     note,
@@ -621,14 +621,10 @@ writePluginsUiFile(pluginContext.ui);
 const allTags = new Set();
 for (const topic of topics) {
   for (const note of topic.notes) {
-    const backlinks = linkResolver.getBacklinks(note.collectionSlug);
-    if (backlinks.length > 0) note.backlinks = backlinks;
     if (note.tags) note.tags.forEach((tag) => allTags.add(tag));
   }
 }
 for (const note of topLevelNotes) {
-  const backlinks = linkResolver.getBacklinks(note.collectionSlug);
-  if (backlinks.length > 0) note.backlinks = backlinks;
   if (note.tags) note.tags.forEach((tag) => allTags.add(tag));
 }
 

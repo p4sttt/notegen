@@ -79,31 +79,6 @@ const headings = noteRender?.headings ?? [];
           ) : null
         }
         {NoteContent ? <NoteContent /> : null}
-
-        {
-          note.backlinks && note.backlinks.length > 0 ? (
-            <div class="note-backlinks-block">
-              <h3 class="backlinks-title">
-                <span>🔗</span>
-                <span>{locale === 'ru' ? 'Упомянуто в заметах' : 'Mentioned in'}</span>
-              </h3>
-              <div class="backlinks-list">
-                {note.backlinks.map((item) => (
-                  <a
-                    href={`${baseUrl}${item.collectionSlug}?lang=${locale}`}
-                    class="backlink-card-item"
-                    data-lang-link
-                  >
-                    <span class="backlink-item-title">{item.title}</span>
-                    {item.summary ? (
-                      <span class="backlink-item-summary">{item.summary}</span>
-                    ) : null}
-                  </a>
-                ))}
-              </div>
-            </div>
-          ) : null
-        }
       </div>
     </div>
   </article>

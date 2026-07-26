@@ -2,15 +2,6 @@
   width: min(100% - 2rem, var(--page-max));
   margin: 0 auto;
   padding: 1.25rem 0 5rem;
-  transition: width 200ms ease;
-}
-
-html[data-width='wide'] .page-shell {
-  width: min(100% - 2rem, 1160px);
-}
-
-html[data-width='full'] .page-shell {
-  width: min(100% - 1.5rem, 1440px);
 }
 
 .site-header {

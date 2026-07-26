@@ -6,9 +6,7 @@ function renderNote(note, indent = '  ') {
   const tagsStr = note.tags
     ? `[${note.tags.map((t) => `'${escapeSingleQuotes(t)}'`).join(', ')}]`
     : 'undefined';
-  const backlinksStr =
-    note.backlinks && note.backlinks.length > 0 ? JSON.stringify(note.backlinks) : 'undefined';
-  return `${indent}{ slug: '${escapeSingleQuotes(note.slug)}', collectionSlug: '${escapeSingleQuotes(note.collectionSlug)}', title: '${escapeSingleQuotes(note.title)}', summary: '${escapeSingleQuotes(note.summary ?? '')}', description: '${escapeSingleQuotes(note.description ?? '')}', status: '${escapeSingleQuotes(note.status ?? 'done')}', sourcePath: '${escapeSingleQuotes(note.sourcePath ?? '')}', updatedAt: '${escapeSingleQuotes(note.updatedAt ?? '')}', tags: ${tagsStr}, backlinks: ${backlinksStr} }`;
+  return `${indent}{ slug: '${escapeSingleQuotes(note.slug)}', collectionSlug: '${escapeSingleQuotes(note.collectionSlug)}', title: '${escapeSingleQuotes(note.title)}', summary: '${escapeSingleQuotes(note.summary ?? '')}', description: '${escapeSingleQuotes(note.description ?? '')}', status: '${escapeSingleQuotes(note.status ?? 'done')}', sourcePath: '${escapeSingleQuotes(note.sourcePath ?? '')}', updatedAt: '${escapeSingleQuotes(note.updatedAt ?? '')}', tags: ${tagsStr} }`;
 }
 
 function renderDatabase(database, indent = '  ') {
@@ -22,12 +20,6 @@ export function renderTopicsDataFile(
   tagColorMap = {},
 ) {
   return `${[
-    'export type Backlink = {',
-    '  collectionSlug: string;',
-    '  title: string;',
-    '  summary?: string;',
-    '};',
-    '',
     'export type Note = {',
     '  slug: string;',
     '  collectionSlug: string;',
@@ -38,7 +30,6 @@ export function renderTopicsDataFile(
     '  sourcePath?: string;',
     '  updatedAt?: string;',
     '  tags?: string[];',
-    '  backlinks?: Backlink[];',
     '};',
     '',
     "export type DatabaseColumnType = 'text' | 'number' | 'date' | 'boolean';",
@@ -83,15 +74,15 @@ export function renderTopicsDataFile(
     'export const topics: Topic[] = [',
   ].join('\n')}
 ${topics
-  .map((topic) => {
-    const noteLines = topic.notes.map((note) => renderNote(note, '    ')).join(',\n');
-    const databaseLines = topic.databases
-      .map((database) => renderDatabase(database, '    '))
-      .join(',\n');
+      .map((topic) => {
+        const noteLines = topic.notes.map((note) => renderNote(note, '    ')).join(',\n');
+        const databaseLines = topic.databases
+          .map((database) => renderDatabase(database, '    '))
+          .join(',\n');
 
-    return `  {\n    slug: '${escapeSingleQuotes(topic.slug)}',\n    title: '${escapeSingleQuotes(topic.title)}',\n    summary: '${escapeSingleQuotes(topic.summary ?? '')}',\n    description: '${escapeSingleQuotes(topic.description ?? '')}',\n    draft: ${topic.draft ? 'true' : 'false'},\n    parentSlug: '${escapeSingleQuotes(topic.parentSlug ?? '')}',\n    sourcePath: '${escapeSingleQuotes(topic.sourcePath ?? '')}',\n    notes: [\n${noteLines}\n    ],\n    databases: [\n${databaseLines}\n    ]\n  }`;
-  })
-  .join(',\n')}
+        return `  {\n    slug: '${escapeSingleQuotes(topic.slug)}',\n    title: '${escapeSingleQuotes(topic.title)}',\n    summary: '${escapeSingleQuotes(topic.summary ?? '')}',\n    description: '${escapeSingleQuotes(topic.description ?? '')}',\n    draft: ${topic.draft ? 'true' : 'false'},\n    parentSlug: '${escapeSingleQuotes(topic.parentSlug ?? '')}',\n    sourcePath: '${escapeSingleQuotes(topic.sourcePath ?? '')}',\n    notes: [\n${noteLines}\n    ],\n    databases: [\n${databaseLines}\n    ]\n  }`;
+      })
+      .join(',\n')}
 ];
 
 export const topLevelNotes: Note[] = [
