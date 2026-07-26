@@ -1,0 +1,119 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import ContentNavigation from '../widgets/content-navigation/ContentNavigation.astro';
+import TagBadge from '../shared/ui/TagBadge.astro';
+import { render } from 'astro:content';
+import { ui, type Locale } from '../i18n/ui';
+import { siteText } from '../config/site';
+import { Note } from '../entities/domain';
+
+interface Props {
+  note: Note;
+  entry: any;
+  locale: Locale;
+  baseUrl: string;
+}
+
+const { note, entry, locale, baseUrl } = Astro.props;
+const copy = siteText[locale];
+const t = ui[locale];
+
+const isNotebook = note.isNotebook();
+const isInProgress = note.isInProgress();
+
+const noteRender = await render(entry);
+const NoteContent = noteRender?.Content;
+const headings = noteRender?.headings ?? [];
+---
+
+<BaseLayout
+  title={`${note.title} | ${copy.brand}`}
+  description={note.title}
+  titlePrefix={note.title}
+  titleSuffixI18nKey="brand"
+>
+  <article class="note-shell home-panel">
+    <header class="note-header note-header-compact home-panel-section">
+      <div class="hero-kicker">
+        <p class="eyebrow">{entry.data.topic ?? copy.brand}</p>
+        <div class="note-status-line">
+          {
+            isInProgress ? (
+              <span class="note-status-badge" data-i18n="inProgress">
+                {t.inProgress}
+              </span>
+            ) : null
+          }
+          <span class="hero-tag" data-i18n={entry.data.date ? undefined : 'sourceData'}>
+            {entry.data.date ? entry.data.date.toISOString().slice(0, 10) : t.sourceData}
+          </span>
+        </div>
+      </div>
+      <div class="hero-copy-block">
+        <h1 class="note-title">{note.title}</h1>
+        {
+          note.tags && note.tags.length > 0 && (
+            <div class="note-tags-list">
+              {note.tags.map((tag) => (
+                <TagBadge tag={tag} />
+              ))}
+            </div>
+          )
+        }
+      </div>
+    </header>
+
+    <hr class="section-divider" />
+
+    <div class={`note-layout note-panel-body${isNotebook ? ' note-layout-full' : ''}`}>
+      {isNotebook ? null : <ContentNavigation headings={headings} title={t.contents} />}
+
+      <div class="note-card prose">
+        {
+          entry.data.topicSlug ? (
+            <p class="note-backline">
+              <a href={`${baseUrl}${entry.data.topicSlug}/?lang=${locale}`} data-lang-link>
+                {entry.data.topic}
+              </a>
+            </p>
+          ) : null
+        }
+        {NoteContent ? <NoteContent /> : null}
+
+        {
+          note.backlinks && note.backlinks.length > 0 ? (
+            <div class="note-backlinks-block">
+              <h3 class="backlinks-title">
+                <span>🔗</span>
+                <span>{locale === 'ru' ? 'Упомянуто в заметах' : 'Mentioned in'}</span>
+              </h3>
+              <div class="backlinks-list">
+                {note.backlinks.map((item) => (
+                  <a
+                    href={`${baseUrl}${item.collectionSlug}?lang=${locale}`}
+                    class="backlink-card-item"
+                    data-lang-link
+                  >
+                    <span class="backlink-item-title">{item.title}</span>
+                    {item.summary ? (
+                      <span class="backlink-item-summary">{item.summary}</span>
+                    ) : null}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : null
+        }
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .note-tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: var(--space-3);
+  }
+</style>

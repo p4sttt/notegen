@@ -1,25 +1,25 @@
-import path from "node:path";
+import path from 'node:path';
 
 export function toVaultRelativePath(vaultRoot, filePath) {
-  return path.relative(vaultRoot, filePath).split(path.sep).join("/");
+  return path.relative(vaultRoot, filePath).split(path.sep).join('/');
 }
 
 export function normalizeSiteBase(input) {
-  if (!input || input === "/") {
-    return "";
+  if (!input || input === '/') {
+    return '';
   }
 
-  return `/${input.replace(/^\/+|\/+$/g, "")}`;
+  return `/${input.replace(/^\/+|\/+$/g, '')}`;
 }
 
 export function slugify(input) {
   return input
     .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9а-яё]+/gi, "-")
-    .replace(/^-+|-+$/g, "")
-    .replace(/-{2,}/g, "-");
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9а-яё]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-');
 }
 
 export function relativePathSegments(relativePath) {
@@ -27,9 +27,9 @@ export function relativePathSegments(relativePath) {
 }
 
 export function slugifyPath(relativePath) {
-  return relativePathSegments(relativePath).map(slugify).join("/");
+  return relativePathSegments(relativePath).map(slugify).join('/');
 }
 
 export function contentFileName(slugPath) {
-  return `${slugPath.split("/").map(slugify).join("--")}.md`;
+  return `${slugPath.split('/').map(slugify).join('--')}.md`;
 }

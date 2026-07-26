@@ -69,13 +69,12 @@
   position: relative;
   width: 1rem;
   height: 1rem;
-  background:
-    linear-gradient(currentColor, currentColor) center / 0.72rem 2px no-repeat;
+  background: linear-gradient(currentColor, currentColor) center / 0.72rem 2px no-repeat;
 }
 
 .prefs-trigger-icon::before,
 .prefs-trigger-icon::after {
-  content: "";
+  content: '';
   position: absolute;
   left: 0.14rem;
   width: 0.72rem;
@@ -136,7 +135,7 @@
   gap: var(--space-2);
 }
 
-.prefs-chip[aria-pressed="true"],
+.prefs-chip[aria-pressed='true'],
 .prefs-popover[open] .prefs-trigger {
   background: var(--accent-soft);
   color: var(--text);
@@ -162,7 +161,7 @@
 }
 
 .swatch::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 50%;
   left: 50%;
@@ -174,7 +173,7 @@
 }
 
 .swatch::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: -0.25rem;
   border-radius: inherit;
@@ -182,60 +181,60 @@
   transition: border-color 180ms ease;
 }
 
-.swatch[data-accent-value="white"] {
+.swatch[data-accent-value='white'] {
   --swatch-color: #1a1a1a;
 }
 
-.swatch[data-accent-value="violet"] {
+.swatch[data-accent-value='violet'] {
   --swatch-color: #7058f6;
 }
 
-.swatch[data-accent-value="teal"] {
+.swatch[data-accent-value='teal'] {
   --swatch-color: #135f57;
 }
 
-.swatch[data-accent-value="blue"] {
+.swatch[data-accent-value='blue'] {
   --swatch-color: #275fc7;
 }
 
-.swatch[data-accent-value="olive"] {
+.swatch[data-accent-value='olive'] {
   --swatch-color: #66703a;
 }
 
-.swatch[data-accent-value="rose"] {
+.swatch[data-accent-value='rose'] {
   --swatch-color: #a14f79;
 }
 
-:root[data-theme="dark"] .swatch[data-accent-value="white"] {
+:root[data-theme='dark'] .swatch[data-accent-value='white'] {
   --swatch-color: #f4f0e8;
 }
 
-:root[data-theme="dark"] .swatch[data-accent-value="violet"] {
+:root[data-theme='dark'] .swatch[data-accent-value='violet'] {
   --swatch-color: #a99cff;
 }
 
-:root[data-theme="dark"] .swatch[data-accent-value="teal"] {
+:root[data-theme='dark'] .swatch[data-accent-value='teal'] {
   --swatch-color: #56c7b8;
 }
 
-:root[data-theme="dark"] .swatch[data-accent-value="blue"] {
+:root[data-theme='dark'] .swatch[data-accent-value='blue'] {
   --swatch-color: #79a8ff;
 }
 
-:root[data-theme="dark"] .swatch[data-accent-value="olive"] {
+:root[data-theme='dark'] .swatch[data-accent-value='olive'] {
   --swatch-color: #b8c96c;
 }
 
-:root[data-theme="dark"] .swatch[data-accent-value="rose"] {
+:root[data-theme='dark'] .swatch[data-accent-value='rose'] {
   --swatch-color: #f09ac3;
 }
 
-.swatch[aria-pressed="true"] {
+.swatch[aria-pressed='true'] {
   border-color: rgba(var(--accent-rgb), 0.28);
   transform: translateY(-1px);
 }
 
-.swatch[aria-pressed="true"]::after {
+.swatch[aria-pressed='true']::after {
   border-color: var(--text);
 }
 

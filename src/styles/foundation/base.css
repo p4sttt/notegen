@@ -9,7 +9,10 @@ html {
     radial-gradient(circle at 1px 1px, var(--grid-dot) 1.1px, transparent 0),
     linear-gradient(var(--grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 28px 28px, 28px 28px, 28px 28px;
+  background-size:
+    28px 28px,
+    28px 28px,
+    28px 28px;
   background-position: center center;
   color: var(--text);
 }

@@ -1,5 +1,5 @@
 ---
-import TagBadge from "./TagBadge.astro";
+import TagBadge from './TagBadge.astro';
 
 interface Props {
   title: string;
@@ -17,15 +17,19 @@ const { title, summary, href, badgeLabel, badgeI18nKey, tags = [] } = Astro.prop
   <div class="entity-card-heading">
     <h3>{title}</h3>
     <div class="entity-card-badges">
-      {badgeLabel ? <span class="entity-card-badge" data-i18n={badgeI18nKey}>{badgeLabel}</span> : null}
+      {
+        badgeLabel ? (
+          <span class="entity-card-badge" data-i18n={badgeI18nKey}>
+            {badgeLabel}
+          </span>
+        ) : null
+      }
     </div>
   </div>
   {summary ? <p>{summary}</p> : null}
   <div class="entity-card-footer">
     <span><slot name="meta" /></span>
-    {tags.map(tag => (
-      <TagBadge tag={tag} />
-    ))}
+    {tags.map((tag) => <TagBadge tag={tag} />)}
   </div>
 </a>
 

@@ -1,5 +1,5 @@
 ---
-import { tagColorMap } from "../../data/generated/topics";
+import { tagColorMap } from '../../data/generated/topics';
 
 interface Props {
   tag: string;
@@ -39,10 +39,28 @@ const colorIndex = tagColorMap[tag] || 1;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
 
-  .tag-color-1 { --tag-bg: var(--tag-1-bg); --tag-text: var(--tag-1-text); }
-  .tag-color-2 { --tag-bg: var(--tag-2-bg); --tag-text: var(--tag-2-text); }
-  .tag-color-3 { --tag-bg: var(--tag-3-bg); --tag-text: var(--tag-3-text); }
-  .tag-color-4 { --tag-bg: var(--tag-4-bg); --tag-text: var(--tag-4-text); }
-  .tag-color-5 { --tag-bg: var(--tag-5-bg); --tag-text: var(--tag-5-text); }
-  .tag-color-6 { --tag-bg: var(--tag-6-bg); --tag-text: var(--tag-6-text); }
+  .tag-color-1 {
+    --tag-bg: var(--tag-1-bg);
+    --tag-text: var(--tag-1-text);
+  }
+  .tag-color-2 {
+    --tag-bg: var(--tag-2-bg);
+    --tag-text: var(--tag-2-text);
+  }
+  .tag-color-3 {
+    --tag-bg: var(--tag-3-bg);
+    --tag-text: var(--tag-3-text);
+  }
+  .tag-color-4 {
+    --tag-bg: var(--tag-4-bg);
+    --tag-text: var(--tag-4-text);
+  }
+  .tag-color-5 {
+    --tag-bg: var(--tag-5-bg);
+    --tag-text: var(--tag-5-text);
+  }
+  .tag-color-6 {
+    --tag-bg: var(--tag-6-bg);
+    --tag-text: var(--tag-6-text);
+  }
 </style>

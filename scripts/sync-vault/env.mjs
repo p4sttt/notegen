@@ -1,19 +1,19 @@
-import { existsSync, readFileSync } from "node:fs";
-import path from "node:path";
+import { existsSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 
-export function readEnvValue(name, envPath = path.resolve(".env")) {
+export function readEnvValue(name, envPath = path.resolve('.env')) {
   if (!existsSync(envPath)) {
     return undefined;
   }
 
-  const envContent = readFileSync(envPath, "utf8");
-  for (const rawLine of envContent.split("\n")) {
+  const envContent = readFileSync(envPath, 'utf8');
+  for (const rawLine of envContent.split('\n')) {
     const line = rawLine.trim();
-    if (!line || line.startsWith("#")) {
+    if (!line || line.startsWith('#')) {
       continue;
     }
 
-    const separatorIndex = line.indexOf("=");
+    const separatorIndex = line.indexOf('=');
     if (separatorIndex === -1) {
       continue;
     }
@@ -24,11 +24,50 @@ export function readEnvValue(name, envPath = path.resolve(".env")) {
     }
 
     let value = line.slice(separatorIndex + 1).trim();
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
       value = value.slice(1, -1);
     }
     return value;
   }
 
   return undefined;
+}
+
+export function loadEnv(envPath = path.resolve('.env')) {
+  if (!existsSync(envPath)) {
+    return;
+  }
+
+  try {
+    const envContent = readFileSync(envPath, 'utf8');
+    for (const rawLine of envContent.split('\n')) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith('#')) {
+        continue;
+      }
+
+      const separatorIndex = line.indexOf('=');
+      if (separatorIndex === -1) {
+        continue;
+      }
+
+      const key = line.slice(0, separatorIndex).trim();
+      let value = line.slice(separatorIndex + 1).trim();
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1);
+      }
+
+      if (process.env[key] === undefined) {
+        process.env[key] = value;
+      }
+    }
+  } catch (err) {
+    console.error(`[Env] Failed to load .env file:`, err);
+  }
 }

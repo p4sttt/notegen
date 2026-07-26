@@ -13,7 +13,10 @@
   }
 
   html {
-    background-size: 22px 22px, 22px 22px, 22px 22px;
+    background-size:
+      22px 22px,
+      22px 22px,
+      22px 22px;
   }
 
   body {
@@ -234,6 +237,133 @@
   .toc-nav {
     gap: 0.45rem;
     font-size: 0.86rem;
+  }
+}
+
+/* Mobile Bottom Action Bar & TOC Sheet */
+.mobile-bottom-bar {
+  display: none;
+}
+
+.mobile-toc-sheet {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9990;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0.4rem 0.5rem calc(0.4rem + env(safe-area-inset-bottom));
+    border-top: 1px solid color-mix(in srgb, var(--line) 80%, rgba(var(--accent-rgb), 0.25));
+    background: color-mix(in srgb, var(--surface-strong) 92%, transparent);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  .mobile-bar-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    padding: 0.25rem 0.6rem;
+    border: none;
+    background: transparent;
+    color: var(--text-soft);
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .mobile-bar-icon {
+    font-size: 1.15rem;
+  }
+
+  .mobile-bar-btn:active {
+    color: var(--accent);
+  }
+
+  .mobile-toc-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 9995;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 200ms ease,
+      visibility 200ms ease;
+  }
+
+  .mobile-toc-sheet.is-open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .mobile-toc-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+  }
+
+  .mobile-toc-content {
+    position: relative;
+    z-index: 1;
+    max-height: 75vh;
+    border-top: 1px solid var(--line);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    background: var(--surface-strong);
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    transform: translateY(100%);
+    transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .mobile-toc-sheet.is-open .mobile-toc-content {
+    transform: translateY(0);
+  }
+
+  .mobile-toc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .mobile-toc-title {
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .mobile-toc-close {
+    border: none;
+    background: transparent;
+    color: var(--text-soft);
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+
+  .mobile-toc-body {
+    padding: 1rem 1.25rem 2rem;
+    max-height: calc(75vh - 3.5rem);
+    overflow-y: auto;
+  }
+
+  .page-shell {
+    padding-bottom: 5rem !important;
   }
 }
 

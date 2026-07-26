@@ -1,6 +1,7 @@
 ---
-import type { Locale } from "../../i18n/ui";
-import { ui } from "../../i18n/ui";
+import type { Locale } from '../../i18n/ui';
+import { ui } from '../../i18n/ui';
+import { pluginsUi } from '../../data/generated/plugins-ui';
 
 interface Props {
   locale: Locale;
@@ -19,10 +20,20 @@ const t = ui[locale];
     <section class="prefs-group" aria-label={t.language} data-i18n-attr="aria-label:language">
       <p class="prefs-label" data-i18n="language">{t.language}</p>
       <div class="prefs-options">
-        <button type="button" class="prefs-chip" data-lang-value="ru" aria-pressed={locale === "ru"}>
+        <button
+          type="button"
+          class="prefs-chip"
+          data-lang-value="ru"
+          aria-pressed={locale === 'ru'}
+        >
           RU
         </button>
-        <button type="button" class="prefs-chip" data-lang-value="en" aria-pressed={locale === "en"}>
+        <button
+          type="button"
+          class="prefs-chip"
+          data-lang-value="en"
+          aria-pressed={locale === 'en'}
+        >
           EN
         </button>
       </div>
@@ -31,93 +42,181 @@ const t = ui[locale];
     <section class="prefs-group" aria-label={t.theme} data-i18n-attr="aria-label:theme">
       <p class="prefs-label" data-i18n="theme">{t.theme}</p>
       <div class="prefs-options">
-        <button type="button" class="prefs-chip" data-theme-value="light" data-i18n="light">{t.light}</button>
-        <button type="button" class="prefs-chip" data-theme-value="dark" data-i18n="dark">{t.dark}</button>
-        <button type="button" class="prefs-chip" data-theme-value="system" data-i18n="system">{t.system}</button>
+        <button type="button" class="prefs-chip" data-theme-value="light" data-i18n="light"
+          >{t.light}</button
+        >
+        <button type="button" class="prefs-chip" data-theme-value="dark" data-i18n="dark"
+          >{t.dark}</button
+        >
+        <button type="button" class="prefs-chip" data-theme-value="system" data-i18n="system"
+          >{t.system}</button
+        >
       </div>
     </section>
 
     <section class="prefs-group" aria-label={t.accent} data-i18n-attr="aria-label:accent">
       <p class="prefs-label" data-i18n="accent">{t.accent}</p>
       <div class="prefs-swatches">
-        <button type="button" class="swatch" data-accent-value="white" aria-label={t.accentWhite} data-i18n-attr="aria-label:accentWhite"></button>
-        <button type="button" class="swatch" data-accent-value="violet" aria-label={t.accentViolet} data-i18n-attr="aria-label:accentViolet"></button>
-        <button type="button" class="swatch" data-accent-value="teal" aria-label={t.accentTeal} data-i18n-attr="aria-label:accentTeal"></button>
-        <button type="button" class="swatch" data-accent-value="blue" aria-label={t.accentBlue} data-i18n-attr="aria-label:accentBlue"></button>
-        <button type="button" class="swatch" data-accent-value="olive" aria-label={t.accentOlive} data-i18n-attr="aria-label:accentOlive"></button>
-        <button type="button" class="swatch" data-accent-value="rose" aria-label={t.accentRose} data-i18n-attr="aria-label:accentRose"></button>
+        <button
+          type="button"
+          class="swatch"
+          data-accent-value="white"
+          aria-label={t.accentWhite}
+          data-i18n-attr="aria-label:accentWhite"></button>
+        <button
+          type="button"
+          class="swatch"
+          data-accent-value="violet"
+          aria-label={t.accentViolet}
+          data-i18n-attr="aria-label:accentViolet"></button>
+        <button
+          type="button"
+          class="swatch"
+          data-accent-value="teal"
+          aria-label={t.accentTeal}
+          data-i18n-attr="aria-label:accentTeal"></button>
+        <button
+          type="button"
+          class="swatch"
+          data-accent-value="blue"
+          aria-label={t.accentBlue}
+          data-i18n-attr="aria-label:accentBlue"></button>
+        <button
+          type="button"
+          class="swatch"
+          data-accent-value="olive"
+          aria-label={t.accentOlive}
+          data-i18n-attr="aria-label:accentOlive"></button>
+        <button
+          type="button"
+          class="swatch"
+          data-accent-value="rose"
+          aria-label={t.accentRose}
+          data-i18n-attr="aria-label:accentRose"></button>
       </div>
     </section>
+
+    <section class="prefs-group" aria-label="Ширина">
+      <p class="prefs-label">{locale === 'ru' ? 'Ширина' : 'Width'}</p>
+      <div class="prefs-options">
+        <button type="button" class="prefs-chip" data-width-value="normal">
+          {locale === 'ru' ? 'Стандарт' : 'Normal'}
+        </button>
+        <button type="button" class="prefs-chip" data-width-value="wide">
+          {locale === 'ru' ? 'Широкая' : 'Wide'}
+        </button>
+        <button type="button" class="prefs-chip" data-width-value="full">
+          {locale === 'ru' ? 'Макс' : 'Full'}
+        </button>
+      </div>
+    </section>
+
+    {
+      pluginsUi.preferencesSections.map((section) => {
+        const resolvedTitle = section.i18n?.[locale] || section.title;
+        return (
+          <section class="prefs-group" aria-label={resolvedTitle}>
+            <p class="prefs-label">{resolvedTitle}</p>
+            <div set:html={section.html} />
+          </section>
+        );
+      })
+    }
   </div>
 </details>
 
 <script is:inline>
-  const themeStorageKey = "notegen-theme";
-  const accentStorageKey = "notegen-accent";
-  const languageStorageKey = "notegen-language";
+  const themeStorageKey = 'notegen-theme';
+  const accentStorageKey = 'notegen-accent';
+  const widthStorageKey = 'notegen-width';
+  const languageStorageKey = 'notegen-language';
   const root = document.documentElement;
-  const themeChips = document.querySelectorAll("[data-theme-value]");
-  const accentChips = document.querySelectorAll("[data-accent-value]");
-  const langChips = document.querySelectorAll("[data-lang-value]");
-  const isSupportedLocale = (value) => value === "en" || value === "ru";
+  const themeChips = document.querySelectorAll('[data-theme-value]');
+  const accentChips = document.querySelectorAll('[data-accent-value]');
+  const widthChips = document.querySelectorAll('[data-width-value]');
+  const langChips = document.querySelectorAll('[data-lang-value]');
+  const isSupportedLocale = (value) => value === 'en' || value === 'ru';
   const applyTheme = (value) => {
-    const resolved = value === "system"
-      ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
-      : value;
+    const resolved =
+      value === 'system'
+        ? window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light'
+        : value;
     root.dataset.theme = resolved;
     themeChips.forEach((chip) => {
-      chip.setAttribute("aria-pressed", String(chip.dataset.themeValue === value));
+      chip.setAttribute('aria-pressed', String(chip.dataset.themeValue === value));
     });
   };
   const applyAccent = (value) => {
     root.dataset.accent = value;
     accentChips.forEach((chip) => {
-      chip.setAttribute("aria-pressed", String(chip.dataset.accentValue === value));
+      chip.setAttribute('aria-pressed', String(chip.dataset.accentValue === value));
+    });
+  };
+  const applyWidth = (value) => {
+    root.dataset.width = value;
+    widthChips.forEach((chip) => {
+      chip.setAttribute('aria-pressed', String(chip.dataset.widthValue === value));
     });
   };
   const currentUrl = new URL(window.location.href);
-  const queryLang = currentUrl.searchParams.get("lang");
+  const queryLang = currentUrl.searchParams.get('lang');
   const savedLang = localStorage.getItem(languageStorageKey);
-  const currentLang = isSupportedLocale(queryLang) ? queryLang : (isSupportedLocale(savedLang) ? savedLang : "ru");
+  const currentLang = isSupportedLocale(queryLang)
+    ? queryLang
+    : isSupportedLocale(savedLang)
+      ? savedLang
+      : 'ru';
   langChips.forEach((chip) => {
-    chip.setAttribute("aria-pressed", String(chip.dataset.langValue === currentLang));
+    chip.setAttribute('aria-pressed', String(chip.dataset.langValue === currentLang));
   });
 
-  const savedTheme = localStorage.getItem(themeStorageKey) ?? "system";
-  const savedAccent = localStorage.getItem(accentStorageKey) ?? "white";
+  const savedTheme = localStorage.getItem(themeStorageKey) ?? 'system';
+  const savedAccent = localStorage.getItem(accentStorageKey) ?? 'white';
+  const savedWidth = localStorage.getItem(widthStorageKey) ?? 'normal';
   applyTheme(savedTheme);
   applyAccent(savedAccent);
+  applyWidth(savedWidth);
 
   themeChips.forEach((chip) => {
-    chip.addEventListener("click", () => {
-      const value = chip.dataset.themeValue ?? "system";
+    chip.addEventListener('click', () => {
+      const value = chip.dataset.themeValue ?? 'system';
       localStorage.setItem(themeStorageKey, value);
       applyTheme(value);
-      chip.closest("details")?.removeAttribute("open");
+      chip.closest('details')?.removeAttribute('open');
     });
   });
   accentChips.forEach((chip) => {
-    chip.addEventListener("click", () => {
-      const value = chip.dataset.accentValue ?? "white";
+    chip.addEventListener('click', () => {
+      const value = chip.dataset.accentValue ?? 'white';
       localStorage.setItem(accentStorageKey, value);
       applyAccent(value);
-      chip.closest("details")?.removeAttribute("open");
+      chip.closest('details')?.removeAttribute('open');
+    });
+  });
+  widthChips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const value = chip.dataset.widthValue ?? 'normal';
+      localStorage.setItem(widthStorageKey, value);
+      applyWidth(value);
+      chip.closest('details')?.removeAttribute('open');
     });
   });
   langChips.forEach((chip) => {
-    chip.addEventListener("click", () => {
-      const value = chip.dataset.langValue ?? "ru";
+    chip.addEventListener('click', () => {
+      const value = chip.dataset.langValue ?? 'ru';
       localStorage.setItem(languageStorageKey, value);
       const nextUrl = new URL(window.location.href);
-      nextUrl.searchParams.set("lang", value);
+      nextUrl.searchParams.set('lang', value);
       window.location.href = nextUrl.toString();
     });
   });
 
-  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-    const value = localStorage.getItem(themeStorageKey) ?? "system";
-    if (value === "system") {
-      applyTheme("system");
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    const value = localStorage.getItem(themeStorageKey) ?? 'system';
+    if (value === 'system') {
+      applyTheme('system');
     }
   });
 </script>

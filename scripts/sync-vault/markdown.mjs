@@ -1,19 +1,19 @@
 export function parseFrontmatter(raw) {
-  if (!raw.startsWith("---\n")) {
+  if (!raw.startsWith('---\n')) {
     return { data: {}, body: raw };
   }
 
-  const end = raw.indexOf("\n---", 4);
+  const end = raw.indexOf('\n---', 4);
   if (end === -1) {
     return { data: {}, body: raw };
   }
 
   const yamlBlock = raw.slice(4, end).trim();
-  const body = raw.slice(end + 4).replace(/^\n/, "");
+  const body = raw.slice(end + 4).replace(/^\n/, '');
   const data = {};
 
-  for (const line of yamlBlock.split("\n")) {
-    const separatorIndex = line.indexOf(":");
+  for (const line of yamlBlock.split('\n')) {
+    const separatorIndex = line.indexOf(':');
     if (separatorIndex === -1) {
       continue;
     }
@@ -25,16 +25,19 @@ export function parseFrontmatter(raw) {
     }
 
     let value = rawValue;
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
       value = value.slice(1, -1);
     }
 
-    if (value.startsWith("[") && value.endsWith("]")) {
+    if (value.startsWith('[') && value.endsWith(']')) {
       const inner = value.slice(1, -1).trim();
-      if (inner === "") {
+      if (inner === '') {
         data[key] = [];
       } else {
-        data[key] = inner.split(",").map((s) => {
+        data[key] = inner.split(',').map((s) => {
           s = s.trim();
           if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
             return s.slice(1, -1);
@@ -42,9 +45,9 @@ export function parseFrontmatter(raw) {
           return s;
         });
       }
-    } else if (value === "true") {
+    } else if (value === 'true') {
       data[key] = true;
-    } else if (value === "false") {
+    } else if (value === 'false') {
       data[key] = false;
     } else {
       data[key] = value;
@@ -56,13 +59,16 @@ export function parseFrontmatter(raw) {
 
 export function stripMarkdown(markdown) {
   return markdown
-    .replace(/^---[\s\S]*?---\n?/, "")
-    .replace(/!\[[^\]]*?\]\([^)]+\)/g, "")
-    .replace(/\[[^\]]+]\(([^)]+)\)/g, "$1")
-    .replace(/[*_`>#-]/g, "")
-    .replace(/\$\$[\s\S]*?\$\$/g, " ")
-    .replace(/\$[^$\n]+\$/g, " ")
-    .replace(/\s+/g, " ")
+    .replace(/^---[\s\S]*?---\n?/, '')
+    .replace(/!\[\[[^\]]*?\]\]/g, '')
+    .replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '$2')
+    .replace(/\[\[([^\]]+)\]\]/g, '$1')
+    .replace(/!\[[^\]]*?\]\([^)]+\)/g, '')
+    .replace(/\[[^\]]+]\(([^)]+)\)/g, '$1')
+    .replace(/[*_`>#-]/g, '')
+    .replace(/\$\$[\s\S]*?\$\$/g, ' ')
+    .replace(/\$[^$\n]+\$/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -75,30 +81,30 @@ export function excerpt(markdown, length = 180) {
 }
 
 export function normalizeBlockquoteMath(markdown) {
-  const lines = markdown.split("\n");
+  const lines = markdown.split('\n');
   const normalized = [];
   let insideBlockquoteMath = false;
 
   for (const line of lines) {
     const trimmed = line.trim();
-    const isQuoted = trimmed.startsWith(">");
-    const afterQuote = isQuoted ? trimmed.replace(/^>\s*/, "") : trimmed;
+    const isQuoted = trimmed.startsWith('>');
+    const afterQuote = isQuoted ? trimmed.replace(/^>\s*/, '') : trimmed;
 
-    if (isQuoted && afterQuote === "$$") {
+    if (isQuoted && afterQuote === '$$') {
       insideBlockquoteMath = !insideBlockquoteMath;
       normalized.push(line);
       continue;
     }
 
     if (insideBlockquoteMath) {
-      if (trimmed === "$$") {
+      if (trimmed === '$$') {
         normalized.push(`> ${trimmed}`);
         insideBlockquoteMath = false;
         continue;
       }
 
       if (trimmed.length === 0) {
-        normalized.push(">");
+        normalized.push('>');
         continue;
       }
 
@@ -109,35 +115,38 @@ export function normalizeBlockquoteMath(markdown) {
     normalized.push(line);
   }
 
-  return normalized.join("\n");
+  return normalized.join('\n');
 }
 
 export function firstParagraph(markdown) {
   const paragraph = markdown
     .split(/\n\s*\n/g)
     .map((chunk) => chunk.trim())
-    .find((chunk) => chunk && !chunk.startsWith("#") && !chunk.startsWith("-") && !chunk.startsWith(">"));
+    .find(
+      (chunk) =>
+        chunk && !chunk.startsWith('#') && !chunk.startsWith('-') && !chunk.startsWith('>'),
+    );
 
-  return paragraph ? stripMarkdown(paragraph) : "";
+  return paragraph ? stripMarkdown(paragraph) : '';
 }
 
 export function toFrontmatter(data) {
-  const lines = ["---"];
+  const lines = ['---'];
   for (const [key, value] of Object.entries(data)) {
-    if (value === undefined || value === null || value === "") {
+    if (value === undefined || value === null || value === '') {
       continue;
     }
-    if (typeof value === "boolean") {
+    if (typeof value === 'boolean') {
       lines.push(`${key}: ${value}`);
       continue;
     }
     if (Array.isArray(value)) {
-      const items = value.map((v) => `"${String(v).replace(/"/g, '\\"')}"`).join(", ");
+      const items = value.map((v) => `"${String(v).replace(/"/g, '\\"')}"`).join(', ');
       lines.push(`${key}: [${items}]`);
       continue;
     }
     lines.push(`${key}: "${String(value).replace(/"/g, '\\"')}"`);
   }
-  lines.push("---", "");
-  return lines.join("\n");
+  lines.push('---', '');
+  return lines.join('\n');
 }

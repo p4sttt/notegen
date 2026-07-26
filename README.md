@@ -1,6 +1,6 @@
 # notegen
 
-Static notes site generated from a private Obsidian vault.
+Static notes site generated from a private Obsidian vault, supporting interactive databases, Jupyter notebook imports, LaTeX equations, and extensible plugins.
 
 ## What It Does
 
@@ -13,6 +13,7 @@ Static notes site generated from a private Obsidian vault.
 - renders LaTeX via KaTeX
 - deploys to GitHub Pages through GitHub Actions
 - rebuilds automatically when the private vault repository updates
+- **plugin system**: extends vault processing, Astro configuration, global styling, client scripts, preferences, and navigation links.
 
 ## Repository Structure
 
@@ -23,14 +24,17 @@ src/
     topics/       generated topic markdown
   data/generated/ generated topic metadata
   pages/          Astro routes
+  styles/         Global and layout CSS stylesheets
+  widgets/        Astro UI components (database, preferences, sidebar)
 scripts/
   sync-vault.mjs  imports vault content into the site
   sync-vault/     sync implementation modules
+plugins/          Git submodules containing extensible plugins
 .github/workflows/
   deploy.yml      build and deploy workflow
 ```
 
-### Vault Sync Modules
+### Vault Sync & Plugin Modules
 
 `scripts/sync-vault.mjs` is the CLI entrypoint and orchestration layer. The implementation details live in `scripts/sync-vault/`:
 
@@ -46,6 +50,16 @@ scripts/
 - `paths.mjs` normalizes site paths, slugs, and generated content filenames
 - `fs-utils.mjs` contains small filesystem helpers shared by sync modules
 - `data-file.mjs` renders `src/data/generated/topics.ts`
+- `plugins.mjs` registers and runs vault compilation hooks for active plugins
+
+## Code Style & Version Control
+
+To maintain a consistent codebase across developers and environments, the repository includes standard files:
+
+- **[.editorconfig](file:///home/d4y2k/progs/notegen/.editorconfig)**: Enforces uniform indent sizes, trim whitespace, line endings, and file formatting in editors.
+- **[.gitattributes](file:///home/d4y2k/progs/notegen/.gitattributes)**: Normalizes code file line endings (`lf`) and specifies binary attributes for media assets.
+
+---
 
 ## Local Development
 
@@ -75,6 +89,34 @@ npm run sync:vault
 npm run dev
 ```
 
+---
+
+## Plugin System
+
+Notegen features a plugin architecture allowing you to extend the core compilation, injection of client-side styles and scripts, and UI layout.
+
+Available plugins live under the `plugins/` directory.
+
+### Supabase Plugin
+
+An active plugin `plugins/supabase` provides database state synchronization and OAuth/Email user auth.
+
+#### Local Integration Showcase
+
+A fully self-contained showcase testing environment exists inside `plugins/supabase/showcase/`. It spins up local PostgreSQL, GoTrue auth, PostgREST API gateway, and an Astro client replica.
+Run it locally:
+
+```bash
+./plugins/supabase/showcase/run-test.sh
+```
+
+Access points:
+
+- Astro Client: `http://localhost:4321`
+- pgweb Database Explorer: `http://localhost:8082`
+
+---
+
 ## Vault Format
 
 Each topic is a directory in the vault:
@@ -103,12 +145,12 @@ Expected conventions:
 - Jupyter notebooks may define note metadata through `notebook.metadata.notegen` or through YAML frontmatter in the first markdown cell
 - relative assets should be referenced like `![desc](./assets/file.png)`
 
-CSV database pages:
+### CSV Database Pages
 
 - use the first row as column headers
 - support comma, semicolon, and tab delimiters
 - infer column types as `text`, `number`, `date`, or `boolean`
-- render boolean values as compact checked/unchecked controls
+- render boolean values as compact checked/unchecked controls. Boolean columns are fully interactive (click cell to toggle) and persist states locally or via cloud.
 - include search, per-column filters, column sorting, column visibility controls, and visible-row counts
 - use the filename as the database title and slug
 
@@ -120,37 +162,7 @@ Attention Is All You Need;2017;true
 Scaling Laws;2020;false
 ```
 
-Notebook metadata example:
-
-```json
-{
-  "metadata": {
-    "notegen": {
-      "title": "Notebook Page Title",
-      "slug": "notebook-page",
-      "description": "Short page description.",
-      "date": "2026-05-14",
-      "status": "in-progress"
-    }
-  }
-}
-```
-
-Equivalent first markdown cell:
-
-```md
 ---
-title: "Notebook Page Title"
-slug: "notebook-page"
-description: "Short page description."
-date: "2026-05-14"
-status: "in-progress"
----
-
-# Notebook content starts here
-```
-
-If both are present, first-cell frontmatter overrides `notebook.metadata.notegen`. If neither defines `title`, `notegen` uses the first `# Heading` in a markdown cell, then falls back to the filename.
 
 ## Site Configuration
 
@@ -161,35 +173,24 @@ Each notes repository can override frontend text by adding `notegen.config.json`
   "changelogPath": "changelog.json",
   "siteText": {
     "ru": {
-      "brand": "Статьи pig-ai",
-      "heroTitle": "Статьи pig-ai",
-      "metaDescription": "Статьи и заметки pig-ai.",
-      "heroBody": "Материалы, заметки и длинные тексты."
+      "brand": "Статьи wiki",
+      "heroTitle": "Статьи wiki",
+      "metaDescription": "Статьи и заметки.",
+      "heroBody": "Материалы, заметки и тексты."
     },
     "en": {
-      "brand": "pig-ai articles",
-      "heroTitle": "pig-ai articles",
-      "metaDescription": "pig-ai articles and notes.",
+      "brand": "wiki articles",
+      "heroTitle": "wiki articles",
+      "metaDescription": "wiki articles and notes.",
       "heroBody": "Articles, notes, and long-form writing."
     }
   }
 }
 ```
 
-`changelogPath` is optional and defaults to `changelog.json` in the vault root. Relative paths are resolved from the vault root.
-
-Top-level `siteText` fields apply to every locale. Locale-specific `ru` and `en` fields override those values.
-
-Supported text fields:
-
-- `metaDescription`
-- `brand`
-- `heroEyebrow`
-- `heroTitle`
-- `heroBody`
-- `heroTag`
-
 By default the build reads `$VAULT_PATH/notegen.config.json`. Use `SITE_CONFIG_PATH` to point to another config file.
+
+---
 
 ## Ignoring Vault Files
 
@@ -210,7 +211,9 @@ raw/
 *.tmp
 ```
 
-Rules are matched relative to the vault root. Directory rules ending with `/` skip the directory and everything inside it. `*` matches inside one path segment. Negated rules with `!` are not supported.
+Rules are matched relative to the vault root. Directory rules ending with `/` skip the directory and everything inside it.
+
+---
 
 ## CI/CD
 
@@ -222,21 +225,7 @@ Rules are matched relative to the vault root. Directory rules ending with `/` sk
 - Astro builds the static output
 - GitHub Pages publishes `dist/`
 
-### Required repository configuration
-
-In `notegen`:
-
-- Action secret: `VAULT_READ_TOKEN`
-- Action variable: `VAULT_REPO_URL`
-
-In the vault repository:
-
-- Action secret: `NOTEGEN_DISPATCH_TOKEN`
-- Action variable: `NOTEGEN_REPO_URL`
-
-Pages setting in `notegen`:
-
-- `Settings -> Pages -> Source -> GitHub Actions`
+---
 
 ## Docker
 
@@ -252,16 +241,6 @@ ghcr.io/<github-owner>/notegen:v0.1.0
 ghcr.io/<github-owner>/notegen:sha-<commit>
 ```
 
-To use this image from GitLab or another external CI, make the GHCR package public in GitHub:
-
-`GitHub -> Packages -> notegen -> Package settings -> Change visibility -> Public`
-
-### Build the image
-
-```bash
-docker build -t notegen .
-```
-
 ### Build a site locally
 
 ```bash
@@ -273,110 +252,21 @@ docker run --rm \
   notegen
 ```
 
-Container contract:
-
-- `/vault` is the mounted notes repository
-- `/out` receives the generated static site
-- `VAULT_PATH` defaults to `/vault`
-- `OUT_DIR` defaults to `/out`
-- `ASTRO_SITE` and `ASTRO_BASE` override Astro `site` and `base`
-- `SITE_CONFIG_PATH` can point to a custom site config JSON file
-
-### Example GitHub Actions usage from a notes repository
-
-```yaml
-name: Build notes site
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout notes
-        uses: actions/checkout@v4
-        with:
-          path: vault
-
-      - name: Checkout notegen
-        uses: actions/checkout@v4
-        with:
-          repository: owner/notegen
-          path: notegen
-
-      - name: Build notegen image
-        run: docker build -t notegen ./notegen
-
-      - name: Build static site
-        run: |
-          mkdir -p site
-          docker run --rm \
-            -v "$PWD/vault:/vault:ro" \
-            -v "$PWD/site:/out" \
-            -e ASTRO_SITE="https://${{ github.repository_owner }}.github.io" \
-            -e ASTRO_BASE="/${{ github.event.repository.name }}" \
-            ghcr.io/owner/notegen:latest
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
-```
-
-## Notes
-
-- generated vault content is ignored by git
-- local `vault/` and `.env` are ignored by git
-- current feature status lives in [FEATURES.md](./FEATURES.md)
+---
 
 ## Changelog
 
-During `npm run sync:vault`, `notegen` reads the changelog file from the vault root and generates a `/changelog` page. The default file is:
+During `npm run sync:vault`, `notegen` reads the changelog file from the vault root and generates a `/changelog` page. The default file is `vault/changelog.json`.
 
-```text
-vault/changelog.json
-```
-
-Override it in `notegen.config.json`:
-
-```json
-{
-  "changelogPath": ".notegen/changelog.jsonl"
-}
-```
-
-The parser accepts either a JSON array:
-
-```json
-[
-  {
-    "timestamp": "2026-05-06T22:40:00Z",
-    "action": "updated",
-    "kind": "note",
-    "path": "topic/note.md",
-    "title": "Topic Note",
-    "topic": "Topic",
-    "source": "pre-commit"
-  }
-]
-```
-
-Or JSON Lines, one event per line:
-
-```jsonl
-{"timestamp":"2026-05-06T22:40:00Z","action":"created","kind":"note","path":"topic/note.md","title":"Topic Note","source":"pre-commit"}
-{"timestamp":"2026-05-06T22:43:00Z","action":"renamed","kind":"note","oldPath":"topic/old.md","path":"topic/new.md","title":"New Topic Note","source":"pre-commit"}
-```
+The parser accepts either a JSON array or JSON Lines format.
 
 Event fields:
 
 - `timestamp`: ISO date string, for example `2026-05-06T22:40:00Z`
-- `action`: `created`, `updated`, `deleted`, `renamed`; unknown values become `changed`
-- `kind`: `note`, `topic`, `database`, `asset`; unknown or missing values become `other`
+- `action`: `created`, `updated`, `deleted`, `renamed`
+- `kind`: `note`, `topic`, `database`, `asset`
 - `path`: current path relative to the vault root
 - `oldPath`: previous path for renamed files
-- `title`: optional display title; if omitted, `notegen` tries to use the current generated note or topic title
-- `topic`: optional display topic
-- `source`: optional source label such as `pre-commit`
+- `title`: display title
+- `topic`: display topic
+- `source`: optional label (e.g. `pre-commit`)
