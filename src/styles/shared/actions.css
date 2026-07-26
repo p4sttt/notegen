@@ -50,6 +50,13 @@
   transform: translateY(0);
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  justify-self: end;
+}
+
 .prefs-popover {
   position: relative;
 }

@@ -80,17 +80,19 @@ const pageI18n = {
             })
           }
         </nav>
-        <button
-          type="button"
-          class="header-search-btn"
-          data-search-trigger
-          title={ui[locale].searchTitle}
-        >
-          <span>🔍</span>
-          <span>{ui[locale].search}</span>
-          <kbd class="search-kbd-badge">{ui[locale].searchShortcut}</kbd>
-        </button>
-        <PreferencesControl locale={locale} />
+        <div class="header-actions">
+          <button
+            type="button"
+            class="header-search-btn"
+            data-search-trigger
+            title={ui[locale].searchTitle}
+          >
+            <span>🔍</span>
+            <span>{ui[locale].search}</span>
+            <kbd class="search-kbd-badge">{ui[locale].searchShortcut}</kbd>
+          </button>
+          <PreferencesControl locale={locale} />
+        </div>
       </header>
       <main class="content-frame">
         <slot />
