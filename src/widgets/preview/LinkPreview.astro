@@ -1,0 +1,158 @@
+---
+import { topics as rawTopics, topLevelNotes as rawNotes } from '../../data/generated/topics';
+
+interface Props {
+  locale: string;
+  baseUrl: string;
+}
+
+const { baseUrl } = Astro.props;
+
+// Build collectionSlug -> preview metadata map
+const previewMap: Record<
+  string,
+  { title: string; summary: string; tags?: string[]; topic?: string }
+> = {};
+
+for (const topic of rawTopics) {
+  previewMap[topic.slug] = {
+    title: topic.title,
+    summary: topic.description || topic.summary || '',
+    topic: topic.parentSlug ? 'Тема' : undefined,
+  };
+
+  for (const note of topic.notes) {
+    previewMap[note.collectionSlug] = {
+      title: note.title,
+      summary: note.description || note.summary || '',
+      tags: note.tags,
+      topic: topic.title,
+    };
+  }
+}
+
+for (const note of rawNotes) {
+  previewMap[note.collectionSlug] = {
+    title: note.title,
+    summary: note.description || note.summary || '',
+    tags: note.tags,
+  };
+}
+---
+
+<div class="link-popover-card" id="link-popover-card" aria-hidden="true">
+  <div class="link-popover-header">
+    <span class="link-popover-icon">📄</span>
+    <span class="link-popover-title" id="link-popover-title"></span>
+  </div>
+  <div class="link-popover-summary" id="link-popover-summary"></div>
+  <div class="link-popover-tags" id="link-popover-tags"></div>
+</div>
+
+<script is:inline define:vars={{ previewMap, baseUrl }}>
+  (() => {
+    const popover = document.getElementById('link-popover-card');
+    const titleEl = document.getElementById('link-popover-title');
+    const summaryEl = document.getElementById('link-popover-summary');
+    const tagsEl = document.getElementById('link-popover-tags');
+
+    if (!popover || !titleEl || !summaryEl || !tagsEl) return;
+
+    let hoverTimer = null;
+    let currentTarget = null;
+
+    function getSlugFromHref(href) {
+      if (!href) return null;
+      let clean = href.replace(window.location.origin, '');
+      const baseClean = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+      if (clean.startsWith(baseClean)) {
+        clean = clean.slice(baseClean.length);
+      } else if (clean.startsWith('/')) {
+        clean = clean.slice(1);
+      }
+      clean = clean.split('?')[0].split('#')[0].replace(/\/$/, '');
+      return clean;
+    }
+
+    function showPopover(link, item) {
+      titleEl.textContent = item.title;
+      summaryEl.textContent = item.summary || '';
+
+      tagsEl.innerHTML = '';
+      if (item.topic) {
+        const topicSpan = document.createElement('span');
+        topicSpan.className = 'link-popover-tag link-popover-topic';
+        topicSpan.textContent = item.topic;
+        tagsEl.appendChild(topicSpan);
+      }
+      if (item.tags) {
+        item.tags.slice(0, 3).forEach((t) => {
+          const tagSpan = document.createElement('span');
+          tagSpan.className = 'link-popover-tag';
+          tagSpan.textContent = `#${t}`;
+          tagsEl.appendChild(tagSpan);
+        });
+      }
+
+      const rect = link.getBoundingClientRect();
+      const popoverWidth = 320;
+      let left = rect.left + window.scrollX;
+      const top = rect.bottom + window.scrollY + 8;
+
+      if (left + popoverWidth > window.innerWidth - 16) {
+        left = window.innerWidth - popoverWidth - 16;
+      }
+      if (left < 16) left = 16;
+
+      popover.style.left = `${left}px`;
+      popover.style.top = `${top}px`;
+      popover.classList.add('is-visible');
+      popover.setAttribute('aria-hidden', 'false');
+    }
+
+    function hidePopover() {
+      if (hoverTimer) clearTimeout(hoverTimer);
+      popover.classList.remove('is-visible');
+      popover.setAttribute('aria-hidden', 'true');
+      currentTarget = null;
+    }
+
+    document.addEventListener('mouseover', (e) => {
+      const link = e.target.closest('a.internal-link');
+      if (!link || link.classList.contains('is-unresolved')) {
+        if (!e.target.closest('#link-popover-card')) {
+          hidePopover();
+        }
+        return;
+      }
+
+      if (link === currentTarget) return;
+      currentTarget = link;
+
+      const slug = getSlugFromHref(link.href);
+      const item = previewMap[slug];
+
+      if (!item) {
+        hidePopover();
+        return;
+      }
+
+      if (hoverTimer) clearTimeout(hoverTimer);
+      hoverTimer = setTimeout(() => showPopover(link, item), 250);
+    });
+
+    document.addEventListener('mouseout', (e) => {
+      const link = e.target.closest('a.internal-link');
+      if (link && !e.relatedTarget?.closest('#link-popover-card')) {
+        if (hoverTimer) clearTimeout(hoverTimer);
+        hoverTimer = setTimeout(hidePopover, 150);
+      }
+    });
+
+    popover.addEventListener('mouseenter', () => {
+      if (hoverTimer) clearTimeout(hoverTimer);
+    });
+
+    popover.addEventListener('mouseleave', hidePopover);
+  })();
+</script>
