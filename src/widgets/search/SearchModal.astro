@@ -1,0 +1,312 @@
+---
+import {
+  topics as rawTopics,
+  topLevelNotes as rawNotes,
+  topLevelDatabases as rawDatabases,
+} from '../../data/generated/topics';
+import type { Locale } from '../../i18n/ui';
+import { ui } from '../../i18n/ui';
+
+interface Props {
+  locale: Locale;
+  baseUrl: string;
+}
+
+const { locale, baseUrl } = Astro.props;
+const copy = ui[locale];
+
+// Prepare searchable items array at build time
+const searchableItems = [
+  ...rawTopics.map((topic) => ({
+    id: `topic:${topic.slug}`,
+    type: 'topic',
+    title: topic.title,
+    summary: topic.description || topic.summary || '',
+    slug: topic.slug,
+    url: `${baseUrl}${topic.slug}?lang=${locale}`,
+    parent: topic.parentSlug ? 'Тема' : undefined,
+    tags: [] as string[],
+  })),
+  ...rawTopics.flatMap((topic) =>
+    topic.notes.map((note) => ({
+      id: `note:${note.collectionSlug}`,
+      type: 'note',
+      title: note.title,
+      summary: note.description || note.summary || '',
+      slug: note.collectionSlug,
+      url: `${baseUrl}${note.collectionSlug}?lang=${locale}`,
+      parent: topic.title,
+      tags: note.tags || [],
+    })),
+  ),
+  ...rawNotes.map((note) => ({
+    id: `note:${note.collectionSlug}`,
+    type: 'note',
+    title: note.title,
+    summary: note.description || note.summary || '',
+    slug: note.collectionSlug,
+    url: `${baseUrl}${note.collectionSlug}?lang=${locale}`,
+    parent: undefined,
+    tags: note.tags || [],
+  })),
+  ...rawTopics.flatMap((topic) =>
+    topic.databases.map((db) => ({
+      id: `db:${db.collectionSlug}`,
+      type: 'database',
+      title: db.title,
+      summary: db.description || db.summary || '',
+      slug: db.collectionSlug,
+      url: `${baseUrl}${db.collectionSlug}?lang=${locale}`,
+      parent: topic.title,
+      tags: [] as string[],
+    })),
+  ),
+  ...rawDatabases.map((db) => ({
+    id: `db:${db.collectionSlug}`,
+    type: 'database',
+    title: db.title,
+    summary: db.description || db.summary || '',
+    slug: db.collectionSlug,
+    url: `${baseUrl}${db.collectionSlug}?lang=${locale}`,
+    parent: undefined,
+    tags: [] as string[],
+  })),
+];
+---
+
+<div class="search-modal-backdrop" id="search-modal-backdrop" aria-hidden="true">
+  <div class="search-modal-card" role="dialog" aria-modal="true" aria-label={copy.searchTitle}>
+    <div class="search-header-bar">
+      <span class="search-icon" aria-hidden="true">🔍</span>
+      <input
+        type="search"
+        id="search-modal-input"
+        class="search-input"
+        placeholder={copy.searchPlaceholder}
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <kbd class="search-kbd-badge">ESC</kbd>
+    </div>
+
+    <div class="search-results-container" id="search-results-container">
+      <div class="search-no-results" id="search-no-results" style="display: none;">
+        {copy.searchNoResults}
+      </div>
+      <div id="search-results-list"></div>
+    </div>
+
+    <div class="search-footer-bar">
+      <div class="search-footer-hints">
+        <span class="search-footer-hint"
+          ><kbd class="search-kbd-badge">↑</kbd>
+          <kbd class="search-kbd-badge">↓</kbd> Навигация</span
+        >
+        <span class="search-footer-hint"><kbd class="search-kbd-badge">↵</kbd> Открыть</span>
+        <span class="search-footer-hint"><kbd class="search-kbd-badge">ESC</kbd> Закрыть</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline define:vars={{ searchableItems }}>
+  (() => {
+    const backdrop = document.getElementById('search-modal-backdrop');
+    const input = document.getElementById('search-modal-input');
+    const resultsList = document.getElementById('search-results-list');
+    const noResults = document.getElementById('search-no-results');
+
+    if (!backdrop || !input || !resultsList || !noResults) return;
+
+    let selectedIndex = -1;
+    let currentResults = [];
+
+    function openModal() {
+      backdrop.classList.add('is-open');
+      backdrop.setAttribute('aria-hidden', 'false');
+      input.value = '';
+      selectedIndex = -1;
+      renderResults('');
+      setTimeout(() => input.focus(), 50);
+    }
+
+    function closeModal() {
+      backdrop.classList.remove('is-open');
+      backdrop.setAttribute('aria-hidden', 'true');
+      input.blur();
+    }
+
+    function renderResults(query) {
+      const q = query.trim().toLowerCase();
+      resultsList.innerHTML = '';
+      selectedIndex = -1;
+
+      if (!q) {
+        // Render default recent / popular items
+        currentResults = searchableItems.slice(0, 8);
+      } else {
+        currentResults = searchableItems.filter((item) => {
+          const matchTitle = item.title.toLowerCase().includes(q);
+          const matchSummary = item.summary.toLowerCase().includes(q);
+          const matchParent = item.parent ? item.parent.toLowerCase().includes(q) : false;
+          const matchTags = item.tags ? item.tags.some((t) => t.toLowerCase().includes(q)) : false;
+          return matchTitle || matchSummary || matchParent || matchTags;
+        });
+      }
+
+      if (currentResults.length === 0) {
+        noResults.style.display = 'block';
+        return;
+      }
+      noResults.style.display = 'none';
+
+      // Group by category
+      const notes = currentResults.filter((i) => i.type === 'note');
+      const topics = currentResults.filter((i) => i.type === 'topic');
+      const dbs = currentResults.filter((i) => i.type === 'database');
+
+      let globalIndex = 0;
+
+      function renderGroup(title, items, icon) {
+        if (items.length === 0) return;
+
+        const groupEl = document.createElement('div');
+        groupEl.className = 'search-category-group';
+
+        const titleEl = document.createElement('div');
+        titleEl.className = 'search-category-title';
+        titleEl.textContent = `${icon} ${title}`;
+        groupEl.appendChild(titleEl);
+
+        items.forEach((item) => {
+          const itemIndex = globalIndex++;
+          const link = document.createElement('a');
+          link.className = 'search-result-item';
+          link.href = item.url;
+          link.dataset.index = String(itemIndex);
+
+          const mainEl = document.createElement('div');
+          mainEl.className = 'search-item-main';
+
+          const titleText = document.createElement('div');
+          titleText.className = 'search-item-title';
+          titleText.textContent = item.title;
+          mainEl.appendChild(titleText);
+
+          if (item.summary) {
+            const snippetEl = document.createElement('div');
+            snippetEl.className = 'search-item-snippet';
+            snippetEl.textContent = item.summary;
+            mainEl.appendChild(snippetEl);
+          }
+
+          link.appendChild(mainEl);
+
+          if (item.parent || (item.tags && item.tags.length > 0)) {
+            const metaEl = document.createElement('div');
+            metaEl.className = 'search-item-meta';
+
+            if (item.parent) {
+              const pTag = document.createElement('span');
+              pTag.className = 'search-item-tag';
+              pTag.textContent = item.parent;
+              metaEl.appendChild(pTag);
+            }
+
+            if (item.tags) {
+              item.tags.slice(0, 2).forEach((t) => {
+                const tagEl = document.createElement('span');
+                tagEl.className = 'search-item-tag';
+                tagEl.textContent = `#${t}`;
+                metaEl.appendChild(tagEl);
+              });
+            }
+
+            link.appendChild(metaEl);
+          }
+
+          link.addEventListener('mouseenter', () => setSelectedIndex(itemIndex));
+          groupEl.appendChild(link);
+        });
+
+        resultsList.appendChild(groupEl);
+      }
+
+      renderGroup('Заметки', notes, '📄');
+      renderGroup('Разделы', topics, '📂');
+      renderGroup('Базы данных', dbs, '📊');
+    }
+
+    function setSelectedIndex(index) {
+      const items = resultsList.querySelectorAll('.search-result-item');
+      items.forEach((el, i) => {
+        if (i === index) {
+          el.classList.add('is-selected');
+          el.scrollIntoView({ block: 'nearest' });
+        } else {
+          el.classList.remove('is-selected');
+        }
+      });
+      selectedIndex = index;
+    }
+
+    // Keyboard navigation inside modal
+    input.addEventListener('input', (e) => renderResults(e.target.value));
+
+    input.addEventListener('keydown', (e) => {
+      const items = resultsList.querySelectorAll('.search-result-item');
+      if (items.length === 0) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const next = selectedIndex < items.length - 1 ? selectedIndex + 1 : 0;
+        setSelectedIndex(next);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prev = selectedIndex > 0 ? selectedIndex - 1 : items.length - 1;
+        setSelectedIndex(prev);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const targetIndex = selectedIndex >= 0 ? selectedIndex : 0;
+        const targetItem = items[targetIndex];
+        if (targetItem) {
+          window.location.href = targetItem.href;
+        }
+      }
+    });
+
+    // Global keyboard triggers (Cmd+K, Ctrl+K, /, Esc)
+    window.addEventListener('keydown', (e) => {
+      const isCmdK = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k';
+      const isSlash =
+        e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
+
+      if (isCmdK || isSlash) {
+        e.preventDefault();
+        if (backdrop.classList.contains('is-open')) {
+          closeModal();
+        } else {
+          openModal();
+        }
+      } else if (e.key === 'Escape' && backdrop.classList.contains('is-open')) {
+        closeModal();
+      }
+    });
+
+    // Close on backdrop click
+    backdrop.addEventListener('click', (e) => {
+      if (e.target === backdrop) {
+        closeModal();
+      }
+    });
+
+    // Listen for trigger buttons
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('[data-search-trigger]');
+      if (trigger) {
+        e.preventDefault();
+        openModal();
+      }
+    });
+  })();
+</script>

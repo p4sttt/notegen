@@ -6,6 +6,7 @@
 @import './widgets/hero.css';
 @import './widgets/section-block.css';
 @import './widgets/content-navigation.css';
+@import './widgets/search.css';
 @import './pages/note.css';
 @import './pages/database.css';
 @import './pages/changelog.css';

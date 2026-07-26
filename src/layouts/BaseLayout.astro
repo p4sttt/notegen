@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { siteText } from '../config/site';
 import { defaultLocale, getLocaleFromUrl, ui } from '../i18n/ui';
 import PreferencesControl from '../widgets/preferences/PreferencesControl.astro';
+import SearchModal from '../widgets/search/SearchModal.astro';
 import { pluginsUi } from '../data/generated/plugins-ui';
 
 interface Props {
@@ -79,11 +80,22 @@ const pageI18n = {
             })
           }
         </nav>
+        <button
+          type="button"
+          class="header-search-btn"
+          data-search-trigger
+          title={ui[locale].searchTitle}
+        >
+          <span>🔍</span>
+          <span>{ui[locale].search}</span>
+          <kbd class="search-kbd-badge">{ui[locale].searchShortcut}</kbd>
+        </button>
         <PreferencesControl locale={locale} />
       </header>
       <main class="content-frame">
         <slot />
       </main>
+      <SearchModal locale={locale} baseUrl={baseUrl} />
     </div>
     <script is:inline define:vars={{ i18nMessages, defaultLocale, pageI18n }}>
       const uiDict = i18nMessages.ui;

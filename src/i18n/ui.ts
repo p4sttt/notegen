@@ -65,6 +65,10 @@ type UIStrings = {
   sourceData: string;
   empty: string;
   intro: string;
+  searchPlaceholder: string;
+  searchTitle: string;
+  searchNoResults: string;
+  searchShortcut: string;
 };
 
 export const ui: Record<Locale, UIStrings> = {
@@ -131,6 +135,10 @@ export const ui: Record<Locale, UIStrings> = {
     sourceData: 'Источник данных',
     empty: 'Тут пока пусто, но скоро обязательно что-нибудь появится.',
     intro: 'Статический сайт конспектов, собранный из Obsidian vault.',
+    searchPlaceholder: 'Поиск по заметкам, разделам и базам...',
+    searchTitle: 'Быстрый поиск',
+    searchNoResults: 'Ничего не найдено',
+    searchShortcut: 'Ctrl K',
   },
   en: {
     home: 'Home',
@@ -191,6 +199,10 @@ export const ui: Record<Locale, UIStrings> = {
     sourceData: 'Source',
     empty: "It's a bit empty here for now, but something will definitely appear soon.",
     intro: 'A static notes site generated from an Obsidian vault.',
+    searchPlaceholder: 'Search notes, topics, databases...',
+    searchTitle: 'Quick Search',
+    searchNoResults: 'No results found',
+    searchShortcut: 'Ctrl K',
   },
 };
 
