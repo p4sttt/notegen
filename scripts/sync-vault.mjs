@@ -1,4 +1,11 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import { createAssetTools } from './sync-vault/assets.mjs';
 import { VaultCacheManager, computeFileHash } from './sync-vault/cache.mjs';
@@ -188,12 +195,8 @@ for (const sourcePath of noteFiles) {
 
   const topicSlug = topicDir ? slugifyPath(path.relative(resolvedVaultPath, topicDir)) : null;
   const isNotebook = sourcePath.endsWith('.ipynb');
-  const noteRelativePath = topicDir
-    ? path.relative(topicDir, sourcePath)
-    : sourceRelativePath;
-  const noteRelativeSegments = relativePathSegments(
-    noteRelativePath.replace(/\.(md|ipynb)$/i, ''),
-  );
+  const noteRelativePath = topicDir ? path.relative(topicDir, sourcePath) : sourceRelativePath;
+  const noteRelativeSegments = relativePathSegments(noteRelativePath.replace(/\.(md|ipynb)$/i, ''));
   const originalName = noteRelativeSegments.at(-1) || path.basename(sourcePath, '.md');
   let title = originalName;
   let customSlug = null;
@@ -226,9 +229,7 @@ for (const sourcePath of noteFiles) {
 
 for (const sourcePath of listDatabaseFiles(resolvedVaultPath, isIgnoredPath)) {
   const sourceRelativePath = path.relative(resolvedVaultPath, sourcePath);
-  const databaseRelativeSegments = relativePathSegments(
-    sourceRelativePath.replace(/\.csv$/i, ''),
-  );
+  const databaseRelativeSegments = relativePathSegments(sourceRelativePath.replace(/\.csv$/i, ''));
   const originalName = databaseRelativeSegments.at(-1) || path.basename(sourcePath, '.csv');
   const databaseSlug = databaseRelativeSegments.map(slugify).join('/');
   const collectionSlug = getPreCollectionSlug(databaseSlug);
@@ -442,9 +443,7 @@ for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
   const noteRelativePath = topic
     ? path.relative(path.join(resolvedVaultPath, topic.sourcePath), sourcePath)
     : sourceRelativePath;
-  const noteRelativeSegments = relativePathSegments(
-    noteRelativePath.replace(/\.(md|ipynb)$/i, ''),
-  );
+  const noteRelativeSegments = relativePathSegments(noteRelativePath.replace(/\.(md|ipynb)$/i, ''));
   const originalName = noteRelativeSegments.at(-1) || path.basename(sourcePath, '.md');
   const notebookPublicScope = topic
     ? `${topic.slug}/${noteRelativeSegments.map(slugify).join('/')}`
@@ -454,10 +453,10 @@ for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
     : null;
   const parsed = isNotebook
     ? notebookNoteFrontmatter(
-      notebookConversion.notebook,
-      notebookConversion.markdown,
-      originalName,
-    )
+        notebookConversion.notebook,
+        notebookConversion.markdown,
+        originalName,
+      )
     : parseFrontmatter(raw);
 
   const processedNote = await pluginManager.runProcessNote(

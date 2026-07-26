@@ -74,15 +74,15 @@ export function renderTopicsDataFile(
     'export const topics: Topic[] = [',
   ].join('\n')}
 ${topics
-      .map((topic) => {
-        const noteLines = topic.notes.map((note) => renderNote(note, '    ')).join(',\n');
-        const databaseLines = topic.databases
-          .map((database) => renderDatabase(database, '    '))
-          .join(',\n');
+  .map((topic) => {
+    const noteLines = topic.notes.map((note) => renderNote(note, '    ')).join(',\n');
+    const databaseLines = topic.databases
+      .map((database) => renderDatabase(database, '    '))
+      .join(',\n');
 
-        return `  {\n    slug: '${escapeSingleQuotes(topic.slug)}',\n    title: '${escapeSingleQuotes(topic.title)}',\n    summary: '${escapeSingleQuotes(topic.summary ?? '')}',\n    description: '${escapeSingleQuotes(topic.description ?? '')}',\n    draft: ${topic.draft ? 'true' : 'false'},\n    parentSlug: '${escapeSingleQuotes(topic.parentSlug ?? '')}',\n    sourcePath: '${escapeSingleQuotes(topic.sourcePath ?? '')}',\n    notes: [\n${noteLines}\n    ],\n    databases: [\n${databaseLines}\n    ]\n  }`;
-      })
-      .join(',\n')}
+    return `  {\n    slug: '${escapeSingleQuotes(topic.slug)}',\n    title: '${escapeSingleQuotes(topic.title)}',\n    summary: '${escapeSingleQuotes(topic.summary ?? '')}',\n    description: '${escapeSingleQuotes(topic.description ?? '')}',\n    draft: ${topic.draft ? 'true' : 'false'},\n    parentSlug: '${escapeSingleQuotes(topic.parentSlug ?? '')}',\n    sourcePath: '${escapeSingleQuotes(topic.sourcePath ?? '')}',\n    notes: [\n${noteLines}\n    ],\n    databases: [\n${databaseLines}\n    ]\n  }`;
+  })
+  .join(',\n')}
 ];
 
 export const topLevelNotes: Note[] = [
