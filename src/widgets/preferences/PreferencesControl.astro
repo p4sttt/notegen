@@ -96,6 +96,21 @@ const t = ui[locale];
       </div>
     </section>
 
+    <section class="prefs-group" aria-label="Ширина">
+      <p class="prefs-label">{locale === 'ru' ? 'Ширина' : 'Width'}</p>
+      <div class="prefs-options">
+        <button type="button" class="prefs-chip" data-width-value="normal">
+          {locale === 'ru' ? 'Стандарт' : 'Normal'}
+        </button>
+        <button type="button" class="prefs-chip" data-width-value="wide">
+          {locale === 'ru' ? 'Широкая' : 'Wide'}
+        </button>
+        <button type="button" class="prefs-chip" data-width-value="full">
+          {locale === 'ru' ? 'Макс' : 'Full'}
+        </button>
+      </div>
+    </section>
+
     {
       pluginsUi.preferencesSections.map((section) => {
         const resolvedTitle = section.i18n?.[locale] || section.title;
@@ -113,10 +128,12 @@ const t = ui[locale];
 <script is:inline>
   const themeStorageKey = 'notegen-theme';
   const accentStorageKey = 'notegen-accent';
+  const widthStorageKey = 'notegen-width';
   const languageStorageKey = 'notegen-language';
   const root = document.documentElement;
   const themeChips = document.querySelectorAll('[data-theme-value]');
   const accentChips = document.querySelectorAll('[data-accent-value]');
+  const widthChips = document.querySelectorAll('[data-width-value]');
   const langChips = document.querySelectorAll('[data-lang-value]');
   const isSupportedLocale = (value) => value === 'en' || value === 'ru';
   const applyTheme = (value) => {
@@ -137,6 +154,12 @@ const t = ui[locale];
       chip.setAttribute('aria-pressed', String(chip.dataset.accentValue === value));
     });
   };
+  const applyWidth = (value) => {
+    root.dataset.width = value;
+    widthChips.forEach((chip) => {
+      chip.setAttribute('aria-pressed', String(chip.dataset.widthValue === value));
+    });
+  };
   const currentUrl = new URL(window.location.href);
   const queryLang = currentUrl.searchParams.get('lang');
   const savedLang = localStorage.getItem(languageStorageKey);
@@ -151,8 +174,10 @@ const t = ui[locale];
 
   const savedTheme = localStorage.getItem(themeStorageKey) ?? 'system';
   const savedAccent = localStorage.getItem(accentStorageKey) ?? 'white';
+  const savedWidth = localStorage.getItem(widthStorageKey) ?? 'normal';
   applyTheme(savedTheme);
   applyAccent(savedAccent);
+  applyWidth(savedWidth);
 
   themeChips.forEach((chip) => {
     chip.addEventListener('click', () => {
@@ -167,6 +192,14 @@ const t = ui[locale];
       const value = chip.dataset.accentValue ?? 'white';
       localStorage.setItem(accentStorageKey, value);
       applyAccent(value);
+      chip.closest('details')?.removeAttribute('open');
+    });
+  });
+  widthChips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const value = chip.dataset.widthValue ?? 'normal';
+      localStorage.setItem(widthStorageKey, value);
+      applyWidth(value);
       chip.closest('details')?.removeAttribute('open');
     });
   });
