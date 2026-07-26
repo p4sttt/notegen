@@ -6,7 +6,9 @@ function renderNote(note, indent = '  ') {
   const tagsStr = note.tags
     ? `[${note.tags.map((t) => `'${escapeSingleQuotes(t)}'`).join(', ')}]`
     : 'undefined';
-  return `${indent}{ slug: '${escapeSingleQuotes(note.slug)}', collectionSlug: '${escapeSingleQuotes(note.collectionSlug)}', title: '${escapeSingleQuotes(note.title)}', summary: '${escapeSingleQuotes(note.summary ?? '')}', description: '${escapeSingleQuotes(note.description ?? '')}', status: '${escapeSingleQuotes(note.status ?? 'done')}', sourcePath: '${escapeSingleQuotes(note.sourcePath ?? '')}', updatedAt: '${escapeSingleQuotes(note.updatedAt ?? '')}', tags: ${tagsStr} }`;
+  const backlinksStr =
+    note.backlinks && note.backlinks.length > 0 ? JSON.stringify(note.backlinks) : 'undefined';
+  return `${indent}{ slug: '${escapeSingleQuotes(note.slug)}', collectionSlug: '${escapeSingleQuotes(note.collectionSlug)}', title: '${escapeSingleQuotes(note.title)}', summary: '${escapeSingleQuotes(note.summary ?? '')}', description: '${escapeSingleQuotes(note.description ?? '')}', status: '${escapeSingleQuotes(note.status ?? 'done')}', sourcePath: '${escapeSingleQuotes(note.sourcePath ?? '')}', updatedAt: '${escapeSingleQuotes(note.updatedAt ?? '')}', tags: ${tagsStr}, backlinks: ${backlinksStr} }`;
 }
 
 function renderDatabase(database, indent = '  ') {
@@ -20,6 +22,12 @@ export function renderTopicsDataFile(
   tagColorMap = {},
 ) {
   return `${[
+    'export type Backlink = {',
+    '  collectionSlug: string;',
+    '  title: string;',
+    '  summary?: string;',
+    '};',
+    '',
     'export type Note = {',
     '  slug: string;',
     '  collectionSlug: string;',
@@ -30,6 +38,7 @@ export function renderTopicsDataFile(
     '  sourcePath?: string;',
     '  updatedAt?: string;',
     '  tags?: string[];',
+    '  backlinks?: Backlink[];',
     '};',
     '',
     "export type DatabaseColumnType = 'text' | 'number' | 'date' | 'boolean';",

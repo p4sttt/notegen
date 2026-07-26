@@ -16,6 +16,7 @@ export class Note {
   sourcePath?: string;
   updatedAt?: string;
   tags: string[];
+  backlinks: Array<{ collectionSlug: string; title: string; summary?: string }>;
 
   constructor(raw: RawNote) {
     this.slug = raw.slug;
@@ -27,6 +28,7 @@ export class Note {
     this.sourcePath = raw.sourcePath;
     this.updatedAt = raw.updatedAt;
     this.tags = raw.tags ?? [];
+    this.backlinks = raw.backlinks ?? [];
   }
 
   isPublished(): boolean {

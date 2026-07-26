@@ -492,6 +492,7 @@ for (const sourcePath of listNoteFiles(resolvedVaultPath, isIgnoredPath)) {
     sourceDirectory: path.dirname(sourcePath),
     publicScope: collectionSlug,
     linkResolver,
+    currentSourceNote: note,
     copyReferencedAsset,
     onAssetCopied,
   });
@@ -620,10 +621,14 @@ writePluginsUiFile(pluginContext.ui);
 const allTags = new Set();
 for (const topic of topics) {
   for (const note of topic.notes) {
+    const backlinks = linkResolver.getBacklinks(note.collectionSlug);
+    if (backlinks.length > 0) note.backlinks = backlinks;
     if (note.tags) note.tags.forEach((tag) => allTags.add(tag));
   }
 }
 for (const note of topLevelNotes) {
+  const backlinks = linkResolver.getBacklinks(note.collectionSlug);
+  if (backlinks.length > 0) note.backlinks = backlinks;
   if (note.tags) note.tags.forEach((tag) => allTags.add(tag));
 }
 
